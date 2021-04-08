@@ -1,0 +1,6 @@
+**/Lib
+**/Lib/*
+**/build
+docs
+Checks
+**/bin/*
