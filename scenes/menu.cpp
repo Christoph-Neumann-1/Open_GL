@@ -66,7 +66,7 @@ void SceneMenu::ImGui(void *_this_, void *)
         if (_this->loader->window.paused)
         {
             _this->loader->window.paused = false;
-            _this->loader->callbackhandler->last = std::chrono::high_resolution_clock::now();
+            _this->loader->callbackhandler->last_update = std::chrono::high_resolution_clock::now();
         }
         else
         {

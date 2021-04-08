@@ -32,11 +32,10 @@ void CallbackHandler::Call(CallbackType type)
 {
     if (type == CallbackType::Update)
     {
-        now = std::chrono::high_resolution_clock::now();
-        auto dt = now - last;
+        auto dt = std::chrono::high_resolution_clock::now() - last_update;
         deltatime_update = std::chrono::duration_cast<std::chrono::nanoseconds>(dt).count() / pow(10, 9);
-        last = now;
-    }
+        last_update = std::chrono::high_resolution_clock::now();
+        }
 
     for (auto &cb : callbacks[type])
     {

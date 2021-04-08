@@ -5,9 +5,7 @@
 #include <VertexArray.hpp>
 
 /**
- * @brief Simplifies drawing of most obkects since only one class must be supported.
- * 
- * Documentation in Children
+ * @brief Removes duplicate functions from Renderer.
  */
 class Drawable
 {

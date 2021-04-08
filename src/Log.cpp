@@ -16,7 +16,5 @@ Logger &Logger::operator<<(const char *in)
 
 Logger &Logger::operator<<(char *in)
 {
-    if (in)
-        stream << in;
-    return *this;
+    return operator<<<const char *>(in);
 }

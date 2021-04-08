@@ -1,4 +1,3 @@
-///@file
 #pragma once
 
 #include <VertexArray.hpp>
@@ -11,8 +10,6 @@
 
 /**
  * @brief A class that helps with drawing a line between 2 points.
- * 
- * Use Renderer.Draw() to draw it.
  */
 class Line : public Drawable
 {
@@ -23,9 +20,9 @@ class Line : public Drawable
     float *color;
 
 public:
-    glm::vec2 start; ///< @brief startpoint
-    glm::vec2 end;   ///<@brief endpoint
-    float thickness; ///<@brief thickness of the curve
+    glm::vec2 start;
+    glm::vec2 end;
+    float thickness;
 
     /**
      * @brief Construct a new Line from start to end
@@ -37,7 +34,7 @@ public:
      */
     Line(glm::vec2 start, glm::vec2 end, float thickness, float color[4]);
 
-    ///@brief Updates the position of the curve
+    ///@brief Updates the vertices of the curve
     void Update();
 
     ///@brief Sets the color as well.

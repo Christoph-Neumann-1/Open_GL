@@ -6,10 +6,7 @@ class SceneLoader;
 /**
  * @brief Base class for all scenes.
  * 
- * This class is used together with SceneLoader to dynamically load scenes.
- * Scene.hpp
- * 
- * @note Yes void* would also work to keep track of instances, but this makes the destructor thing easier. And I may need to add functionality.
+ * Makes calling destructur easier.
  * 
  * @attention This class should never be instantited.
  */

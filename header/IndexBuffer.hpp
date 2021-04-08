@@ -3,7 +3,6 @@
 
 /**
  * @brief Abstraction to create and manipulate Indexbuffers
- * 
  */
 class IndexBuffer
 {
@@ -33,7 +32,7 @@ public:
     /**
      * @brief Set the index data.
      * 
-     * @param[in] data what to fill it with
+     * @param data what to fill it with
      * @param count how many indices are supposed to be in the buffer
      */
     void SetData(const unsigned int *data, unsigned int count);

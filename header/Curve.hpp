@@ -1,4 +1,3 @@
-///@file
 #pragma once
 
 #include <glm/glm.hpp>
@@ -6,11 +5,7 @@
 #include <Drawable.hpp>
 
 /**
- * @brief Used to draw curves on th screen. 
- * 
- * Generates all necessary buffers and calculates vertices. To draw it use Renderer.Draw()
- * 
- * @note Subject to change when the material system gets implemented
+ * @brief Used to draw curves on the screen. 
  */
 class Curve : public Drawable
 {
@@ -35,7 +30,7 @@ public:
      * Can be resized later if necessary. Use Update() before drawing it or after changing something.
      * 
      * @param n_Points Number of Points to draw a curve through must be at least 2
-     * @param dynamic Do you want to modify the curve later on?
+     * @param dynamic Do you want to modify the curve later on? Can still be modified but the buffer will use GL_STATIC_DRAW
      */
     explicit Curve(unsigned int n_Points = 2, bool dynamic = false);
 

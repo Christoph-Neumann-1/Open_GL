@@ -6,10 +6,7 @@
 #include <iostream>
 
 /**
- * @brief Class used to log debugging output
- * 
- * Multiple instances can be used to collect input
- * and print all at once.
+ * @brief Class used to print debugging output
  */
 class Logger
 {
@@ -22,7 +19,8 @@ public:
      */
     void print()
     {
-        std::cout << stream.str() <<'\n'<<std::flush;
+        std::cout << stream.str() << '\n'
+                  << std::flush;
         stream.str("");
     }
     /**
