@@ -12,10 +12,10 @@ const float radius = 10;
 const float G = 60;
 const float color[4] = {0, 1, 0.8, 1};
 const u_int segcount = 16;
-const u_int n_balls = 250;
+const u_int n_balls = 150;
 const float startv = 60;
 
-const float force = 400;
+const float force = 450;
 const float friction = 3.5;
 
 const float mouseforce = 150;
@@ -35,14 +35,16 @@ class BallHandle : public Scene
     SceneLoader *loader;
     std::vector<Ball> balls;
     Renderer renderer;
+    Circle circle;
 
     static void Render(void *, void *);
     static void Update(void *, void *);
 
 public:
     BallHandle(SceneLoader *loader)
-        : loader(loader)
+        : loader(loader), circle(radius, segcount)
     {
+        circle.SetColor(color);
         renderer.proj = loader->proj;
         renderer.view = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 
@@ -56,7 +58,7 @@ public:
         {
             glm::vec2 position = {rand() % loader->window.x, rand() % loader->window.y};
             glm::vec2 velocity = {(float)rand() / RAND_MAX * 2 * startv - startv, (float)rand() / RAND_MAX * 2 * startv - startv};
-            balls.emplace_back(position, velocity, this);
+            balls.emplace_back(position, velocity);
         }
     }
     ~BallHandle()
@@ -67,15 +69,12 @@ public:
 
 struct Ball
 {
-    BallHandle *handle;
-    Circle circle;
     glm::mat4 model = glm::translate(glm::mat4(1.0f), {400, 400, 0});
     glm::vec2 velocity;
 
-    Ball(glm::vec2 position, glm::vec2 velocity, BallHandle *_handle)
-        : handle(_handle), circle(radius, segcount), model(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0))), velocity(velocity)
+    Ball(glm::vec2 position, glm::vec2 velocity)
+        : model(glm::translate(glm::mat4(1.0f), glm::vec3(position, 0))), velocity(velocity)
     {
-        circle.SetColor(color);
     }
 };
 
@@ -84,7 +83,7 @@ void BallHandle::Render(void *_this_, void *)
     auto _this = reinterpret_cast<BallHandle *>(_this_);
     for (auto &ball : _this->balls)
     {
-        _this->renderer.Draw(&ball.circle, ball.model);
+        _this->renderer.Draw(&_this->circle, ball.model);
     }
 }
 
@@ -97,7 +96,7 @@ void BallHandle::Update(void *_this_, void *)
         ball.velocity.y -= G * dt;
         float v = sqrtf(ball.velocity.x * ball.velocity.x + ball.velocity.y * ball.velocity.y);
 
-        ball.velocity *= std::clamp((v - friction * dt), 0.0f, MAXFLOAT) / v;
+        ball.velocity *= std::clamp((v - friction * dt), 0.0f, 4000.0f) / v;
 
         ball.model[3][0] += ball.velocity.x * dt;
         ball.model[3][1] += ball.velocity.y * dt;
