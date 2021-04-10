@@ -20,8 +20,10 @@ public:
      * @param radius radius in whatever coordinatesystem the renderer uses
      * @param segcount how many lines to draw
      * @param origin where to draw the circle I recommend using matrices for transfor insead of this.
+     * @param shader_path use a different shader
      */
-    explicit Circle(float radius, unsigned int segcount = 64, const glm::vec2 &origin = {0, 0});
+    explicit Circle(float radius, unsigned int segcount = 64, const glm::vec2 &origin = {0, 0},const std::string& shader_path="/res/Shaders/Line.glsl");
+
 
     ///@brief Set the color RGBA
     void SetColor(const float color[4])

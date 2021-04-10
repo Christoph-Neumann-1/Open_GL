@@ -2,8 +2,8 @@
 #include <Data.hpp>
 #include <cmath>
 
-Circle::Circle(float radius, unsigned int segcount, const glm::vec2 &origin)
-    : ib(nullptr, 3 * segcount * sizeof(unsigned int)), shader(ROOT_Directory + "/res/Shaders/Line.glsl"), vb((segcount + 1) * 2 * sizeof(float))
+Circle::Circle(float radius, unsigned int segcount, const glm::vec2 &origin, const std::string &shader_path)
+    : ib(nullptr, 3 * segcount), shader(ROOT_Directory + shader_path), vb((segcount + 1) * 2 * sizeof(float))
 {
     Update(radius, segcount, origin);
 

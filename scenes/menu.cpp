@@ -26,7 +26,7 @@ class SceneMenu final : public Scene
         std::make_pair("Triangle"s, "triangle"s),
         std::make_pair("Circle"s, "circle"s),
         std::make_pair("Circle_dyn"s, "dyncirc"s),
-        std::make_pair("bouncyballs"s, "bouncyballs"s),
+        std::make_pair("bouncyballs"s, "instbounce"s),
     };
 
 public:
@@ -59,7 +59,7 @@ void SceneMenu::ImGui(void *_this_, void *)
     }
     if (ImGui::Button("Close") || glfwGetKey(_this->loader->window, GLFW_KEY_ESCAPE))
     {
-        _this->loader->callbackhandler->Register(cbt::PreRender, _this_, Close);
+        _this->loader->callbackhandler->Register(cbt::PostRender, _this_, Close);
     }
     if (ImGui::Button("Pause"))
     {
@@ -81,7 +81,7 @@ void SceneMenu::Close(void *_this_, void *)
 {
     auto _this = reinterpret_cast<SceneMenu *>(_this_);
     _this->scene.UnLoad();
-    _this->loader->callbackhandler->RemoveAllInstances(cbt::PreRender, {_this_, Close});
+    _this->loader->callbackhandler->RemoveAllInstances(cbt::PostRender, {_this_, Close});
     malloc_trim(100);
 }
 

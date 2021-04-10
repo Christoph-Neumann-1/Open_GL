@@ -22,7 +22,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 static Logger logger;
-
+using cbt=CallbackHandler::CallbackType;
 int main()
 {
     {
@@ -72,26 +72,29 @@ int main()
                 window.x = fbx;
                 window.y = fby;
                 glViewport(0, 0, fbx, fby);
-                cb.Call(CallbackHandler::CallbackType::OnWindowResize);
-                cb.Call(CallbackHandler::CallbackType::OnWindowResize2);
+                cb.Call(cbt::OnWindowResize);
+                cb.Call(cbt::OnWindowResize2);
             }
             if (!window.paused)
             {
-
-                cb.Call(CallbackHandler::CallbackType::Update);
+                cb.Call(cbt::PreUpdate);
+                cb.Call(cbt::Update);
+                cb.Call(cbt::PostUpdate);
             }
-            cb.Call(CallbackHandler::CallbackType::PreRender);
+            cb.Call(cbt::PreRender);
 
-            cb.Call(CallbackHandler::CallbackType::Render);
+            cb.Call(cbt::Render);
 
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            cb.Call(CallbackHandler::CallbackType::ImGuiRender);
+            cb.Call(cbt::ImGuiRender);
 
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+            cb.Call(cbt::PostRender);
 
             glfwSwapBuffers(window);
             glfwPollEvents();
