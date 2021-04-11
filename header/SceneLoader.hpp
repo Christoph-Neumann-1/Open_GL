@@ -69,6 +69,14 @@ public:
      */
     void UnLoad();
 
+    std::unordered_map<std::string, int> &GetFlags()
+    {
+        if (s == nullptr)
+            throw std::runtime_error("No scene loaded when accessing flags");
+        return s->flags;
+    }
+    bool hasScene() { return s; }
+
 private:
     static void OnResize(void *_this_, void *)
     {

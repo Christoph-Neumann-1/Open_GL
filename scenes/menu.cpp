@@ -48,34 +48,41 @@ SceneMenu::~SceneMenu()
 void SceneMenu::ImGui(void *_this_, void *)
 {
     auto _this = reinterpret_cast<SceneMenu *>(_this_);
-    ImGui::Begin("Scenes");
-
-    for (unsigned int i = 0; i < _this->scenes.size(); i++)
+    if (!(_this->scene.hasScene() && _this->scene.GetFlags()["hide_menu"]))
     {
-        if (ImGui::Button(_this->scenes[i].first.c_str()) || glfwGetKey(_this->loader->window, GLFW_KEY_1 + i))
+        ImGui::Begin("Scenes");
+
+        for (unsigned int i = 0; i < _this->scenes.size(); i++)
         {
-            _this->path = ROOT_Directory + "/scenes/bin/" + _this->scenes[i].second + ".so";
-            _this->loader->callbackhandler->Register(cbt::PreRender, _this_, Switch);
+            if (ImGui::Button(_this->scenes[i].first.c_str()) || glfwGetKey(_this->loader->window, GLFW_KEY_1 + i))
+            {
+                _this->path = ROOT_Directory + "/scenes/bin/" + _this->scenes[i].second + ".so";
+                _this->loader->callbackhandler->Register(cbt::PreRender, _this_, Switch);
+            }
         }
+        if (ImGui::Button("Close") || glfwGetKey(_this->loader->window, GLFW_KEY_ESCAPE))
+        {
+            _this->loader->callbackhandler->Register(cbt::PostRender, _this_, Close);
+        }
+        if (ImGui::Button("Pause"))
+        {
+            if (_this->loader->window.paused)
+            {
+                _this->loader->window.paused = false;
+                _this->loader->callbackhandler->last_update = std::chrono::high_resolution_clock::now();
+            }
+            else
+            {
+                _this->loader->window.paused = true;
+            }
+        }
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
     }
-    if (ImGui::Button("Close") || glfwGetKey(_this->loader->window, GLFW_KEY_ESCAPE))
+    else if (glfwGetKey(_this->loader->window, GLFW_KEY_ESCAPE))
     {
         _this->loader->callbackhandler->Register(cbt::PostRender, _this_, Close);
     }
-    if (ImGui::Button("Pause"))
-    {
-        if (_this->loader->window.paused)
-        {
-            _this->loader->window.paused = false;
-            _this->loader->callbackhandler->last_update = std::chrono::high_resolution_clock::now();
-        }
-        else
-        {
-            _this->loader->window.paused = true;
-        }
-    }
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    ImGui::End();
 }
 
 void SceneMenu::Close(void *_this_, void *)
