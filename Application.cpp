@@ -22,7 +22,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 static Logger logger;
-using cbt=CallbackHandler::CallbackType;
+using cbt = CallbackHandler::CallbackType;
 int main()
 {
     {
@@ -42,6 +42,7 @@ int main()
         glViewport(0, 0, window.x, window.y);
 
         glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEPTH_TEST);
         glDebugMessageCallback(ErrorCallback, 0);
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -64,7 +65,7 @@ int main()
 
         while (!window.CloseFlag())
         {
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glfwGetFramebufferSize(window, &fbx, &fby);
 
             if (fbx != window.x || fby != window.y)

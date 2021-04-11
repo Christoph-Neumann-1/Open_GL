@@ -1,7 +1,6 @@
 #include <SceneLoader.hpp>
 #include <Scene.hpp>
 #include <Renderer.hpp>
-#include <Log.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <Callback.hpp>
 #include <Texture.hpp>
