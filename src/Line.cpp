@@ -31,7 +31,7 @@ void Line::Update(float color[4])
 void Line::Update()
 {
     glm::vec2 nv = end - start;
-    float length = sqrtf(nv.x * nv.x + nv.y * nv.y);
+    float length = glm::length(nv);
     nv = glm::vec2(-nv.y / length, nv.x / length);
     nv *= thickness;
     glm::vec2 vertices[] = {start + nv, start - nv, end + nv, end - nv};

@@ -127,7 +127,7 @@ void BallHandle::Update(void *_this_, void *)
                 continue;
 
             glm::vec2 vec = {ball_p[j].x - ball_p[i].x, ball_p[j].y - ball_p[i].y};
-            float length = sqrtf(vec.x * vec.x + vec.y * vec.y);
+            float length = glm::length(vec);
             auto f = (length < 2.5 * radius) * force * dt * vec / length;
             ball_v[i] -= f;
         }
@@ -143,7 +143,7 @@ void BallHandle::Update(void *_this_, void *)
         for (u_int i=0; i<n_balls;i++)
         {
             glm::vec2 vec = {x - ball_p[i].x, y - ball_p[i].y};
-            float length = sqrtf(vec.x * vec.x + vec.y * vec.y);
+            float length = glm::length(vec);
             auto force = f_dt / length * length * vec / length;
             ball_v[i] += force;
         }
@@ -158,7 +158,7 @@ void BallHandle::Update(void *_this_, void *)
         for (u_int i=0; i<n_balls;i++)
         {
             glm::vec2 vec = {x - ball_p[i].x, y - ball_p[i].y};
-            float length = sqrtf(vec.x * vec.x + vec.y * vec.y);
+            float length = glm::length(vec);
             auto force = f_dt / length * length * vec / length;
             ball_v[i] -= force;
         }

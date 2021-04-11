@@ -66,7 +66,7 @@ void Curve::Update()
         glm::vec2 &start = Points[i];
         glm::vec2 &end = Points[i + 1];
         glm::vec2 nv = end - start;
-        float length = sqrtf(nv.x * nv.x + nv.y * nv.y);
+        float length = glm::length(nv);
         nv = glm::vec2(-nv.y / length, nv.x / length);
         nv *= thickness;
         pos[0] = start + nv;
