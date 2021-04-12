@@ -8,10 +8,7 @@
 #include <Data.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <Camera3D.hpp>
-
-float c_speed = 0.06f;
-float c_rspeed = 1.0f;
-float mouse_sensitivity = 0.2f;
+#include <Flycam.hpp>
 
 class S1 final : public Scene
 {
@@ -64,14 +61,9 @@ class S1 final : public Scene
     VertexBuffer vb;
 
     Camera3D camera;
-    glm::vec3 c_pos = {0, 0, 3};
+    Flycam fcam;
 
-    glm::quat c_rot{1, 0, 0, 0};
-
-    glm::mat4 view = glm::lookAt(
-        c_pos,
-        c_pos + glm::vec3{0, 0, -1},
-        glm::vec3(0, 1, 0));
+    glm::mat4 view;
 
     glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3{0, 0, 0});
     glm::mat4 rotation = glm::mat4(1.0f);
@@ -82,14 +74,9 @@ class S1 final : public Scene
     Texture tex;
     Shader shader;
 
-    double mousex;
-    double mousey;
-    double newmousex;
-    double newmousey;
-
 public:
     explicit S1(SceneLoader *_load)
-        : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}), tex(Texture(ROOT_Directory + "/res/Textures/Thing.png")),
+        : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}),fcam(&camera,loader->window,10,120,.11), tex(Texture(ROOT_Directory + "/res/Textures/Thing.png")),
           shader(Shader(ROOT_Directory + "/res/Shaders/Tex.glsl"))
     {
         VertexBufferLayout layout;
@@ -100,12 +87,8 @@ public:
 
         shader.Bind();
         shader.SetUniform1i("u_Texture", 0);
-        shader.SetUniformMat4f("u_MVP", proj * view * (translation * rotation * scale));
 
         loader->callbackhandler->Register(CallbackHandler::CallbackType::Render, this, OnRender);
-        glfwSetInputMode(loader->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glfwSetInputMode(loader->window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-        glfwGetCursorPos(loader->window, &mousex, &mousey);
 
         flags["hide_menu"] = 1;
     }
@@ -113,7 +96,6 @@ public:
     ~S1()
     {
         loader->callbackhandler->RemoveAll(this);
-        glfwSetInputMode(loader->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
     static void OnRender(void *_this_, void *)
@@ -122,26 +104,7 @@ public:
         _this->tex.Bind();
         _this->va.Bind();
 
-        glfwGetCursorPos(_this->loader->window, &_this->newmousex, &_this->newmousey);
-
-        float mousedeltax = _this->newmousex - _this->mousex;
-        float mousedeltay = _this->newmousey - _this->mousey;
-
-        _this->mousex = _this->newmousex;
-        _this->mousey = _this->newmousey;
-
-        glm::vec3 forward = _this->camera.Forward();
-        glm::vec3 up_cam = _this->camera.Up();
-        glm::vec3 right = glm::cross(forward, up_cam);
-
-        _this->camera.position += c_speed * forward * (float)glfwGetKey(_this->loader->window, GLFW_KEY_W) - c_speed * forward * (float)glfwGetKey(_this->loader->window, GLFW_KEY_S);
-        _this->camera.position += c_speed * right * (float)glfwGetKey(_this->loader->window, GLFW_KEY_D) - c_speed * right * (float)glfwGetKey(_this->loader->window, GLFW_KEY_A);
-        _this->camera.position += c_speed * up_cam * (float)glfwGetKey(_this->loader->window, GLFW_KEY_R) - c_speed * up_cam * (float)glfwGetKey(_this->loader->window, GLFW_KEY_F);
-
-        _this->camera.rotation = glm::rotate(_this->camera.rotation, glm::radians(c_rspeed * mouse_sensitivity * mousedeltax), up_cam);
-        _this->camera.rotation = glm::rotate(_this->camera.rotation, glm::radians(c_rspeed * mouse_sensitivity * mousedeltay), right);
-        _this->camera.rotation = glm::rotate(_this->camera.rotation, glm::radians(c_rspeed * (float)(glfwGetKey(_this->loader->window, GLFW_KEY_Q) - glfwGetKey(_this->loader->window, GLFW_KEY_E))), forward);
-
+        _this->fcam.Update(_this->loader->callbackhandler->deltatime_update);
         _this->view = _this->camera.ComputeMatrix();
 
         _this->shader.Bind();
