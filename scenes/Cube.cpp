@@ -58,6 +58,9 @@ class S1 final : public Scene
         -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f};
 
+    glm::vec3 offsets[3]={{1.5,0,0},{0.6,0.7,0},{0.3,0.2,3}};
+    u_int offBuff;
+
     VertexBuffer vb;
 
     Camera3D camera;
@@ -77,13 +80,20 @@ class S1 final : public Scene
 public:
     explicit S1(SceneLoader *_load)
         : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}),fcam(&camera,loader->window,10,120,.11), tex(Texture(ROOT_Directory + "/res/Textures/Thing.png")),
-          shader(Shader(ROOT_Directory + "/res/Shaders/Tex.glsl"))
+          shader(Shader(ROOT_Directory + "/res/Shaders/InstTex.glsl"))
     {
         VertexBufferLayout layout;
         layout.Push<float>(3);
         layout.Push<float>(2);
 
+
         va.AddBuffer(vb, layout);
+        glGenBuffers(1,&offBuff);
+        glBindBuffer(GL_ARRAY_BUFFER,offBuff);
+        glBufferData(GL_ARRAY_BUFFER,3*3*sizeof(float),offsets,GL_STATIC_DRAW);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2,3,GL_FLOAT,false,3*sizeof(float),0);
+        glVertexAttribDivisor(2,1);
 
         shader.Bind();
         shader.SetUniform1i("u_Texture", 0);
@@ -110,7 +120,7 @@ public:
         _this->shader.Bind();
         _this->shader.SetUniformMat4f("u_MVP", _this->proj * _this->view * (_this->translation * _this->rotation * _this->scale));
 
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 36,3);
     }
 };
 
