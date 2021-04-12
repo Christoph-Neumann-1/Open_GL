@@ -7,6 +7,7 @@
 #include <Shader.hpp>
 #include <Data.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <Camera3D.hpp>
 
 float c_speed = 0.06f;
 float c_rspeed = 1.0f;
@@ -62,8 +63,7 @@ class S1 final : public Scene
 
     VertexBuffer vb;
 
-    IndexBuffer ib;
-
+    Camera3D camera;
     glm::vec3 c_pos = {0, 0, 3};
 
     glm::quat c_rot{1, 0, 0, 0};
@@ -89,7 +89,8 @@ class S1 final : public Scene
 
 public:
     explicit S1(SceneLoader *_load)
-        : loader(_load), vb(5 * 36 * sizeof(float), vertices), tex(Texture(ROOT_Directory + "/res/Textures/Thing.png")), shader(Shader(ROOT_Directory + "/res/Shaders/Tex.glsl"))
+        : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}), tex(Texture(ROOT_Directory + "/res/Textures/Thing.png")),
+          shader(Shader(ROOT_Directory + "/res/Shaders/Tex.glsl"))
     {
         VertexBufferLayout layout;
         layout.Push<float>(3);
@@ -120,7 +121,6 @@ public:
         auto _this = reinterpret_cast<S1 *>(_this_);
         _this->tex.Bind();
         _this->va.Bind();
-        _this->ib.Bind();
 
         glfwGetCursorPos(_this->loader->window, &_this->newmousex, &_this->newmousey);
 
@@ -130,24 +130,21 @@ public:
         _this->mousex = _this->newmousex;
         _this->mousey = _this->newmousey;
 
-        glm::vec3 forward = glm::vec3(glm::vec4{0, 0, -1, 0} * glm::toMat4(_this->c_rot));
-        glm::vec3 up_cam=glm::vec3(glm::vec4{0, 1, 0, 0} * glm::toMat4(_this->c_rot));
+        glm::vec3 forward = _this->camera.Forward();
+        glm::vec3 up_cam = _this->camera.Up();
         glm::vec3 right = glm::cross(forward, up_cam);
 
-        _this->c_pos += c_speed * forward * (float)glfwGetKey(_this->loader->window, GLFW_KEY_W) - c_speed * forward * (float)glfwGetKey(_this->loader->window, GLFW_KEY_S);
-        _this->c_pos += c_speed * right * (float)glfwGetKey(_this->loader->window, GLFW_KEY_D) - c_speed * right * (float)glfwGetKey(_this->loader->window, GLFW_KEY_A);
-        _this->c_pos += c_speed * up_cam * (float)glfwGetKey(_this->loader->window, GLFW_KEY_R) - c_speed * up_cam * (float)glfwGetKey(_this->loader->window, GLFW_KEY_F);
+        _this->camera.position += c_speed * forward * (float)glfwGetKey(_this->loader->window, GLFW_KEY_W) - c_speed * forward * (float)glfwGetKey(_this->loader->window, GLFW_KEY_S);
+        _this->camera.position += c_speed * right * (float)glfwGetKey(_this->loader->window, GLFW_KEY_D) - c_speed * right * (float)glfwGetKey(_this->loader->window, GLFW_KEY_A);
+        _this->camera.position += c_speed * up_cam * (float)glfwGetKey(_this->loader->window, GLFW_KEY_R) - c_speed * up_cam * (float)glfwGetKey(_this->loader->window, GLFW_KEY_F);
 
-        _this->c_rot = glm::rotate(_this->c_rot, glm::radians(c_rspeed * mouse_sensitivity * mousedeltax), up_cam);
-        _this->c_rot = glm::rotate(_this->c_rot, glm::radians(c_rspeed * mouse_sensitivity * mousedeltay), right);
-        _this->c_rot = glm::rotate(_this->c_rot, glm::radians(c_rspeed * (float)(glfwGetKey(_this->loader->window, GLFW_KEY_Q) - glfwGetKey(_this->loader->window, GLFW_KEY_E))), forward);
+        _this->camera.rotation = glm::rotate(_this->camera.rotation, glm::radians(c_rspeed * mouse_sensitivity * mousedeltax), up_cam);
+        _this->camera.rotation = glm::rotate(_this->camera.rotation, glm::radians(c_rspeed * mouse_sensitivity * mousedeltay), right);
+        _this->camera.rotation = glm::rotate(_this->camera.rotation, glm::radians(c_rspeed * (float)(glfwGetKey(_this->loader->window, GLFW_KEY_Q) - glfwGetKey(_this->loader->window, GLFW_KEY_E))), forward);
 
-        _this->view = glm::lookAt(
-            _this->c_pos,
-            _this->c_pos + forward,
-            glm::vec3(glm::vec4{0, 1, 0, 0} * glm::toMat4(_this->c_rot)));
+        _this->view = _this->camera.ComputeMatrix();
 
-        _this->shader.Bind(); 
+        _this->shader.Bind();
         _this->shader.SetUniformMat4f("u_MVP", _this->proj * _this->view * (_this->translation * _this->rotation * _this->scale));
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
