@@ -9,6 +9,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <Camera3D.hpp>
 #include <Flycam.hpp>
+#include <Model.hpp>
 
 class S1 final : public Scene
 {
@@ -58,7 +59,7 @@ class S1 final : public Scene
         -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
         -0.5f, 0.5f, -0.5f, 0.0f, 1.0f};
 
-    glm::vec3 offsets[3]={{1.5,0,0},{0.6,0.7,0},{0.3,0.2,3}};
+    glm::vec3 offsets[3] = {{1.5, 0, -.09}, {0.6, 1.7, 0}, {-2.3, 0.2, -3}};
     u_int offBuff;
 
     VertexBuffer vb;
@@ -77,23 +78,27 @@ class S1 final : public Scene
     Texture tex;
     Shader shader;
 
+    Model model;
+    Shader m_shader;
+
 public:
     explicit S1(SceneLoader *_load)
-        : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}),fcam(&camera,loader->window,10,120,.11), tex(Texture(ROOT_Directory + "/res/Textures/Thing.png")),
-          shader(Shader(ROOT_Directory + "/res/Shaders/InstTex.glsl"))
+        : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}), fcam(&camera, loader->window, 10, 120, .11), tex(Texture(ROOT_Directory + "/res/Textures/t2.jpg")),
+          shader(Shader(ROOT_Directory + "/res/Shaders/InstTex.glsl")),
+          model(ROOT_Directory+"/res/Models/teapot.obj"),
+          m_shader(ROOT_Directory + "/res/Shaders/Line.glsl")
     {
         VertexBufferLayout layout;
         layout.Push<float>(3);
         layout.Push<float>(2);
 
-
         va.AddBuffer(vb, layout);
-        glGenBuffers(1,&offBuff);
-        glBindBuffer(GL_ARRAY_BUFFER,offBuff);
-        glBufferData(GL_ARRAY_BUFFER,3*3*sizeof(float),offsets,GL_STATIC_DRAW);
+        glGenBuffers(1, &offBuff);
+        glBindBuffer(GL_ARRAY_BUFFER, offBuff);
+        glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(float), offsets, GL_STATIC_DRAW);
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2,3,GL_FLOAT,false,3*sizeof(float),0);
-        glVertexAttribDivisor(2,1);
+        glVertexAttribPointer(2, 3, GL_FLOAT, false, 3 * sizeof(float), 0);
+        glVertexAttribDivisor(2, 1);
 
         shader.Bind();
         shader.SetUniform1i("u_Texture", 0);
@@ -101,6 +106,10 @@ public:
         loader->callbackhandler->Register(CallbackHandler::CallbackType::Render, this, OnRender);
 
         flags["hide_menu"] = 1;
+
+        float color[] = {1, 0, 0, 1};
+        m_shader.Bind();
+        m_shader.SetUniform4f("u_Color", color);
     }
 
     ~S1()
@@ -120,7 +129,12 @@ public:
         _this->shader.Bind();
         _this->shader.SetUniformMat4f("u_MVP", _this->proj * _this->view * (_this->translation * _this->rotation * _this->scale));
 
-        glDrawArraysInstanced(GL_TRIANGLES, 0, 36,3);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 3);
+
+        _this->m_shader.Bind();
+        _this->m_shader.SetUniformMat4f("u_MVP", _this->proj * _this->view * (_this->translation * _this->rotation * _this->scale));
+
+        _this->model.Draw(_this->m_shader); 
     }
 };
 

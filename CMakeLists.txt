@@ -41,8 +41,8 @@ target_precompile_headers(${PROJECT_NAME} PRIVATE pch.hpp)
 target_compile_definitions(${PROJECT_NAME} PUBLIC ROOT_DIR="${PROJECT_SOURCE_DIR}") 
 target_compile_definitions(OGL PUBLIC ROOT_DIR="${PROJECT_SOURCE_DIR}") 
 
-target_link_libraries(OGL glad GL glfw IMGUI)
-target_link_libraries(${PROJECT_NAME} glad GL glfw IMGUI OGL)
+target_link_libraries(OGL glad GL glfw IMGUI assimp)
+target_link_libraries(${PROJECT_NAME} glad GL glfw IMGUI OGL assimp)
 
 
 add_custom_command(TARGET OGL
