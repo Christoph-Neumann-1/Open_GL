@@ -11,6 +11,7 @@ class VertexBuffer
 {
 private:
     unsigned int BufferID;
+    bool autoclean;
 
 public:
     /**
@@ -19,11 +20,15 @@ public:
      * @param size How many bytes to allocate
      * @param data a pointer to the data
      */
-    explicit VertexBuffer(unsigned int size, const void *data = nullptr, bool dynamic = false);
+    explicit VertexBuffer(unsigned int size, const void *data = nullptr, bool dynamic = false, bool destroy_automatic = true);
 
     ///@brief Construct a VertexBuffer, but leave it empty.
-    VertexBuffer() { glGenBuffers(1, &BufferID); }
-    ~VertexBuffer() { glDeleteBuffers(1, &BufferID); }
+    VertexBuffer(bool destroy_automatic = true) : autoclean(destroy_automatic) { glGenBuffers(1, &BufferID); }
+    ~VertexBuffer()
+    {
+        if (autoclean)
+            glDeleteBuffers(1, &BufferID);
+    }
 
     /**
      * @brief Fill the buffer with data.

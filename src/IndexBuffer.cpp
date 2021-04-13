@@ -3,23 +3,24 @@
 
 #include "IndexBuffer.hpp"
 
-IndexBuffer::IndexBuffer(const unsigned int *data, unsigned int count)
-    : count(count)
+IndexBuffer::IndexBuffer(const unsigned int *data, unsigned int count, bool destroy_automatic)
+    : count(count), destroy(destroy_automatic)
 {
     glGenBuffers(1, &BufferID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, BufferID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
 }
 
-IndexBuffer::IndexBuffer()
-    :count(0)
+IndexBuffer::IndexBuffer(bool destroy_automatic)
+    : count(0), destroy(destroy_automatic)
 {
     glGenBuffers(1, &BufferID);
 }
 
 IndexBuffer::~IndexBuffer()
 {
-    glDeleteBuffers(1, &BufferID);
+    if (destroy)
+        glDeleteBuffers(1, &BufferID);
 }
 
 void IndexBuffer::Bind() const
@@ -33,8 +34,8 @@ void IndexBuffer::UnBind() const
 }
 
 void IndexBuffer::SetData(const unsigned int *data, unsigned int count)
-{   
-    this->count=count!=0 ? count : this->count;
+{
+    this->count = count != 0 ? count : this->count;
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, BufferID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(unsigned int), data, GL_STATIC_DRAW);
 }

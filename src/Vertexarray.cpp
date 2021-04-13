@@ -4,13 +4,15 @@
 #include "VertexArray.hpp"
 
 
-VertexArray::VertexArray()
+VertexArray::VertexArray(bool destroy_automatic)
+    :auto_destroy(destroy_automatic)
 {
     glGenVertexArrays(1, &id);
 }
 
 VertexArray::~VertexArray()
 {
+    if(auto_destroy)
     glDeleteVertexArrays(1, &id);
 }
 

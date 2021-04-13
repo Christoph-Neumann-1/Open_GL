@@ -10,9 +10,9 @@
 class VertexArray
 {
     unsigned int id;
-
+    bool auto_destroy;
 public:
-    VertexArray();
+    VertexArray(bool destroy_automatic=true);
     ~VertexArray();
 
     ///@return The id of the vertexarray, only use this if you need to.

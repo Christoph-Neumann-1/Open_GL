@@ -5,7 +5,7 @@
 #include <cstring>
 
 Line::Line(glm::vec2 start, glm::vec2 end, float thickness, float color[4])
-    : shader(Shader(ROOT_Directory + "/res/Shaders/Line.glsl")),vb(8*sizeof(float)), start(start), end(end), thickness(thickness)
+    : shader(Shader(ROOT_Directory + "/res/Shaders/Line.glsl")),vb(8*sizeof(float),nullptr), start(start), end(end), thickness(thickness)
 {
     {
         unsigned int idata[] = {0, 1, 2, 1, 2, 3};

@@ -37,7 +37,7 @@ public:
     std::vector<s_Texture> textures;
 
     Mesh(const std::vector<Vertex> &vertices, const std::vector<u_int> &indices, const std::vector<s_Texture> &textures)
-        : vb(vertices.size() * sizeof(Vertex), &vertices[0]), ib(&indices[0], indices.size()), vertices(vertices), indices(indices), textures(textures)
+        : va(false), vb(vertices.size() * sizeof(Vertex), &vertices[0], false, false), ib(&indices[0], indices.size(), false), vertices(vertices), indices(indices), textures(textures)
     {
         va.Bind();
         glEnableVertexAttribArray(0);
@@ -58,6 +58,10 @@ public:
 
         glDrawElements(GL_TRIANGLES, ib.GetCount(), GL_UNSIGNED_INT, 0);
     }
+
+    ~Mesh()
+    {
+    }
 };
 
 class Model
@@ -71,7 +75,7 @@ class Model
         std::vector<unsigned int> indices;
         std::vector<s_Texture> textures;
 
-        for(unsigned int i = 0; i < mesh->mNumVertices; i++)
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
             Vertex vertex;
             glm::vec3 vector;
@@ -88,11 +92,11 @@ class Model
                 vertex.normal = vector;
             }
 
-            if(mesh->mTextureCoords[0])
+            if (mesh->mTextureCoords[0])
             {
                 glm::vec2 vec;
-                
-                vec.x = mesh->mTextureCoords[0][i].x; 
+
+                vec.x = mesh->mTextureCoords[0][i].x;
                 vec.y = mesh->mTextureCoords[0][i].y;
                 vertex.texcoord = vec;
             }
@@ -102,12 +106,12 @@ class Model
             vertices.push_back(vertex);
         }
         // now wak through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-        for(unsigned int i = 0; i < mesh->mNumFaces; i++)
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
         {
             aiFace face = mesh->mFaces[i];
             // retrieve all indices of the face and store them in the indices vector
-            for(unsigned int j = 0; j < face.mNumIndices; j++)
-                indices.push_back(face.mIndices[j]);        
+            for (unsigned int j = 0; j < face.mNumIndices; j++)
+                indices.push_back(face.mIndices[j]);
         }
         /*
         // process materials
@@ -135,8 +139,7 @@ class Model
         // return a mesh object created from the extracted mesh data
         return Mesh(vertices, indices, textures);*/
 
-        meshes.emplace_back(vertices,indices,textures);
-    
+        meshes.emplace_back(vertices, indices, textures);
     }
 
     std::vector<s_Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)

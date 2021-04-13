@@ -85,7 +85,7 @@ public:
     explicit S1(SceneLoader *_load)
         : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}), fcam(&camera, loader->window, 10, 120, .11), tex(Texture(ROOT_Directory + "/res/Textures/t2.jpg")),
           shader(Shader(ROOT_Directory + "/res/Shaders/InstTex.glsl")),
-          model(ROOT_Directory+"/res/Models/teapot.obj"),
+          model(ROOT_Directory+"/res/Models/low_poly_tree/Lowpoly_tree_sample.obj"),
           m_shader(ROOT_Directory + "/res/Shaders/Line.glsl")
     {
         VertexBufferLayout layout;
