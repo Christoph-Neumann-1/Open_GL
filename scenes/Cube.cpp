@@ -69,9 +69,9 @@ class S1 final : public Scene
 
     glm::mat4 view;
 
-    glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3{0, 0, 0});
+    glm::mat4 translation = glm::translate(glm::mat4(1.0f), glm::vec3{-2, -0.5, 0});
     glm::mat4 rotation = glm::mat4(1.0f);
-    glm::mat4 scale = glm::scale(glm::mat4(1.0f), {1.0f, 1.0f, 1.0f});
+    glm::mat4 scale = glm::scale(glm::mat4(1.0f), {0.5f, 0.5f, 0.5f});
 
     glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->window.x / (float)loader->window.y, 0.1f, 100.0f);
 
@@ -85,8 +85,8 @@ public:
     explicit S1(SceneLoader *_load)
         : loader(_load), vb(5 * 36 * sizeof(float), vertices), camera({0, 0, 3}), fcam(&camera, loader->window, 10, 120, .11), tex(Texture(ROOT_Directory + "/res/Textures/t2.jpg")),
           shader(Shader(ROOT_Directory + "/res/Shaders/InstTex.glsl")),
-          model(ROOT_Directory+"/res/Models/low_poly_tree/Lowpoly_tree_sample.obj"),
-          m_shader(ROOT_Directory + "/res/Shaders/Line.glsl")
+          model(ROOT_Directory+"/res/Models/backpack/backpack.obj"),
+          m_shader(ROOT_Directory + "/res/Shaders/Model.glsl")
     {
         VertexBufferLayout layout;
         layout.Push<float>(3);
@@ -107,9 +107,6 @@ public:
 
         flags["hide_menu"] = 1;
 
-        float color[] = {1, 0, 0, 1};
-        m_shader.Bind();
-        m_shader.SetUniform4f("u_Color", color);
     }
 
     ~S1()
@@ -127,7 +124,7 @@ public:
         _this->view = _this->camera.ComputeMatrix();
 
         _this->shader.Bind();
-        _this->shader.SetUniformMat4f("u_MVP", _this->proj * _this->view * (_this->translation * _this->rotation * _this->scale));
+        _this->shader.SetUniformMat4f("u_MVP", _this->proj * _this->view );
 
         glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 3);
 

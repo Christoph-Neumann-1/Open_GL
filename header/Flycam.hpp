@@ -44,7 +44,7 @@ public:
 
         glm::vec3 forward = cam->Forward();
         glm::vec3 up_cam = cam->Up();
-        glm::vec3 right = glm::cross(forward, up_cam);
+        glm::vec3 right = cam->Right();
 
         cam->position += m_dt * forward * (float)glfwGetKey(window, GLFW_KEY_W) - m_dt * forward * (float)glfwGetKey(window, GLFW_KEY_S);
         cam->position += m_dt * right * (float)glfwGetKey(window, GLFW_KEY_D) - m_dt * right * (float)glfwGetKey(window, GLFW_KEY_A);
