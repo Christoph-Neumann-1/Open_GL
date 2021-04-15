@@ -27,7 +27,7 @@ class SceneMenu final : public Scene
         std::make_pair("Circle"s, "circle"s),
         std::make_pair("Circle_dyn"s, "dyncirc"s),
         std::make_pair("bouncyballs"s, "instbounce"s),
-        std::make_pair("Cube"s, "Cube"s),
+        std::make_pair("Model"s, "Model"s),
     };
 
 public:

@@ -26,6 +26,7 @@ add_subdirectory(Libs/imgui)
 add_subdirectory(Libs/glm)
 
 add_compile_options(-Wall -Wno-unknown-pragmas)
+# add_compile_options(-Wextra)
 
 file(GLOB SOURCES "src/*.cpp")
 add_library(OGL SHARED ${SOURCES} Libs/Image/stb_image.cpp)

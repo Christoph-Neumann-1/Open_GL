@@ -23,6 +23,11 @@
 
 static Logger logger;
 using cbt = CallbackHandler::CallbackType;
+
+static Window *_window;
+static CallbackHandler *_cbh;
+
+
 int main()
 {
     {
@@ -31,7 +36,17 @@ int main()
         {
             return 1;
         }
+
         Window window(1000, 800, "GL_Test", 4, 6);
+        _window = &window;
+        glfwSetFramebufferSizeCallback(window, [](GLFWwindow *window, int x, int y) {
+            _window->x = x;
+            _window->y = y;
+            glViewport(0, 0, x, y);
+            _cbh->Call(CallbackHandler::CallbackType::OnWindowResize);
+            _cbh->Call(CallbackHandler::CallbackType::OnWindowResize2);
+        });
+
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
         {
             logger << "Failed to initialize glad.";
@@ -49,6 +64,7 @@ int main()
         glEnable(GL_BLEND);
 
         CallbackHandler cb;
+        _cbh = &cb;
         SceneLoader menu(window, &cb);
         menu.Load((ROOT_Directory + "/scenes/bin/menu.so").c_str());
 
@@ -60,22 +76,12 @@ int main()
         ImGui_ImplOpenGL3_Init("#version 330");
         ImGui::StyleColorsDark();
 
-        int fbx;
-        int fby;
 
         while (!window.CloseFlag())
         {
+            glClearColor(0.2, 0.2, 0.2, 1);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glfwGetFramebufferSize(window, &fbx, &fby);
-
-            if (fbx != window.x || fby != window.y)
-            {
-                window.x = fbx;
-                window.y = fby;
-                glViewport(0, 0, fbx, fby);
-                cb.Call(cbt::OnWindowResize);
-                cb.Call(cbt::OnWindowResize2);
-            }
+            
             if (!window.paused)
             {
                 cb.Call(cbt::PreUpdate);

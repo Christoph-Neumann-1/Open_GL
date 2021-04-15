@@ -11,6 +11,7 @@ void GLAPIENTRY ErrorCallback(GLenum source,
                               const GLchar *message,
                               const void *userParam)
 {
+    if(type=0x8251) return;
     char messag[512];
     snprintf(messag, sizeof(char) * 511, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s",
              (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),

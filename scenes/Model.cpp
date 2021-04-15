@@ -8,7 +8,7 @@
 #include <Data.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <Camera3D.hpp>
-#include <Flycam.hpp>
+#include <First Person Camera.hpp>
 #include <Model.hpp>
 
 class S1 final : public Scene
@@ -65,7 +65,7 @@ class S1 final : public Scene
     VertexBuffer vb;
 
     Camera3D camera;
-    Flycam fcam;
+    Flycam2 fcam;
 
     glm::mat4 view;
 
