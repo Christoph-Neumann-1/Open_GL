@@ -58,6 +58,7 @@ int main()
 
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEPTH_TEST);
+        // glEnable(GL_CULL_FACE); Still not compatible with everything 
         glDebugMessageCallback(ErrorCallback, 0);
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

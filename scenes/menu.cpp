@@ -19,7 +19,7 @@ class SceneMenu final : public Scene
     static void Switch(void *, void *);
 
     std::string path;
-    std::array<std::pair<std::string, std::string>, 8> scenes{
+    std::array<std::pair<std::string, std::string>, 9> scenes{
         std::make_pair("Picture"s, "S1"s),
         std::make_pair("Curve"s, "curve"s),
         std::make_pair("Quad"s, "quad"s),
@@ -28,6 +28,7 @@ class SceneMenu final : public Scene
         std::make_pair("Circle_dyn"s, "dyncirc"s),
         std::make_pair("bouncyballs"s, "instbounce"s),
         std::make_pair("Model"s, "Model"s),
+        std::make_pair("Stars"s, "starsim"s),
     };
 
 public:
