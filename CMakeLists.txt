@@ -6,7 +6,7 @@ enable_testing()
 
 
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-# set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ffast-math") #Not sure when to use this, helps a lot with the stars.
 set(CMAKE_SKIP_RPATH FALSE)
 set(BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "Lib")
