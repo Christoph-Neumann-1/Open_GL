@@ -10,6 +10,7 @@ Window::Window(int size_x, int size_y, const char *name, unsigned short Major, u
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, Major);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, Minor);
     glfwWindowHint(GLFW_RESIZABLE, resizable);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     glfwWindowHint(GLFW_OPENGL_PROFILE, Core ? GLFW_OPENGL_CORE_PROFILE : GLFW_OPENGL_COMPAT_PROFILE);
     window = glfwCreateWindow(x, y, name, NULL, NULL);

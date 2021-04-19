@@ -19,11 +19,11 @@ struct Star
     float scale;
 };
 
-const float spawnrange = 25;
-const float spawnv = 3.5;
+const float spawnrange = 185;
+const float spawnv = 15;
 const float startscale = 1;
-const u_int nStars = 25;
-const float G = 16;
+const u_int nStars = 1700;
+const float G = 18;
 
 class StarSim final : public Scene
 {
@@ -35,7 +35,7 @@ class StarSim final : public Scene
 
     Camera3D camera;
     Flycam camcontrol;
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->window.x / (float)loader->window.y, 0.1f, 1500.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->window.x / (float)loader->window.y, 0.1f, 1500.0f);
     std::vector<std::pair<int, int>> collisions;
     std::vector<int> deleted_stars;
     void OnUpdate()
@@ -99,8 +99,8 @@ public:
 };
 
 StarSim::StarSim(SceneLoader *loader)
-    : loader(loader), star(ROOT_Directory + "/res/Models/star.obj"), shader(ROOT_Directory + "/res/Shaders/Star.glsl"), camera({0, 0, 3}),
-      camcontrol(&camera, loader->window, 70, 120, 0.11)
+    : loader(loader), star(ROOT_Directory + "/res/Models/star.obj"), shader(ROOT_Directory + "/res/Shaders/Star.glsl"), camera({0, 0, 200}),
+      camcontrol(&camera, loader->window, 150, 120, 0.11)
 {
     glGenBuffers(1, &Transforms);
     InstanceBufferLayout layout;
