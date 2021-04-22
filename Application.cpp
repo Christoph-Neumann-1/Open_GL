@@ -8,6 +8,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <Data.hpp>
+#include <filesystem>
+
 #include <Window.hpp>
 #include <ErrorHandler.hpp>
 #include <Log.hpp>
@@ -27,9 +30,15 @@ using cbt = CallbackHandler::CallbackType;
 static Window *_window;
 static CallbackHandler *_cbh;
 
+std::string ROOT_Directory;
 
-int main()
+
+int main(int argc, char **argv)
 {
+
+    ROOT_Directory= argc>1 ? argv[1] : std::filesystem::path(std::string(argv[0])).parent_path().string();
+    if(!std::filesystem::exists(ROOT_Directory+"/res"))
+        ROOT_Directory=std::filesystem::path(ROOT_Directory).parent_path().string(); // Needed to run it from build directory.
     {
         glfwSetErrorCallback(glfw_error_callback);
         if (!glfwInit())
