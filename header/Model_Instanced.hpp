@@ -172,7 +172,7 @@ class Model
     std::vector<Mesh> meshes;
     std::vector<s_Texture> loaded;
 
-    std::vector<s_Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
+    std::vector<s_Texture> loadMaterialTextures(aiMaterial *mat, aiTextureType type, const std::string &typeName)
     {
         std::vector<s_Texture> textures;
 

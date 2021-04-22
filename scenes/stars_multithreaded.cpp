@@ -5,7 +5,7 @@
 #include <Callback.hpp>
 #include <Shader.hpp>
 #include <Data.hpp>
-#include <Flycam.hpp>
+#include <SpaceCam.hpp>
 #include <Model_Instanced.hpp>
 #include <vector>
 #include <algorithm>
@@ -114,11 +114,11 @@ struct Star
     float scale;
 };
 
-const float spawnrange = 160;
-const float spawnv = 18;
+const float spawnrange = 140;
+const float spawnv = 18.5;
 const float startscale = 1;
-const u_int nStars = 2400;
-const float G = 13;
+const u_int nStars = 1900;
+const float G = 14.5;
 const int physicsfreq = 120;
 const u_int nThreads = 6;
 
@@ -131,7 +131,7 @@ class StarSim final : public Scene
     Shader shader;
 
     Camera3D camera;
-    Flycam camcontrol;
+    SpaceCam camcontrol;
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->window.x / (float)loader->window.y, 0.1f, 1500.0f);
     std::vector<std::pair<int, int>> collisions;
     std::vector<int> deleted_stars;
@@ -246,6 +246,7 @@ class StarSim final : public Scene
     void OnRender()
     {
         camcontrol.Update(loader->callbackhandler->deltatime_update);
+        shader.Bind();
         shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
         std::lock_guard<std::mutex> lk(modify_stars);
         glBindBuffer(GL_ARRAY_BUFFER, Transforms);
@@ -266,7 +267,7 @@ public:
 
 StarSim::StarSim(SceneLoader *loader)
     : loader(loader), star(ROOT_Directory + "/res/Models/star.obj"), shader(ROOT_Directory + "/res/Shaders/Star.glsl"), camera({0, 0, 50}),
-      camcontrol(&camera, loader->window, 150, 120, 0.11)
+      camcontrol(&camera, loader->window, 50, 120, 0.11)
 {
     glGenBuffers(1, &Transforms);
     InstanceBufferLayout layout;
@@ -278,15 +279,25 @@ StarSim::StarSim(SceneLoader *loader)
     loader->callbackhandler->Register(CallbackHandler::CallbackType::Render, this, [](void *x, void *) { reinterpret_cast<StarSim *>(x)->OnRender(); });
     glBindBuffer(GL_ARRAY_BUFFER, Transforms);
 
-    stars.reserve(nStars);
+    glm::vec3 veldiff(1,-16.5,0);
+
+    stars.reserve(2*nStars+1);
     srand(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
     for (u_int i = 0; i < nStars; i++)
     {
         glm::vec3 pos = {((float)rand() / (RAND_MAX / 2) - 1) * spawnrange, ((float)rand() / (RAND_MAX / 2) - 1) * spawnrange, ((float)rand() / (RAND_MAX / 2) - 1) * spawnrange};
         glm::vec3 vel = {((float)rand() / (RAND_MAX / 2) - 1) * spawnv, ((float)rand() / (RAND_MAX / 2) - 1) * spawnv, ((float)rand() / (RAND_MAX / 2) - 1) * spawnv};
-        stars.emplace_back(pos, vel, ((float)rand() / RAND_MAX + 0.5) * startscale);
+        stars.emplace_back(pos, vel-veldiff, ((float)rand() / RAND_MAX + 0.5) * startscale);
     }
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Star) * nStars, &stars[0], GL_DYNAMIC_DRAW);
+    glm::vec3 offset(470,0,0);
+    for (u_int i = 0; i < nStars; i++)
+    {
+        glm::vec3 pos = {((float)rand() / (RAND_MAX / 2) - 1) * spawnrange, ((float)rand() / (RAND_MAX / 2) - 1) * spawnrange, ((float)rand() / (RAND_MAX / 2) - 1) * spawnrange};
+        glm::vec3 vel = {((float)rand() / (RAND_MAX / 2) - 1) * spawnv, ((float)rand() / (RAND_MAX / 2) - 1) * spawnv, ((float)rand() / (RAND_MAX / 2) - 1) * spawnv};
+        stars.emplace_back(pos+offset, vel+veldiff, ((float)rand() / RAND_MAX + 0.5) * startscale);
+    }
+    stars.emplace_back(offset/2.0f,glm::vec3{0,0,0},9.0f);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Star) * stars.size(), &stars[0], GL_DYNAMIC_DRAW);
 
     flags["hide_menu"] = true;
     physics_thread = new std::thread([&]() { OnUpdate(); });
