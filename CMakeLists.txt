@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.16.0)
 project(Opengl VERSION 0.1.0)
 
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math") #Not sure when to use this, helps a lot with the stars.
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -14,6 +13,7 @@ include_directories(Libs/imgui/backends)
 include_directories(Libs/imgui)
 include_directories(Libs/glad/include)
 
+add_subdirectory(Libs/glad)
 add_subdirectory(Libs/imgui)
 add_subdirectory(Libs/glm)
 

@@ -9,6 +9,7 @@ set(CPACK_PROJECT_NAME IMGUI)
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 target_link_libraries(IMGUI glad)
+target_compile_options(IMGUI PRIVATE -O3)
 
 add_custom_command(TARGET IMGUI 
                    POST_BUILD

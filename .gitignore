@@ -2,3 +2,7 @@
 docs
 Cppcheck
 **/bin/*
+Lib
+*.scene
+*.module
+tests/special/**/*.so
