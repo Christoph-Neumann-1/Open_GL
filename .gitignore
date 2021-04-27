@@ -1,8 +1,5 @@
 **/Lib
-**/Lib/*
 **/build
 docs
-Checks
+Cppcheck
 **/bin/*
-**/low_poly_tree
-**/Models

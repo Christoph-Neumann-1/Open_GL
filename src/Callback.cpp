@@ -1,44 +1,70 @@
 #include <Callback.hpp>
 #include <algorithm>
-
-void CallbackHandler::Register(CallbackType type, const Callback &callback)
+namespace GL
 {
-    callbacks[type].push_back(callback);
-}
-
-void CallbackHandler::Remove(CallbackType type, const Callback &callback)
-{
-    auto &vec = callbacks[type];
-    vec.erase(std::remove(vec.begin(), vec.end(), callback), vec.end());
-}
-
-void CallbackHandler::RemoveAllInstances(CallbackType type, const Callback &callback)
-{
-    auto &vec = callbacks[type];
-    vec.erase(std::remove_if(vec.begin(), vec.end(), [&callback](const Callback &cb) { return callback.cb_this == cb.cb_this && callback.f_ptr == cb.f_ptr; }), vec.end());
-}
-
-void CallbackHandler::RemoveAll(void *_this)
-{
-    for (auto &type : callbacks)
+    void CallbackList::ProcessQueues()
     {
-        std::vector<Callback> &vec = callbacks[type.first];
+        std::lock_guard lk(mutex_queue);
 
-        vec.erase(std::remove_if(vec.begin(), vec.end(), [&_this](const Callback &cb) { return cb.cb_this == _this; }), vec.end());
-    }
-}
-
-void CallbackHandler::Call(CallbackType type)
-{
-    if (type == CallbackType::Update)
-    {
-        auto dt = std::chrono::high_resolution_clock::now() - last_update;
-        deltatime_update = std::chrono::duration_cast<std::chrono::nanoseconds>(dt).count() / pow(10, 9);
-        last_update = std::chrono::high_resolution_clock::now();
+        for (auto &func : add_queue)
+        {
+            functions.push_back(func);
         }
 
-    for (auto &cb : callbacks[type])
+        for (auto item : remove_queue)
+        {
+            if (item.caller_id)
+            {
+                functions.erase(std::remove_if(functions.begin(), functions.end(), [&](const Callback &cb) { return item.id == cb.obj_id; }), functions.end());
+            }
+            else
+            {
+                functions.erase(std::remove_if(functions.begin(), functions.end(), [&](const Callback &cb) { return item.id == cb.id; }), functions.end());
+            }
+        }
+
+        remove_queue.clear();
+        add_queue.clear();
+    }
+
+    void CallbackList::Call()
     {
-        cb.Call();
+        std::lock_guard lock(mutex);
+        ProcessQueues();
+        for (auto &func : functions)
+        {
+            func();
+        }
+    }
+
+    u_int CallbackList::Add(const std::function<void()> &function, u_int caller_id)
+    {
+        std::lock_guard lock(mutex_queue);
+        add_queue.push_back({current_id, caller_id, function});
+        return current_id++;
+    }
+
+    void CallbackList::Remove(u_int id)
+    {
+        if (!id)
+            return;
+        std::lock_guard lock(mutex_queue);
+        remove_queue.push_back({id, false});
+    }
+
+    void CallbackList::RemoveAll(u_int caller_id)
+    {
+        if (!caller_id)
+            return;
+        std::lock_guard lock(mutex_queue);
+        remove_queue.push_back({caller_id, true});
+    }
+
+    void CallbackHandler::RemoveAll(u_int caller_id)
+    {
+        for (auto &i : lists)
+        {
+            i.second.RemoveAll(caller_id);
+        }
     }
 }

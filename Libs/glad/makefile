@@ -1,3 +1,3 @@
 
 libglad.so : src/glad.c
-	g++ -shared -fPIC -I include src/glad.c -o libglad.so
+	clang -shared -fPIC -O3 -I include src/glad.c -o libglad.so  

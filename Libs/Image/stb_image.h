@@ -1,6 +1,5 @@
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#pragma CLANG diagnostic push
+#pragma CLANG diagnostic ignored "-Wsign-compare"
 
 /* stb_image - v2.26 - public domain image loader - http://nothings.org/stb
                                   no warranty implied; use at your own risk
@@ -7764,4 +7763,4 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ------------------------------------------------------------------------------
 */
-#pragma GCC diagnostic pop
+#pragma CLANG diagnostic pop
