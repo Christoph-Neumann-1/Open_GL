@@ -6,7 +6,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-enable_testing()
 include(GoogleTest)
 
 file(GLOB TEST_SRC "*.cpp")

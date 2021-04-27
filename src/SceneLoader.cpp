@@ -151,11 +151,15 @@ namespace GL
 
     void SceneLoader::Terminate()
     {
-        s->Terminate();
-        cbh.ProcessNow();
-        delete s;
-        s = nullptr;
-        dlclose(loaded);
-        loaded = nullptr;
+        if (loaded)
+        {
+            s->Terminate();
+            cbh.ProcessNow();
+            delete s;
+            s = nullptr;
+
+            dlclose(loaded);
+            loaded = nullptr;
+        }
     }
 }

@@ -9,7 +9,7 @@ add_dependencies(t_SceneLoader OGL)
 gtest_discover_tests(t_SceneLoader WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/special/SceneLoader PROPERTIES ENVIRONMENT LD_PRELOAD=./libSceneLoaderLib.so)
 
 
-add_library(t_SceneLoader_ SHARED Scene.cpp)
+add_library(t_SceneLoader_ SHARED TestScene.cpp)
 target_link_libraries(t_SceneLoader_ OGL)
 add_dependencies(t_SceneLoader_ OGL)
 set_target_properties(t_SceneLoader_ PROPERTIES PREFIX "")

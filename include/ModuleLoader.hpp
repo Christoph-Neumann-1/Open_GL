@@ -38,16 +38,14 @@ namespace GL
             {
                 return reinterpret_cast<rtype (*)(param...)>(func->second);
             }
-            Logger log;
-            log << "Function [" << sig << "] not found. Available Functions: \n";
+            std::string str("Function [" + sig + "] not found. Available Functions: \n");
 
             for (auto &func_sig : *functions)
             {
-                log << '[' << func_sig.first << ']' << '\n';
+                str += '[' + func_sig.first + ']' + '\n';
             }
-            log.print();
 
-            throw std::runtime_error("Unknown function in Module");
+            throw std::runtime_error(str.c_str());
         }
 
         void UnLoad()

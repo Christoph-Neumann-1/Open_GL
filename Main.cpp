@@ -75,10 +75,7 @@ int main(int argc, char **argv)
     if (!std::filesystem::exists(ROOT_Directory + "/res"))
         ROOT_Directory = std::filesystem::path(ROOT_Directory).parent_path().string(); // Needed to run it from build directory.
 
-    ModuleLoader module(ROOT_Directory + "/modules/bin/TestModule.module");
 
-    auto add = module.RETRIEVE(int, add, int, int);
-    log(add(1, 2));
 
     {
         CallbackHandler cbh;
@@ -151,8 +148,8 @@ int main(int argc, char **argv)
         ImGui::StyleColorsDark();
 #pragma endregion
 
+
         SceneLoader loader(window, cbh, timeinfo);
-        loader.Load(ROOT_Directory + "/scenes/bin/Test.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);

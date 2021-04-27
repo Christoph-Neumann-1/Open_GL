@@ -6,7 +6,7 @@ foreach(MODULE ${MODULES})
     string(REPLACE ".cpp" "" MODULE_N2 ${MODULE})
     get_filename_component(MODULE_N ${MODULE_N2} NAME)
     add_library(${MODULE_N} SHARED ${MODULE} )
-    target_link_libraries(${MODULE_N} glad GL glfw IMGUI OGL assimp pthread)
+    target_link_libraries(${MODULE_N} OGL)
     add_dependencies(${MODULE_N} OGL)
     set_target_properties(${MODULE_N} PROPERTIES PREFIX "")
     add_custom_command(TARGET ${MODULE_N}

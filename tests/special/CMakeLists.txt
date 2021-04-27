@@ -1,1 +1,2 @@
 add_subdirectory(SceneLoader)
+add_subdirectory(ModuleLoader)

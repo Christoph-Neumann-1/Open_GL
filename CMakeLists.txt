@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16.0)
 project(Opengl VERSION 0.1.0)
 
+enable_testing()
+
 # set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
 
 set(CMAKE_CXX_STANDARD 20)
