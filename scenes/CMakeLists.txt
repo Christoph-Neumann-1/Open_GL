@@ -1,5 +1,7 @@
+file(MAKE_DIRECTORY bin)
 
 file(GLOB SCENES "*.cpp")
+
 foreach(SCENE ${SCENES})
     string(REPLACE ".cpp" "" SCENE_N2 ${SCENE})
     get_filename_component(SCENE_N ${SCENE_N2} NAME)

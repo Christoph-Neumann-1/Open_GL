@@ -1,5 +1,7 @@
+file(MAKE_DIRECTORY bin)
 
 file(GLOB MODULES "*.cpp")
+
 foreach(MODULE ${MODULES})
     string(REPLACE ".cpp" "" MODULE_N2 ${MODULE})
     get_filename_component(MODULE_N ${MODULE_N2} NAME)
