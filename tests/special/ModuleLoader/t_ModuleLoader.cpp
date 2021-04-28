@@ -6,10 +6,14 @@ TEST(MODULE_LOADER, LoadAndCall)
     using namespace GL;
 
     ModuleLoader loader("./t_Module.module");
-    auto add_func = loader.RETRIEVE(int, add, int, int);
+    auto add_funcf = loader.RETRIEVE(float, add, float, float);
+    auto add_funci = loader.RETRIEVE(int, add, int, int);
     auto times3 = loader.RETRIEVE(float, times3, float);
 
-    EXPECT_EQ(add_func(1, 2), 3);
+    ASSERT_NE((void*)add_funcf,(void*)add_funci); //Asserts that overloaded functions get loaded correctly
+
+    EXPECT_EQ(add_funci(1, 2), 3);
+    EXPECT_FLOAT_EQ(add_funcf(0.5f, 1.0f), 1.5f);
     EXPECT_EQ(times3(2.0f), 6.0f);
 }
 

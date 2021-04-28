@@ -1,11 +1,10 @@
 #include <Module.hpp>
 
-void Setup()
-{
-    FUNCTION(int, add, int, int);
-    FUNCTION(float, times3, float);
-}
+FUNCTION(int, add, int, int)
+(int a, int b) { return a + b; }
 
-int add(int a, int b) { return a + b; }
+FUNCTION(float, add, float, float)
+(float a, float b) { return a + b; }
 
-float times3(float n) { return n * 3; }
+FUNCTION(float, times3, float)
+(float n) { return n * 3; }

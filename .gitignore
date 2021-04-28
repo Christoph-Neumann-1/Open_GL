@@ -6,3 +6,4 @@ Lib
 *.scene
 *.module
 tests/special/**/*.so
+imgui.ini
