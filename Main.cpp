@@ -150,6 +150,7 @@ int main(int argc, char **argv)
 
 
         SceneLoader loader(window, cbh, timeinfo);
+        loader.Load(ROOT_Directory+"/scenes/bin/Test.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);

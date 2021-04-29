@@ -36,8 +36,8 @@ namespace GL
         std::atomic_bool update_ready = false, render_ready = false;
         std::atomic_bool update_ready2 = false, render_ready2 = false;
         std::atomic_bool is_loading_or_unloading = false;
-        u_int update_id, render_id;
-        u_int update_id2, render_id2;
+        uint update_id, render_id;
+        uint update_id2, render_id2;
 
         void load_func(const std::string &);
 

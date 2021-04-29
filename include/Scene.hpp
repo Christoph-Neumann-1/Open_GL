@@ -14,7 +14,7 @@ namespace GL
     {
     protected:
         SceneLoader *loader; //All scenes will need this.
-        u_int callback_id = loader->GetCallback().GenId();
+        uint callback_id = loader->GetCallback().GenId();
         float RenderDelta() { return loader->GetTimeInfo().RenderDeltaTime(); } //Purely for convenience.
         float PhysicsDelta() { return loader->GetTimeInfo().UpdateInterval(); } //Purely for convenience.
 

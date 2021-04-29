@@ -30,8 +30,8 @@ namespace GL
         ///@brief A function + its id for removal.
         struct Callback
         {
-            u_int id;     //Function id assigned by CallbackList
-            u_int obj_id; //Id of object or group of functions. Lets you remove them together.
+            uint id;     //Function id assigned by CallbackList
+            uint obj_id; //Id of object or group of functions. Lets you remove them together.
             std::function<void()> function;
 
             void operator()() { function(); }
@@ -39,11 +39,11 @@ namespace GL
 
         std::mutex mutex; //Gets locked when modifying the callback list or during Call list.
         std::vector<Callback> functions;
-        u_int current_id = 1; //Keeps track of the function ids, that have been asigned.
+        uint current_id = 1; //Keeps track of the function ids, that have been asigned.
 
         struct RemoveCallback
         {
-            u_int id;       //Either a function id or an id from CallbackHandler.
+            uint id;       //Either a function id or an id from CallbackHandler.
             bool caller_id; //Whether the id is from CallbackHandler.
         };
 
@@ -58,13 +58,13 @@ namespace GL
         void Call();
 
         ///@brief Add a new Callback. Gets applied during the next Call()
-        u_int Add(const std::function<void()> &function, u_int caller_id = 0);
+        uint Add(const std::function<void()> &function, uint caller_id = 0);
 
         ///@brief Removes a callback by its id. Gets applied during the next Call()
-        void Remove(u_int id);
+        void Remove(uint id);
 
         ///@brief Removes a callback by the id from CallbackHandler. Gets applied during the next Call()
-        void RemoveAll(u_int caller_id);
+        void RemoveAll(uint caller_id);
 
         ///@see Call()
         void operator()()
@@ -90,10 +90,10 @@ namespace GL
         CallbackList &GetList(CallbackType type) { return lists[type]; }
 
         ///@brief Get a unique id.
-        u_int GenId() { return current_id++; }
+        uint GenId() { return current_id++; }
 
         ///@brief Calls RemoveAll on every CallbackList
-        void RemoveAll(u_int callerid);
+        void RemoveAll(uint callerid);
 
         void ProcessNow()
         {

@@ -37,14 +37,14 @@ namespace GL
         }
     }
 
-    u_int CallbackList::Add(const std::function<void()> &function, u_int caller_id)
+    uint CallbackList::Add(const std::function<void()> &function, uint caller_id)
     {
         std::lock_guard lock(mutex_queue);
         add_queue.push_back({current_id, caller_id, function});
         return current_id++;
     }
 
-    void CallbackList::Remove(u_int id)
+    void CallbackList::Remove(uint id)
     {
         if (!id)
             return;
@@ -52,7 +52,7 @@ namespace GL
         remove_queue.push_back({id, false});
     }
 
-    void CallbackList::RemoveAll(u_int caller_id)
+    void CallbackList::RemoveAll(uint caller_id)
     {
         if (!caller_id)
             return;
@@ -60,7 +60,7 @@ namespace GL
         remove_queue.push_back({caller_id, true});
     }
 
-    void CallbackHandler::RemoveAll(u_int caller_id)
+    void CallbackHandler::RemoveAll(uint caller_id)
     {
         for (auto &i : lists)
         {

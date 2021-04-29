@@ -32,7 +32,7 @@ namespace GL
         std::chrono::time_point<std::chrono::high_resolution_clock> last_render;
         float deltatime_render;
 
-        u_int objid;
+        uint objid;
 
         function<void()> PreRender = [&]() {
             auto current_time = std::chrono::high_resolution_clock::now();
