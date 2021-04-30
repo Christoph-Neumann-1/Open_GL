@@ -13,8 +13,6 @@
 #include <condition_variable>
 #include <pthread.h>
 
-#include <ModuleLoader.hpp>
-
 std::string ROOT_Directory;
 
 using namespace GL;
