@@ -22,7 +22,22 @@ namespace GL
         static std::mutex mutex;
 
     public:
+        /**
+         * @brief Print everything.
+         * 
+         * This function is synchronized to avoid print statements interfering.
+         */
         void print();
+
+        /**
+         * @brief Adds the message to the stringstream.
+         * 
+         * Only works if stringstream accepts T
+         * 
+         * @tparam T 
+         * @param message 
+         * @return Logger& For chaining calls.
+         */
         template <typename T>
         Logger &operator<<(const T &message)
         {
@@ -43,6 +58,7 @@ namespace GL
                 stream << message;
             return *this;
         }
+
         Logger &operator<<(char *message)
         {
             return operator<<(static_cast<const char *>(message));
@@ -60,10 +76,17 @@ namespace GL
             return *this;
         }
 
+        /**
+         * @brief Log output directly.
+         * 
+         * @tparam T 
+         * @param message 
+         */
         template <typename T>
         void operator()(const T &message)
         {
-            (*this)<<message;
+            stream.str("");
+            (*this) << message;
             this->print();
         }
     };

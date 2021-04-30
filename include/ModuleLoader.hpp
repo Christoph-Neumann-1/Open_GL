@@ -3,18 +3,29 @@
 #include <dlfcn.h>
 #include <map>
 
+///@brief Purely for convenience.
 #define RETRIEVE(rtype, name, ...) \
     Retrieve<rtype, __VA_ARGS__>(std::string(#rtype " " #name " " #__VA_ARGS__))
 
 namespace GL
 {
 
+    /**
+     * @brief Load and access a module.
+     * 
+     * Can only be loaded once.
+     */
     class ModuleLoader
     {
         void *loaded;
         std::map<std::string, void *> *functions;
 
     public:
+        /**
+         * @brief Construct a new Module Loader object
+         * 
+         * Throws a std::runtime_error if the module is not valid.
+         */
         ModuleLoader(const std::string &path)
         {
             loaded = dlopen(path.c_str(), RTLD_LAZY);
@@ -30,6 +41,21 @@ namespace GL
             functions = load_func();
         }
 
+        /**
+         * @brief Retrive function by name
+         * 
+         * Please use the macro.
+         * 
+         * Usage:
+         * @code{.cpp}
+         * Retrieve<int,int,int>("int add int, int");
+         * @endcode 
+         * 
+         * @tparam rtype return type
+         * @tparam param what arguments it takes
+         * @param sig The name
+         * @return rtype(*)(param...) a pointer to the function
+         */
         template <typename rtype, typename... param>
         rtype (*Retrieve(const std::string &sig))(param...)
         {

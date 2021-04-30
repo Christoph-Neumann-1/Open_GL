@@ -22,7 +22,7 @@ namespace GL
     using std::function;
 
     /**
-     * @brief Provides a time delta between Render calls, how long an Update took, as well as the frequency of Update calls.
+     * @brief Provides a time delta between Render call and the frequency of Update calls.
      */
     class TimeInfo
     {

@@ -59,6 +59,7 @@ public:
             thread.join();
     }
 
+    ///@brief Add new item to queue
     template <typename Func, typename... Args>
     auto Add(Func &&f, Args &&...args)
         -> std::future<typename std::result_of<Func(Args...)>::type>
@@ -80,12 +81,14 @@ public:
         return res;
     }
 
+    ///@brief terminate once all tasks are finished. Does not accept new tasks anymore.
     void Stop()
     {
         std::scoped_lock lk(queue_mutex);
         stop = true;
     }
 
+    ///@brief Stop as fast as possible
     void Terminate()
     {
         std::scoped_lock lk(queue_mutex);
