@@ -13,6 +13,8 @@
 #include <condition_variable>
 #include <pthread.h>
 
+#include <Shader.hpp>
+
 std::string ROOT_Directory;
 
 using namespace GL;
@@ -72,6 +74,7 @@ int main(int argc, char **argv)
     ROOT_Directory = argc > 1 ? argv[1] : std::filesystem::path(std::string(argv[0])).parent_path().string();
     if (!std::filesystem::exists(ROOT_Directory + "/res"))
         ROOT_Directory = std::filesystem::path(ROOT_Directory).parent_path().string(); // Needed to run it from build directory.
+
 
     {
         CallbackHandler cbh;
@@ -143,6 +146,7 @@ int main(int argc, char **argv)
         ImGui_ImplOpenGL3_Init("#version 330");
         ImGui::StyleColorsDark();
 #pragma endregion
+    Shader shader(ROOT_Directory + "/shader/test.vs", ROOT_Directory + "/shader/test.fs");
 
         SceneLoader loader(window, cbh, timeinfo);
         loader.Load(ROOT_Directory + "/scenes/bin/Test.scene");
