@@ -75,8 +75,6 @@ int main(int argc, char **argv)
     if (!std::filesystem::exists(ROOT_Directory + "/res"))
         ROOT_Directory = std::filesystem::path(ROOT_Directory).parent_path().string(); // Needed to run it from build directory.
 
-
-
     {
         CallbackHandler cbh;
         TimeInfo timeinfo(cbh);
@@ -123,7 +121,7 @@ int main(int argc, char **argv)
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_MULTISAMPLE);
-        // glEnable(GL_CULL_FACE); Still not compatible with everything
+        glEnable(GL_CULL_FACE);
         glDebugMessageCallback(ErrorCallback, 0);
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -148,9 +146,8 @@ int main(int argc, char **argv)
         ImGui::StyleColorsDark();
 #pragma endregion
 
-
         SceneLoader loader(window, cbh, timeinfo);
-        loader.Load(ROOT_Directory+"/scenes/bin/Test.scene");
+        loader.Load(ROOT_Directory + "/scenes/bin/Test.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);

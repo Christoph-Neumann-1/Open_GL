@@ -67,6 +67,7 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "bitset": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "future": "cpp"
     },
 }
