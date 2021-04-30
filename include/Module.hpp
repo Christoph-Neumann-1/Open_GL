@@ -4,7 +4,7 @@
 #include <map>
 #include <initializer_list>
 
-std::map<std::string, void *> functions;
+static std::map<std::string, void *> functions;
 
 struct FunctionInit
 {
@@ -23,7 +23,7 @@ extern "C" std::map<std::string, void *> *_LOAD_()
 
 #define FUNCTION(rtype, name,...) \
     rtype name(__VA_ARGS__);       \
-    FunctionInit  CONCAT(name, __COUNTER__)\
+    static FunctionInit  CONCAT(name, __COUNTER__)\
     (#rtype " " #name " " #__VA_ARGS__,reinterpret_cast<void*>(static_cast<rtype(*)(__VA_ARGS__)>(name)));\
     rtype name
 
