@@ -114,7 +114,7 @@ unsigned int Shader::CompileShader(const std::string &src, unsigned int type)
         char message[length];
         glGetShaderInfoLog(s_id, length, &length, message);
 
-        logger << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader\n"
+        logger << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader Paths: " << paths << '\n'
                << message << '\n';
         logger.print();
 
