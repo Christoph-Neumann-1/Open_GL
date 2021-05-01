@@ -24,7 +24,7 @@ public:
         float color[4]{1, 0.5, 0.8, 1};
         circle_mod.RETRIEVE(void, SetColor, void *, float *)(circle, color);
         Draw = circle_mod.RETRIEVE(void, Draw, void *, glm::mat4);
-        loader->GetCallback().GetList(CallbackType::Render).Add(std::bind(&CircleScene::Render, this));
+        RegisterFunc(std::bind(&CircleScene::Render, this), CallbackType::Render);
     }
     ~CircleScene()
     {
@@ -32,7 +32,4 @@ public:
     }
 };
 
-extern "C" Scene *_LOAD_(SceneLoader *loader)
-{
-    return new CircleScene(loader);
-}
+SCENE_LOAD_FUNC(CircleScene)

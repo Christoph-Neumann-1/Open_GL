@@ -43,7 +43,7 @@ namespace GL
 
         struct RemoveCallback
         {
-            uint id;       //Either a function id or an id from CallbackHandler.
+            uint id;        //Either a function id or an id from CallbackHandler.
             bool caller_id; //Whether the id is from CallbackHandler.
         };
 
@@ -99,6 +99,10 @@ namespace GL
         {
             for (auto &list : lists)
                 list.second.ProcessNow();
+        }
+        void Terminate()
+        {
+            lists.clear();
         }
     };
 }
