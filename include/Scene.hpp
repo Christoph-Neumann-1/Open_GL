@@ -30,7 +30,7 @@ namespace GL
          * 
          * Remove callbacks here. After Update and Render are finished this object will be deleted.
          */
-        virtual void PrepareUnload() {}
+        virtual void PrepareUnload() { loader->GetCallback().RemoveAll(callback_id); }
 
         /**
          * @brief Called to imidiatelly close the scene.
@@ -40,7 +40,7 @@ namespace GL
          * break the CallbackHandler.
          * 
          */
-        virtual void Terminate() {}
+        virtual void Terminate() { this->PrepareUnload(); }
     };
 }
 
