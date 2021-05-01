@@ -12,10 +12,7 @@
 #include <thread>
 #include <condition_variable>
 #include <pthread.h>
-
-#include <Shader.hpp>
-
-std::string ROOT_Directory;
+#include <Data.hpp>
 
 using namespace GL;
 using cbt = CallbackType;
@@ -75,7 +72,6 @@ int main(int argc, char **argv)
     if (!std::filesystem::exists(ROOT_Directory + "/res"))
         ROOT_Directory = std::filesystem::path(ROOT_Directory).parent_path().string(); // Needed to run it from build directory.
 
-
     {
         CallbackHandler cbh;
         TimeInfo timeinfo(cbh);
@@ -122,7 +118,6 @@ int main(int argc, char **argv)
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_MULTISAMPLE);
-        glEnable(GL_CULL_FACE);
         glDebugMessageCallback(ErrorCallback, 0);
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -146,10 +141,9 @@ int main(int argc, char **argv)
         ImGui_ImplOpenGL3_Init("#version 330");
         ImGui::StyleColorsDark();
 #pragma endregion
-    Shader shader(ROOT_Directory + "/shader/test.vs", ROOT_Directory + "/shader/test.fs");
 
         SceneLoader loader(window, cbh, timeinfo);
-        loader.Load(ROOT_Directory + "/scenes/bin/Test.scene");
+        loader.Load(ROOT_Directory + "/scenes/bin/Circles.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);
