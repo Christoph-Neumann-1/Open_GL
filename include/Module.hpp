@@ -21,6 +21,7 @@ extern "C" std::map<std::string, void *> *_LOAD_()
 {
     return &functions;
 }
+
 #define CONCAT(a, b) CONCAT_INNER(a, b)
 #define CONCAT_INNER(a, b) a ## b
 
