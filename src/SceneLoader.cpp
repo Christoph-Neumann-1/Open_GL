@@ -34,62 +34,32 @@ namespace GL
         {
             s->PrepareUnload();
 
-            update_ready = false;
-            render_ready = false;
+            update_ready = 0;
 
             std::unique_lock lk(flags_lock);
             flags.clear();
             flags["_VALID_"] = 0;
             lk.unlock();
 
-            update_id = cbh.GetList(CallbackType::PreUpdate).Add([&]() {
-                update_ready = true;
-                if (render_ready.load())
+            update_id = cbh.GetList(CallbackType::PreUpdate).Add(std::bind([&](std::string path) {
+                update_ready++;
+                if (update_ready >= 2)
+                    cbh.GetList(CallbackType::PreUpdate).Remove(update_id);
+            },path));
+
+            render_id = cbh.GetList(CallbackType::PreRender).Add(std::bind([&](std::string path) {
+                if (update_ready >= 2)
                 {
                     delete s;
                     s = nullptr;
                     dlclose(loaded);
                     loaded = nullptr;
-                }
-                cbh.GetList(CallbackType::PreUpdate).Remove(update_id);
-            });
-
-            render_id = cbh.GetList(CallbackType::PreRender).Add([&]() {
-                render_ready = true;
-                if (update_ready.load())
-                {
-                    delete s;
-                    s = nullptr;
-                    dlclose(loaded);
-                    loaded = nullptr;
-                }
-                cbh.GetList(CallbackType::PreRender).Remove(render_id);
-            });
-
-            update_ready2 = false;
-            render_ready2 = false;
-
-            load_func(path);
-
-            update_id2 = cbh.GetList(CallbackType::PreUpdate).Add([&]() {
-                update_ready2 = true;
-                if (render_ready2.load())
-                {
                     load_func(path);
                     is_loading_or_unloading = false;
+                    cbh.GetList(CallbackType::PreRender).Remove(render_id);
                 }
-                cbh.GetList(CallbackType::PreUpdate).Remove(update_id2);
-            });
+            },path));
 
-            render_id2 = cbh.GetList(CallbackType::PreRender).Add([&]() {
-                render_ready2 = true;
-                if (update_ready2.load())
-                {
-                    load_func(path);
-                    is_loading_or_unloading = false;
-                }
-                cbh.GetList(CallbackType::PreRender).Remove(render_id2);
-            });
         }
         else
         {
@@ -108,8 +78,7 @@ namespace GL
 
         s->PrepareUnload();
 
-        update_ready = false;
-        render_ready = false;
+        update_ready = 0;
 
         std::unique_lock lk(flags_lock);
         flags.clear();
@@ -117,29 +86,21 @@ namespace GL
         lk.unlock();
 
         update_id = cbh.GetList(CallbackType::PreUpdate).Add([&]() {
-            update_ready = true;
-            if (render_ready.load())
-            {
-                delete s;
-                s = nullptr;
-                dlclose(loaded);
-                loaded = nullptr;
-                is_loading_or_unloading = false;
-            }
-            cbh.GetList(CallbackType::PreUpdate).Remove(update_id);
+            update_ready++;
+            if (update_ready >= 2)
+                cbh.GetList(CallbackType::PreUpdate).Remove(update_id);
         });
 
         render_id = cbh.GetList(CallbackType::PreRender).Add([&]() {
-            render_ready = true;
-            if (update_ready.load())
+            if (update_ready >= 2)
             {
                 delete s;
                 s = nullptr;
                 dlclose(loaded);
                 loaded = nullptr;
                 is_loading_or_unloading = false;
+                cbh.GetList(CallbackType::PreRender).Remove(render_id);
             }
-            cbh.GetList(CallbackType::PreRender).Remove(render_id);
         });
     }
 

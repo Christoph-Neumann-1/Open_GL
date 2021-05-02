@@ -33,8 +33,7 @@ namespace GL
         std::mutex flags_lock;
         std::unordered_map<std::string, std::atomic_int> flags;
 
-        std::atomic_bool update_ready = false, render_ready = false;
-        std::atomic_bool update_ready2 = false, render_ready2 = false;
+        std::atomic_uint update_ready = 0;
         std::atomic_bool is_loading_or_unloading = false;
         uint update_id, render_id;
         uint update_id2, render_id2;
