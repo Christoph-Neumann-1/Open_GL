@@ -14,9 +14,13 @@ TEST(SCENE_LOADER, LoadAndUnload)
     loader.Load("./Scene.scene");
     preupdate();
     prerender();
+    preupdate();
+    prerender();
     EXPECT_TRUE(loader.HasScene());
 
     loader.UnLoad();
+    preupdate();
+    prerender();
     preupdate();
     prerender();
     EXPECT_FALSE(loader.HasScene());
@@ -24,18 +28,26 @@ TEST(SCENE_LOADER, LoadAndUnload)
     loader.UnLoad();
     preupdate();
     prerender();
+    preupdate();
+    prerender();
     EXPECT_FALSE(loader.HasScene());
 
     loader.Load("./Scene.scene");
     preupdate();
     prerender();
+    preupdate();
+    prerender();
 
     loader.Load("./Scene.scene");
+    preupdate();
+    prerender();
     preupdate();
     prerender();
     EXPECT_TRUE(loader.HasScene());
 
     loader.UnLoad();
+    preupdate();
+    prerender();
     preupdate();
     prerender();
     EXPECT_FALSE(loader.HasScene());
@@ -75,6 +87,8 @@ TEST(SCENE_LOADER, TestFlags)
     loader.Load("./Scene.scene");
     preupdate();
     prerender();
+    preupdate();
+    prerender();
     ASSERT_TRUE(loader.HasScene());
     EXPECT_TRUE(loader.GetFlag("_VALID_"));
 
@@ -89,6 +103,8 @@ TEST(SCENE_LOADER, TestFlags)
     loader.UnLoad();
     prerender();
     preupdate();
+    preupdate();
+    prerender();
     ASSERT_FALSE(loader.HasScene());
     EXPECT_FALSE(loader.GetFlag("_VALID_"));
 }

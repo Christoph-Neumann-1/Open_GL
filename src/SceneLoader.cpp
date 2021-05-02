@@ -9,14 +9,16 @@ namespace GL
         loaded = dlopen(str.c_str(), RTLD_LAZY);
         if (!loaded)
         {
-            throw InvalidScene(std::string("Could not load Scene. Error: ") + dlerror());
+            const char* error=dlerror();
+            throw InvalidScene(std::string("Could not load Scene. Error: ") + (error ? error : ""));
         }
         auto init_func = reinterpret_cast<Scene *(*)(SceneLoader *)>(dlsym(loaded, "_LOAD_"));
 
         if (!init_func)
         {
+            const char* error=dlerror();
             dlclose(loaded);
-            throw InvalidScene(std::string("Could not find load function. Error: ") + dlerror());
+            throw InvalidScene(std::string("Could not find load function. Error: ") + (error ? error : ""));
         }
         s = init_func(this);
 
