@@ -84,10 +84,15 @@ namespace GL
     {
         std::unordered_map<CallbackType, CallbackList> lists;
         std::atomic_uint current_id = 1; //Keeps track of which ids have been assigned.
+        std::mutex list_m;
 
     public:
         ///@brief Returns the CallbackList associated with type.
-        CallbackList &GetList(CallbackType type) { return lists[type]; }
+        CallbackList &GetList(CallbackType type)
+        {
+            std::scoped_lock lk(list_m);
+            return lists[type];
+        }
 
         ///@brief Get a unique id.
         uint GenId() { return current_id++; }
@@ -97,11 +102,13 @@ namespace GL
 
         void ProcessNow()
         {
+            std::scoped_lock lk(list_m);
             for (auto &list : lists)
                 list.second.ProcessNow();
         }
         void Terminate()
         {
+            std::scoped_lock lk(list_m);
             lists.clear();
         }
     };
