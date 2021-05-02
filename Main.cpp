@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 #pragma endregion
 
         SceneLoader loader(window, cbh, timeinfo);
-        loader.Load(ROOT_Directory + "/scenes/bin/Circles.scene");
+        loader.Load(ROOT_Directory + "/scenes/bin/3d.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);
