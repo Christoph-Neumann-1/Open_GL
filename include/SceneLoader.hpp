@@ -44,10 +44,7 @@ namespace GL
         SceneLoader(Window &_window, CallbackHandler &_cbh, TimeInfo &_timeinfo) : window(_window), cbh(_cbh), timeinfo(_timeinfo) {}
         ~SceneLoader()
         {
-            if (loaded && s)
-            {
                 Terminate();
-            }
         }
 
         ///@brief Load a new Scene. Unloads old if necessary.
