@@ -22,7 +22,7 @@ TEST(CALLBACK, TestSingleCallback)
     //Test adding calling and removing a single callback.
     using namespace GL;
 
-    CallbackHandler handler;
+    CallbackHandler handler([](const std::function<void()> &func) { func(); });
     CallbackList &list = handler.GetList(CallbackType::Render);
     bool wascalled = false;
     uint callback_id = list.Add(std::bind(CheckIfCalled, &wascalled));
@@ -40,7 +40,7 @@ TEST(CALLBACK, TestMultipleCallbacks)
     //Test adding and removing multiple callbacks. ASSERT is used because a failure means later tests won't work.
     using namespace GL;
 
-    CallbackHandler handler;
+    CallbackHandler handler([](const std::function<void()> &func) { func(); });
     CallbackList &list = handler.GetList(CallbackType::Render);
     uint id = handler.GenId();
 
@@ -69,12 +69,12 @@ TEST(CALLBACK, TestMultipleCallbacks)
     uint id1 = list.Add(std::bind(CountCalls, &count), id);
     uint id2 = list.Add(std::bind(CountCalls, &count), id);
     uint id3 = list.Add(std::bind(CountCalls, &count), id);
-    
+
     list.Remove(id1);
     list.Remove(id2);
     list.Remove(id3);
     list();
-    ASSERT_EQ(count,0);
+    ASSERT_EQ(count, 0);
 }
 
 TEST(CALLBACK, RemoveSelfFromList)
@@ -82,7 +82,7 @@ TEST(CALLBACK, RemoveSelfFromList)
     //Test removing a callback while it is being called.
     using namespace GL;
 
-    CallbackHandler handler;
+    CallbackHandler handler([](const std::function<void()> &func) { func(); });
     CallbackList &list = handler.GetList(CallbackType::Render);
     bool wascalled = false;
     uint id = list.Add(std::bind(RemoveSelf, &list, &id, &wascalled));
