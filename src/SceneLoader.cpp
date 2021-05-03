@@ -9,20 +9,20 @@ namespace GL
         loaded = dlopen(str.c_str(), RTLD_LAZY);
         if (!loaded)
         {
-            const char* error=dlerror();
+            const char *error = dlerror();
             throw InvalidScene(std::string("Could not load Scene. Error: ") + (error ? error : ""));
         }
         auto init_func = reinterpret_cast<Scene *(*)(SceneLoader *)>(dlsym(loaded, "_LOAD_"));
 
         if (!init_func)
         {
-            const char* error=dlerror();
+            const char *error = dlerror();
             dlclose(loaded);
             throw InvalidScene(std::string("Could not find load function. Error: ") + (error ? error : ""));
         }
         s = init_func(this);
 
-        std::lock_guard lk(this->flags_lock);
+        flags.clear();
         flags["_VALID_"] = 1;
     };
 
@@ -34,34 +34,15 @@ namespace GL
 
         if (loaded)
         {
-            s->PrepareUnload();
-
-            update_ready = 0;
-
-            std::unique_lock lk(flags_lock);
-            flags.clear();
-            flags["_VALID_"] = 0;
-            lk.unlock();
-
-            update_id = cbh.GetList(CallbackType::PreUpdate).Add(std::bind([&](std::string path) {
-                update_ready++;
-                if (update_ready >= 2)
-                    cbh.GetList(CallbackType::PreUpdate).Remove(update_id);
-            },path));
-
-            render_id = cbh.GetList(CallbackType::PreRender).Add(std::bind([&](std::string path) {
-                if (update_ready >= 2)
-                {
-                    delete s;
-                    s = nullptr;
-                    dlclose(loaded);
-                    loaded = nullptr;
-                    load_func(path);
-                    is_loading_or_unloading = false;
-                    cbh.GetList(CallbackType::PreRender).Remove(render_id);
-                }
-            },path));
-
+            cbh.SynchronizedCall(std::bind([&](std::string _path) {
+                delete s;
+                s = nullptr;
+                dlclose(loaded);
+                loaded = nullptr;
+                load_func(_path);
+                is_loading_or_unloading = false;
+            },
+                                           path));
         }
         else
         {
@@ -78,31 +59,14 @@ namespace GL
         if (!is_loading_or_unloading.compare_exchange_weak(f, t))
             return;
 
-        s->PrepareUnload();
-
-        update_ready = 0;
-
-        std::unique_lock lk(flags_lock);
-        flags.clear();
-        flags["_VALID_"] = 0;
-        lk.unlock();
-
-        update_id = cbh.GetList(CallbackType::PreUpdate).Add([&]() {
-            update_ready++;
-            if (update_ready >= 2)
-                cbh.GetList(CallbackType::PreUpdate).Remove(update_id);
-        });
-
-        render_id = cbh.GetList(CallbackType::PreRender).Add([&]() {
-            if (update_ready >= 2)
-            {
-                delete s;
-                s = nullptr;
-                dlclose(loaded);
-                loaded = nullptr;
-                is_loading_or_unloading = false;
-                cbh.GetList(CallbackType::PreRender).Remove(render_id);
-            }
+        cbh.SynchronizedCall([&]() {
+            flags.clear();
+            flags["_VALID_"] = 0;
+            delete s;
+            s = nullptr;
+            dlclose(loaded);
+            loaded = nullptr;
+            is_loading_or_unloading = false;
         });
     }
 
@@ -116,8 +80,6 @@ namespace GL
     {
         if (loaded)
         {
-            s->Terminate();
-            cbh.ProcessNow();
             delete s;
             s = nullptr;
 

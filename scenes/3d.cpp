@@ -31,6 +31,7 @@ class S3D final : public Scene
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
         shader.UnBind();
+        loader->GetWindow();
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_ESCAPE))
         {
             loader->Load(ROOT_Directory+"/scenes/bin/3d.scene");
@@ -54,15 +55,11 @@ public:
         float color[]{1, 1, 0, 1};
         shader.Bind();
         shader.SetUniform4f("u_Color", color);
-        id = loader->GetCallback().GetList(CallbackType::Render).Add(std::bind(&S3D::Render, this), callback_id);
-    }
-
-    void PrepareUnload()
-    {
-        loader->GetCallback().GetList(CallbackType::Render).Remove(id);
+        RegisterFunc(std::bind(&S3D::Render, this),CallbackType::Render);
     }
     ~S3D()
     {
+        loader->GetCallback().RemoveAll(callback_id);
         glDeleteBuffers(1, &VBO);
         glDeleteVertexArrays(1, &VAO);
     }

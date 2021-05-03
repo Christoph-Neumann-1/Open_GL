@@ -25,7 +25,6 @@ add_compile_options(-Wall -Wno-unknown-pragmas -Wshadow)
 add_subdirectory(src)
 add_subdirectory(scenes)
 add_subdirectory(modules)
-add_subdirectory(Applications)
 
 add_executable(${PROJECT_NAME} Main.cpp)
 add_dependencies(${PROJECT_NAME} OGL)

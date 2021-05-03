@@ -85,8 +85,11 @@ namespace GL
         std::unordered_map<CallbackType, CallbackList> lists;
         std::atomic_uint current_id = 1; //Keeps track of which ids have been assigned.
         std::mutex list_m;
+        std::function<void(const std::function<void()> &)> SyncFunc;
 
     public:
+        CallbackHandler(const std::function<void(const std::function<void()> &)> &sync) : SyncFunc(sync) {}
+
         ///@brief Returns the CallbackList associated with type.
         CallbackList &GetList(CallbackType type)
         {
@@ -110,6 +113,10 @@ namespace GL
         {
             std::scoped_lock lk(list_m);
             lists.clear();
+        }
+        void SynchronizedCall(const std::function<void()> &func)
+        {
+            SyncFunc(func);
         }
     };
 }

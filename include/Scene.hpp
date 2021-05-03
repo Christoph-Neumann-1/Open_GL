@@ -42,23 +42,6 @@ namespace GL
         }
 
         virtual ~Scene() {}
-
-        /**
-         * @brief Called when unloading.
-         * 
-         * Remove callbacks here. After Update and Render are finished this object will be deleted.
-         */
-        virtual void PrepareUnload() { loader->GetCallback().RemoveAll(callback_id); }
-
-        /**
-         * @brief Called to imidiatelly close the scene.
-         * 
-         * Should only be called outside of callbacks, and when no callbacks are currently executed.
-         * Basically when destroying the scene. I couldn't find a good way to remove a scene while running callbacks, so this will propably
-         * break the CallbackHandler.
-         * 
-         */
-        virtual void Terminate() { this->PrepareUnload(); }
     };
 }
 

@@ -11,13 +11,19 @@
 #include <imgui_impl_opengl3.h>
 #include <thread>
 #include <condition_variable>
-#include <pthread.h>
 #include <Data.hpp>
 
 using namespace GL;
 using cbt = CallbackType;
 
-void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv, float frequency)
+void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syncs, const std::function<void()> &func)
+{
+    std::scoped_lock lk(mutex);
+    syncs.push_back(func);
+}
+
+void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv, float frequency,
+                std::atomic_bool &should_sync, std::atomic_bool &is_synced, std::mutex &mutex)
 {
     Logger log;
     auto &updatecb = cbh.GetList(cbt::Update);
@@ -41,6 +47,14 @@ void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std
         preupdatecb();
         updatecb();
         postupdatecb();
+
+        if (should_sync)
+        {
+            std::unique_lock lk(mutex);
+            is_synced = true;
+            cv.notify_one();
+            cv.wait(lk, [&]() { return should_sync.load(); });
+        }
 
         auto end = std::chrono::high_resolution_clock::now();
         auto time = Interval - (end - begin);
@@ -73,7 +87,9 @@ int main(int argc, char **argv)
         ROOT_Directory = std::filesystem::path(ROOT_Directory).parent_path().string(); // Needed to run it from build directory.
 
     {
-        CallbackHandler cbh;
+        std::mutex mutex;
+        std::vector<std::function<void()>> syncfunctions;
+        CallbackHandler cbh(std::bind(AddToSync, std::ref(mutex), std::ref(syncfunctions), std::placeholders::_1));
         TimeInfo timeinfo(cbh);
 
 #pragma region
@@ -151,11 +167,13 @@ int main(int argc, char **argv)
 
         auto &imguirendercb = cbh.GetList(cbt::ImGuiRender);
 
-        std::mutex mutex;
         std::condition_variable cv;
         std::atomic_bool should_close = false;
+        std::atomic_bool should_sync = false;
+        std::atomic_bool is_synced = false;
 
-        std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close), std::ref(cv), 100.0f);
+        std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),
+                                 std::ref(cv), 100.0f, std::ref(should_sync), std::ref(is_synced), std::ref(mutex));
 
         while (!glfwWindowShouldClose(window))
         {
@@ -176,6 +194,20 @@ int main(int argc, char **argv)
 
             postrendercb();
 
+            {
+                std::unique_lock lk(mutex);
+                if (syncfunctions.size())
+                {
+                    should_sync = true;
+                    cv.wait(lk, [&]() { return is_synced.load(); });
+                    for (auto &func : syncfunctions)
+                        func();
+                    syncfunctions.clear();
+                    is_synced = false;
+                    should_sync = false;
+                    cv.notify_one();
+                }
+            }
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
@@ -197,7 +229,7 @@ int main(int argc, char **argv)
 
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();        
+        ImGui::DestroyContext();
     }
     glfwTerminate();
 }
