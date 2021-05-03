@@ -21,24 +21,18 @@ add_subdirectory(Libs/glm)
 
 add_compile_options(-Wall -Wno-unknown-pragmas -Wshadow)
 
-file(GLOB SOURCES "src/*.cpp")
-add_library(OGL SHARED ${SOURCES} Libs/Image/stb_image.cpp)
 
+add_subdirectory(src)
 add_subdirectory(scenes)
 add_subdirectory(modules)
+add_subdirectory(Applications)
 
 add_executable(${PROJECT_NAME} Main.cpp)
 add_dependencies(${PROJECT_NAME} OGL)
 
-target_precompile_headers(OGL PRIVATE pch.hpp)
 target_precompile_headers(${PROJECT_NAME} PRIVATE pch.hpp)
 
-target_link_libraries(OGL glad GL glfw IMGUI assimp dl pthread)
 target_link_libraries(${PROJECT_NAME} glad GL glfw IMGUI OGL pthread)
-
-add_custom_command(TARGET OGL
-                   POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:OGL> ${CMAKE_SOURCE_DIR}/Lib/libOGL.so)
 
 add_subdirectory(tests)
 
