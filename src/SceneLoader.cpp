@@ -64,6 +64,7 @@ namespace GL
             flags["_VALID_"] = 0;
             delete s;
             s = nullptr;
+            cbh.ProcessNow();
             dlclose(loaded);
             loaded = nullptr;
             is_loading_or_unloading = false;
@@ -82,7 +83,7 @@ namespace GL
         {
             delete s;
             s = nullptr;
-
+            cbh.ProcessNow();
             dlclose(loaded);
             loaded = nullptr;
         }
