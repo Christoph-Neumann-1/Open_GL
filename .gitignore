@@ -7,3 +7,5 @@ Lib
 *.module
 tests/special/**/*.so
 imgui.ini
+
+pkg

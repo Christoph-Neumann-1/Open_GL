@@ -6,7 +6,7 @@ class t_Scene final : public Scene
 public:
     t_Scene(SceneLoader *_loader) : Scene(_loader)
     {
-        RegisterFunc([&]() { int x=0; }, CallbackType::PreUpdate);
+        RegisterFunc([&]() {}, CallbackType::PreUpdate);
     }
     ~t_Scene()
     {
