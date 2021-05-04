@@ -37,6 +37,7 @@ namespace GL
             cbh.SynchronizedCall(std::bind([&](std::string _path) {
                 delete s;
                 s = nullptr;
+                cbh.ProcessNow();
                 dlclose(loaded);
                 loaded = nullptr;
                 load_func(_path);
