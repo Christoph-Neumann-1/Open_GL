@@ -23,23 +23,44 @@ namespace GL
 
     /**
      * @brief Contains a list of functions.
-     * Used in CallbackHandler. Has little use on its own.
+     * Used in CallbackHandler.
      */
     class CallbackList
     {
         ///@brief A function + its id for removal.
         struct Callback
         {
-            uint id;     //Function id assigned by CallbackList
-            uint obj_id; //Id of object or group of functions. Lets you remove them together.
-            std::function<void()> function;
+            uint id;                        //Function id assigned by CallbackList
+            uint obj_id;                    //Id of object or group of functions. Lets you remove them together.
+            std::function<void()> function; //The function which gets called. NOTE please destroy before unloading the scene.
 
-            void operator()() { function(); }
+            void operator()() { function(); } //For convinience
+
+            Callback &operator=(Callback &&cb)
+            {
+                id = cb.id;
+                obj_id = cb.obj_id;
+                function = std::move(cb.function);
+                return *this;
+            }
+
+            Callback &operator=(const Callback &cb)
+            {
+                id = cb.id;
+                obj_id = cb.obj_id;
+                function = cb.function;
+                return *this;
+            }
+
+            Callback(uint _id, uint _obj_id, const std::function<void()> &func) : id(_id), obj_id(_obj_id), function(func) {}
+            Callback(uint _id, uint _obj_id, std::function<void()> &&func) : id(_id), obj_id(_obj_id), function(std::move(func)) {}
+
+            Callback(Callback &&old) : id(old.id), obj_id(old.obj_id), function(std::move(old.function)) {}
         };
 
         std::mutex mutex; //Gets locked when modifying the callback list or during Call list.
         std::vector<Callback> functions;
-        uint current_id = 1; //Keeps track of the function ids, that have been asigned.
+        uint current_id = 1; //Keeps track of the function ids, that have been assigned.
 
         struct RemoveCallback
         {
@@ -47,18 +68,33 @@ namespace GL
             bool caller_id; //Whether the id is from CallbackHandler.
         };
 
-        std::mutex mutex_queue; //Locked when adding or removing callbacks or when those modifications get applied.
+        std::mutex mutex_queue; //Locked when adding or removing callbacks and when those modifications get applied.
         std::vector<RemoveCallback> remove_queue;
         std::vector<Callback> add_queue;
 
         void ProcessQueues();
+
+        
 
     public:
         ///@brief Call every function
         void Call();
 
         ///@brief Add a new Callback. Gets applied during the next Call()
-        uint Add(const std::function<void()> &function, uint caller_id = 0);
+        uint Add(const std::function<void()> &function, uint caller_id = 0)
+        {
+            std::lock_guard lock(mutex_queue);
+            add_queue.emplace_back(current_id, caller_id, function);
+            return current_id++;
+        }
+
+        ///@overload
+        uint Add(std::function<void()> &&function, uint caller_id = 0)
+        {
+            std::lock_guard lock(mutex_queue);
+            add_queue.emplace_back(current_id, caller_id, std::move(function));
+            return current_id++;
+        }
 
         ///@brief Removes a callback by its id. Gets applied during the next Call()
         void Remove(uint id);
@@ -72,6 +108,12 @@ namespace GL
             Call();
         }
 
+        /**
+         * @brief Process add and remove now.
+         * 
+         * Does not work while calling. Only use outside of calls.
+         * 
+         */
         void ProcessNow()
         {
             std::lock_guard lk(mutex);
@@ -103,17 +145,29 @@ namespace GL
         ///@brief Calls RemoveAll on every CallbackList
         void RemoveAll(uint callerid);
 
+        ///Same as CallbackList.
         void ProcessNow()
         {
             std::scoped_lock lk(list_m);
             for (auto &list : lists)
                 list.second.ProcessNow();
         }
+
+        /**
+         * @brief Clear all callbacks
+         * 
+         */
         void Terminate()
         {
             std::scoped_lock lk(list_m);
             lists.clear();
         }
+
+        /**
+         * @brief Callfunction without worrying about threads.
+         * 
+         * Calls the function provided when creating object.
+         */
         void SynchronizedCall(const std::function<void()> &func)
         {
             SyncFunc(func);

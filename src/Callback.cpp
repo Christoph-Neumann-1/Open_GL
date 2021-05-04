@@ -8,7 +8,7 @@ namespace GL
 
         for (auto &func : add_queue)
         {
-            functions.push_back(func);
+            functions.emplace_back(std::move(func));
         }
 
         for (auto item : remove_queue)
@@ -37,19 +37,13 @@ namespace GL
         }
     }
 
-    uint CallbackList::Add(const std::function<void()> &function, uint caller_id)
-    {
-        std::lock_guard lock(mutex_queue);
-        add_queue.push_back({current_id, caller_id, function});
-        return current_id++;
-    }
 
     void CallbackList::Remove(uint id)
     {
         if (!id)
             return;
         std::lock_guard lock(mutex_queue);
-        remove_queue.push_back({id, false});
+        remove_queue.emplace_back(id, false);
     }
 
     void CallbackList::RemoveAll(uint caller_id)
@@ -57,7 +51,7 @@ namespace GL
         if (!caller_id)
             return;
         std::lock_guard lock(mutex_queue);
-        remove_queue.push_back({caller_id, true});
+        remove_queue.emplace_back(caller_id, true);
     }
 
     void CallbackHandler::RemoveAll(uint caller_id)
