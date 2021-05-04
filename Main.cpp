@@ -23,7 +23,7 @@ void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syncs, con
 }
 
 void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv, float frequency,
-                std::atomic_bool &should_sync, std::atomic_bool &is_synced, std::mutex &mutex)
+                std::atomic_bool &should_sync, std::atomic_bool &is_synced)
 {
     Logger log;
     auto &updatecb = cbh.GetList(cbt::Update);
@@ -50,10 +50,8 @@ void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std
 
         if (should_sync)
         {
-            std::unique_lock lk(mutex);
             is_synced = true;
-            cv.notify_one();
-            cv.wait(lk, [&]() { return should_sync.load(); });
+            while(should_sync);
         }
 
         auto end = std::chrono::high_resolution_clock::now();
@@ -173,7 +171,7 @@ int main(int argc, char **argv)
         std::atomic_bool is_synced = false;
 
         std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),
-                                 std::ref(cv), 100.0f, std::ref(should_sync), std::ref(is_synced), std::ref(mutex));
+                                 std::ref(cv), 100.0f, std::ref(should_sync), std::ref(is_synced));
 
         while (!glfwWindowShouldClose(window))
         {
@@ -199,13 +197,12 @@ int main(int argc, char **argv)
                 if (syncfunctions.size())
                 {
                     should_sync = true;
-                    cv.wait(lk, [&]() { return is_synced.load(); });
+                    while(!is_synced);
                     for (auto &func : syncfunctions)
                         func();
                     syncfunctions.clear();
                     is_synced = false;
                     should_sync = false;
-                    cv.notify_one();
                 }
             }
             glfwSwapBuffers(window);

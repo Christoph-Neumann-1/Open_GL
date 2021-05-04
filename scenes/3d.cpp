@@ -32,9 +32,13 @@ class S3D final : public Scene
         glDrawArrays(GL_TRIANGLES, 0, 3);
         shader.UnBind();
         loader->GetWindow();
-        if (glfwGetKey(loader->GetWindow(), GLFW_KEY_ESCAPE))
+        if (glfwGetKey(loader->GetWindow(), GLFW_KEY_L))
         {
-            loader->Load(ROOT_Directory+"/scenes/bin/3d.scene");
+            loader->Load(ROOT_Directory + "/scenes/bin/3d.scene");
+        }
+        if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
+        {
+            loader->UnLoad();
         }
     }
 
@@ -55,7 +59,7 @@ public:
         float color[]{1, 1, 0, 1};
         shader.Bind();
         shader.SetUniform4f("u_Color", color);
-        RegisterFunc(std::bind(&S3D::Render, this),CallbackType::Render);
+        RegisterFunc(std::bind(&S3D::Render, this), CallbackType::Render);
     }
     ~S3D()
     {
