@@ -33,18 +33,18 @@ namespace GL
         std::mutex flags_lock;
         std::unordered_map<std::string, std::atomic_int> flags;
 
-        std::atomic_uint update_ready = 0;
         std::atomic_bool is_loading_or_unloading = false;
-        uint update_id, render_id;
-        uint update_id2, render_id2;
 
         void load_func(const std::string &);
+
+        std::function<void(SceneLoader *, const std::string &)> OnLoad = [](SceneLoader *, const std::string &) {};
+        std::function<void(SceneLoader *)> OnUnload = [](SceneLoader *) {};
 
     public:
         SceneLoader(Window &_window, CallbackHandler &_cbh, TimeInfo &_timeinfo) : window(_window), cbh(_cbh), timeinfo(_timeinfo) {}
         ~SceneLoader()
         {
-                Terminate();
+            Terminate();
         }
 
         ///@brief Load a new Scene. Unloads old if necessary.
@@ -63,5 +63,8 @@ namespace GL
         CallbackHandler &GetCallback() const { return cbh; }
 
         void Terminate();
+
+        void SetLoadCb(const std::function<void(SceneLoader *, const std::string &)> &cb) { OnLoad = cb; }
+        void SetUnloadCb(const std::function<void(SceneLoader *)> &cb) { OnUnload = cb; }
     };
 }

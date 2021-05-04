@@ -35,6 +35,7 @@ namespace GL
         if (loaded)
         {
             cbh.SynchronizedCall(std::bind([&](std::string _path) {
+                OnLoad(this, path);
                 delete s;
                 s = nullptr;
                 cbh.ProcessNow();
@@ -47,6 +48,7 @@ namespace GL
         }
         else
         {
+            OnLoad(this, path);
             load_func(path);
             is_loading_or_unloading = false;
         }
@@ -61,6 +63,7 @@ namespace GL
             return;
 
         cbh.SynchronizedCall([&]() {
+            OnUnload(this);
             flags.clear();
             flags["_VALID_"] = 0;
             delete s;
