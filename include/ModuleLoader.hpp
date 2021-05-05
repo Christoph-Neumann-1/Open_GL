@@ -74,6 +74,12 @@ namespace GL
             throw std::runtime_error(str.c_str());
         }
 
+        /**
+         * @brief Closes the module
+         * 
+         * Be carful with std::function when unloading.
+         * 
+         */
         void UnLoad()
         {
             if (loaded)

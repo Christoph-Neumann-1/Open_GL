@@ -158,7 +158,7 @@ int main(int argc, char **argv)
 
         SceneLoader loader(window, cbh, timeinfo);
         loader.SetUnloadCb([&](SceneLoader*){glfwSetWindowShouldClose(window,2);});
-        loader.Load(ROOT_Directory + "/scenes/bin/3d.scene");
+        loader.Load(ROOT_Directory + "/scenes/bin/Example.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);

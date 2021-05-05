@@ -31,7 +31,6 @@ class S3D final : public Scene
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
         shader.UnBind();
-        loader->GetWindow();
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_L))
         {
             loader->Load(ROOT_Directory + "/scenes/bin/3d.scene");
