@@ -81,8 +81,8 @@ int main(int argc, char **argv)
     Logger log;
 
     ROOT_Directory = argc > 1 ? argv[1] : std::filesystem::path(std::string(argv[0])).parent_path().string();
-    if (!std::filesystem::exists(ROOT_Directory + "/res"))
-        ROOT_Directory = std::filesystem::path(ROOT_Directory).parent_path().string(); // Needed to run it from build directory.
+    if (!std::filesystem::exists(ROOT_Directory + "/res") && std::filesystem::exists(ROOT_Directory + "/../res"))
+        ROOT_Directory = std::filesystem::path(ROOT_Directory+"/.."); // Needed to run it from build directory.
 
     {
         std::mutex mutex;
