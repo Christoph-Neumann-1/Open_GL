@@ -14,7 +14,7 @@ namespace GL
         double m_y;
 
     public:
-        Flycam(Camera3D *_cam, GLFWwindow *_window, float move = 6, float rot = 4, float mouse = 0.2) : CameraControler(_cam,_window), movement(move), rotation(rot), mouseSpeed(mouse)
+        Flycam(Camera3D *_cam, GLFWwindow *_window, float move = 4, float rot = 120, float mouse = 0.11) : CameraControler(_cam,_window), movement(move), rotation(rot), mouseSpeed(mouse)
         {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
