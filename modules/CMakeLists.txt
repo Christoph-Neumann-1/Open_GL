@@ -7,7 +7,6 @@ foreach(MODULE ${MODULES})
     get_filename_component(MODULE_N ${MODULE_N2} NAME)
     add_library("m_${MODULE_N}" SHARED ${MODULE} )
     target_link_libraries("m_${MODULE_N}" OGL)
-    target_precompile_headers(m_${MODULE_N} REUSE_FROM OGL)
     add_dependencies("m_${MODULE_N}" OGL)
     set_target_properties("m_${MODULE_N}" PROPERTIES PREFIX "")
     add_custom_command(TARGET "m_${MODULE_N}"
