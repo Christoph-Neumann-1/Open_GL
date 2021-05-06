@@ -19,7 +19,6 @@ class S3D final : public Scene
     uint VBO;
     uint VAO;
     Shader shader;
-    uint id;
 
     void Render()
     {

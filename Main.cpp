@@ -51,7 +51,8 @@ void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std
         if (should_sync)
         {
             is_synced = true;
-            while(should_sync);
+            while (should_sync)
+                ;
         }
 
         auto end = std::chrono::high_resolution_clock::now();
@@ -82,7 +83,7 @@ int main(int argc, char **argv)
 
     ROOT_Directory = argc > 1 ? argv[1] : std::filesystem::path(std::string(argv[0])).parent_path().string();
     if (!std::filesystem::exists(ROOT_Directory + "/res") && std::filesystem::exists(ROOT_Directory + "/../res"))
-        ROOT_Directory = std::filesystem::path(ROOT_Directory+"/.."); // Needed to run it from build directory.
+        ROOT_Directory = std::filesystem::path(ROOT_Directory + "/.."); // Needed to run it from build directory.
 
     {
         std::mutex mutex;
@@ -157,8 +158,8 @@ int main(int argc, char **argv)
 #pragma endregion
 
         SceneLoader loader(window, cbh, timeinfo);
-        loader.SetUnloadCb([&](SceneLoader*){glfwSetWindowShouldClose(window,2);});
-        loader.Load(ROOT_Directory + "/scenes/bin/Example.scene");
+        loader.SetUnloadCb([&](SceneLoader *) { glfwSetWindowShouldClose(window, 2); });
+        loader.Load(ROOT_Directory + "/scenes/bin/Model.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);
@@ -198,7 +199,8 @@ int main(int argc, char **argv)
                 if (syncfunctions.size())
                 {
                     should_sync = true;
-                    while(!is_synced);
+                    while (!is_synced)
+                        ;
                     for (auto &func : syncfunctions)
                         func();
                     syncfunctions.clear();
@@ -230,4 +232,5 @@ int main(int argc, char **argv)
         ImGui::DestroyContext();
     }
     glfwTerminate();
+    return 0;
 }
