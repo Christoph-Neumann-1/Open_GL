@@ -66,6 +66,8 @@ namespace GL
         {
             uint id;        //Either a function id or an id from CallbackHandler.
             bool caller_id; //Whether the id is from CallbackHandler.
+
+            RemoveCallback(uint _id, bool _cid) : id(_id), caller_id(_cid) {}
         };
 
         std::mutex mutex_queue; //Locked when adding or removing callbacks and when those modifications get applied.
@@ -73,8 +75,6 @@ namespace GL
         std::vector<Callback> add_queue;
 
         void ProcessQueues();
-
-        
 
     public:
         ///@brief Call every function
