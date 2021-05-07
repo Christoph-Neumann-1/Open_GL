@@ -29,8 +29,6 @@ add_subdirectory(modules)
 add_executable(${PROJECT_NAME} Main.cpp)
 add_dependencies(${PROJECT_NAME} OGL)
 
-target_precompile_headers(${PROJECT_NAME} PRIVATE pch.hpp)
-
 target_link_libraries(${PROJECT_NAME} glad GL glfw IMGUI OGL pthread)
 
 add_subdirectory(tests)
