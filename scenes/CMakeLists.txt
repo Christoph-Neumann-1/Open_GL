@@ -19,7 +19,7 @@ foreach(SCENE ${SCENES})
     target_precompile_headers(s_${SCENE_N} PRIVATE pch.hpp)
     set(S_PCH s_${SCENE_N})
     else()
-    target_compile_definitions(s_${SCENE_N} PRIVATE s_3d_EXPORTS)
+    target_compile_definitions(s_${SCENE_N} PRIVATE ${S_PCH}_EXPORTS) #Stops gcc complains
     target_precompile_headers(s_${SCENE_N} REUSE_FROM ${S_PCH})
     endif(${S_PCH} EQUAL 0)
                    

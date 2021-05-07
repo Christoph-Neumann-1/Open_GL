@@ -69,7 +69,7 @@ public:
         auto task = std::make_shared<std::packaged_task<return_type()>>(
             std::bind(std::forward<Func>(f), std::forward<Args>(args)...));
 
-        std::future<return_type> res = task->get_future();
+        std::future<return_type> result = task->get_future();
 
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
@@ -78,7 +78,7 @@ public:
                 queue.emplace([task]() { (*task)(); });
         }
         cv.notify_one();
-        return res;
+        return result;
     }
 
     ///@brief terminate once all tasks are finished. Does not accept new tasks anymore.
