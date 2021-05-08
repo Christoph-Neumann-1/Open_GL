@@ -10,7 +10,7 @@ using namespace GL;
 
 struct Circle
 {
-    uint VBO, VAO;
+    uint VBO, VAO; 
     Shader shader;
     uint vcount = 0;
 
