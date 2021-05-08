@@ -35,22 +35,28 @@ namespace GL
         if (loaded)
         {
             cbh.SynchronizedCall(std::bind([&](std::string _path) {
-                OnLoad(this, path);
-                delete s;
-                s = nullptr;
-                cbh.ProcessNow();
-                dlclose(loaded);
-                loaded = nullptr;
-                load_func(_path);
+                if (OnUnload(this))
+                {
+                    delete s;
+                    s = nullptr;
+                    cbh.ProcessNow();
+                    dlclose(loaded);
+                    loaded = nullptr;
+                    if (OnLoad(this, path))
+                        load_func(_path);
+                }
                 is_loading_or_unloading = false;
             },
                                            path));
         }
         else
         {
-            OnLoad(this, path);
-            load_func(path);
-            is_loading_or_unloading = false;
+            cbh.SynchronizedCall(std::bind([&](std::string _path) {
+                if (OnLoad(this, path))
+                    load_func(_path);
+                is_loading_or_unloading = false;
+            },
+                                           path));
         }
     }
 
@@ -63,14 +69,16 @@ namespace GL
             return;
 
         cbh.SynchronizedCall([&]() {
-            OnUnload(this);
-            flags.clear();
-            flags["_VALID_"] = 0;
-            delete s;
-            s = nullptr;
-            cbh.ProcessNow();
-            dlclose(loaded);
-            loaded = nullptr;
+            if (OnUnload(this))
+            {
+                flags.clear();
+                flags["_VALID_"] = 0;
+                delete s;
+                s = nullptr;
+                cbh.ProcessNow();
+                dlclose(loaded);
+                loaded = nullptr;
+            }
             is_loading_or_unloading = false;
         });
     }
@@ -85,6 +93,8 @@ namespace GL
     {
         if (loaded)
         {
+            flags.clear();
+            flags["_VALID_"] = 0;
             delete s;
             s = nullptr;
             cbh.ProcessNow();

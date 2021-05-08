@@ -37,8 +37,8 @@ namespace GL
 
         void load_func(const std::string &);
 
-        std::function<void(SceneLoader *, const std::string &)> OnLoad = [](SceneLoader *, const std::string &) {};
-        std::function<void(SceneLoader *)> OnUnload = [](SceneLoader *) {};
+        std::function<bool(SceneLoader *, const std::string &)> OnLoad = [](SceneLoader *, const std::string &) {return true;};
+        std::function<bool(SceneLoader *)> OnUnload = [](SceneLoader *) {return true;};
 
     public:
         SceneLoader(Window &_window, CallbackHandler &_cbh, TimeInfo &_timeinfo) : window(_window), cbh(_cbh), timeinfo(_timeinfo) {}
@@ -58,13 +58,13 @@ namespace GL
         /// Undefined behaviour if used after unloading. To check if flags may be used check the _VALID_ flag
         std::atomic_int &GetFlag(const std::string &name);
         bool HasScene() const { return s ? 1 : 0; }
-        const Window &GetWindow() const { return window; }
-        const TimeInfo &GetTimeInfo() const { return timeinfo; }
+        Window &GetWindow() const { return window; }
+        TimeInfo &GetTimeInfo() const { return timeinfo; }
         CallbackHandler &GetCallback() const { return cbh; }
 
         void Terminate();
 
-        void SetLoadCb(const std::function<void(SceneLoader *, const std::string &)> &cb) { OnLoad = cb; }
-        void SetUnloadCb(const std::function<void(SceneLoader *)> &cb) { OnUnload = cb; }
+        void SetLoadCb(const std::function<bool(SceneLoader *, const std::string &)> &cb) { OnLoad = cb; }
+        void SetUnloadCb(const std::function<bool(SceneLoader *)> &cb) { OnUnload = cb; }
     };
 }

@@ -36,6 +36,11 @@ namespace GL
             return loader->GetCallback().GetList(cbt).Add(func, callback_id);
         }
 
+        void RemoveFunctions()
+        {
+            loader->GetCallback().RemoveAll(callback_id);
+        }
+
     public:
         explicit Scene(SceneLoader *_loader) : loader(_loader)
         {
