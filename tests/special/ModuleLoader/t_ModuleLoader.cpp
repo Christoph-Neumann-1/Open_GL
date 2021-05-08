@@ -48,7 +48,7 @@ TEST(MODULE_LOADER, InvalidModule)
         GL::ModuleLoader loader("./void");
         FAIL();
     }
-    catch (std::runtime_error)
+    catch (const std::runtime_error &)
     {
     }
 }
@@ -64,7 +64,7 @@ TEST(MODULE_LOADER, InvalidFunction)
         func(1,2);
         FAIL();
     }
-    catch (std::runtime_error)
+    catch (const std::runtime_error &)
     {
     }
 }

@@ -27,16 +27,6 @@ namespace GL
         add_queue.clear();
     }
 
-    void CallbackList::Call()
-    {
-        std::lock_guard lock(mutex);
-        ProcessQueues();
-        for (auto &func : functions)
-        {
-            func();
-        }
-    }
-
 
     void CallbackList::Remove(uint id)
     {

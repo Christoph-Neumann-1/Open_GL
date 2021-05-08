@@ -78,8 +78,16 @@ namespace GL
 
     public:
         ///@brief Call every function
-        void Call();
-
+        void Call()
+        {
+            std::lock_guard lock(mutex);
+            ProcessQueues();
+            for (auto &func : functions)
+            {
+                func();
+            }
+        }
+        
         ///@brief Add a new Callback. Gets applied during the next Call()
         uint Add(const std::function<void()> &function, uint caller_id = 0)
         {

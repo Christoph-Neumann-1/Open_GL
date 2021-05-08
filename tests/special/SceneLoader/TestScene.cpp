@@ -14,10 +14,4 @@ public:
     }
 };
 
-extern "C"
-{
-    Scene *_LOAD_(SceneLoader *loader)
-    {
-        return new t_Scene(loader);
-    }
-}
+SCENE_LOAD_FUNC(t_Scene)

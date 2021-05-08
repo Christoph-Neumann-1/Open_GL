@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Window.hpp>
-#include <DeltaTime.hpp>
+#include <Time.hpp>
 #include <stdexcept>
 #include <unordered_map>
 #include <string>

@@ -10,25 +10,25 @@ TEST(SCENE_LOADER, LoadAndUnload)
 
     loader.Load("./Scene.scene");
 
-    // EXPECT_TRUE(loader.HasScene());
+    EXPECT_TRUE(loader.HasScene());
 
-    // loader.UnLoad();
+    loader.UnLoad();
 
-    // EXPECT_FALSE(loader.HasScene());
+    EXPECT_FALSE(loader.HasScene());
 
-    // loader.UnLoad();
+    loader.UnLoad();
 
-    // EXPECT_FALSE(loader.HasScene());
+    EXPECT_FALSE(loader.HasScene());
 
-    // loader.Load("./Scene.scene");
+    loader.Load("./Scene.scene");
 
-    // loader.Load("./Scene.scene");
+    loader.Load("./Scene.scene");
 
-    // EXPECT_TRUE(loader.HasScene());
+    EXPECT_TRUE(loader.HasScene());
 
-    // loader.UnLoad();
+    loader.UnLoad();
 
-    // EXPECT_FALSE(loader.HasScene());
+    EXPECT_FALSE(loader.HasScene());
 }
 
 TEST(SCENE_LOADER, TestInvalidScene)
@@ -67,10 +67,10 @@ TEST(SCENE_LOADER, TestFlags)
     auto &flag = loader.GetFlag("Test");
     flag = 1;
 
-    EXPECT_EQ(flag, 1);
+    EXPECT_EQ(loader.GetFlag("Test"), 1);
 
     flag = 0;
-    EXPECT_EQ(flag, 0);
+    EXPECT_EQ(loader.GetFlag("Test"), 0);
 
     loader.UnLoad();
     ASSERT_FALSE(loader.HasScene());
