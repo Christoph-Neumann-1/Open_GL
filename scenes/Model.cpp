@@ -24,7 +24,7 @@ class Star final : public Scene
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
         shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix());
 
-        model.Draw(shader, 0);
+        model.Draw(shader, 3);
 
         shader.UnBind();
 
@@ -51,6 +51,7 @@ public:
         layout.stride = 3 * sizeof(float);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         model.AddInstanceBuffer(layout, buff);
+        SetFlag("hide_menu",true);
     }
 
     ~Star()

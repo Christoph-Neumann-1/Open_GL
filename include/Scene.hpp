@@ -41,6 +41,18 @@ namespace GL
             loader->GetCallback().RemoveAll(callback_id);
         }
 
+        std::atomic_int& GetFlag(const std::string &name)
+        {
+            return loader->GetFlag(name);
+        };
+
+        void SetFlag(const std::string &name, int val)
+        {
+            loader->GetFlag(name) = val;
+        }
+
+
+
     public:
         explicit Scene(SceneLoader *_loader) : loader(_loader)
         {
