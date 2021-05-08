@@ -2,7 +2,7 @@
 #include <GLFW/glfw3.h>
 #include <Scene.hpp>
 #include <Callback.hpp>
-#include <DeltaTime.hpp>
+#include <Time.hpp>
 #include <Logger.hpp>
 #include <filesystem>
 #include <ErrorOutput.hpp>
