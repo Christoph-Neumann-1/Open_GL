@@ -16,6 +16,12 @@ foreach(SCENE ${SCENES})
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:s_${SCENE_N}> ${CMAKE_SOURCE_DIR}/scenes/bin/${SCENE_N2}.scene)
     
+    set_property(
+    TARGET s_${SCENE_N}
+    APPEND
+    PROPERTY ADDITIONAL_CLEAN_FILES ${CMAKE_SOURCE_DIR}/scenes/bin/${SCENE_N2}.scene
+    )
+
     if(${S_PCH} EQUAL 0)
     target_precompile_headers(s_${SCENE_N} PRIVATE pch.hpp)
     set(S_PCH s_${SCENE_N})
