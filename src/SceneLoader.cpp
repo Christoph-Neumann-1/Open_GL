@@ -21,8 +21,6 @@ namespace GL
             throw InvalidScene(std::string("Could not find load function. Error: ") + (error ? error : ""));
         }
         s = init_func(this);
-
-        flags.clear();
         flags["_VALID_"] = 1;
     };
 
@@ -42,6 +40,7 @@ namespace GL
                     cbh.ProcessNow();
                     dlclose(loaded);
                     loaded = nullptr;
+                    flags.clear();
                     if (OnLoad(this, path))
                         load_func(_path);
                 }
@@ -71,13 +70,12 @@ namespace GL
         cbh.SynchronizedCall([&]() {
             if (OnUnload(this))
             {
-                flags.clear();
-                flags["_VALID_"] = 0;
                 delete s;
                 s = nullptr;
                 cbh.ProcessNow();
                 dlclose(loaded);
                 loaded = nullptr;
+                flags.clear();
             }
             is_loading_or_unloading = false;
         });
@@ -93,13 +91,12 @@ namespace GL
     {
         if (loaded)
         {
-            flags.clear();
-            flags["_VALID_"] = 0;
             delete s;
             s = nullptr;
             cbh.ProcessNow();
             dlclose(loaded);
             loaded = nullptr;
+            flags.clear();
         }
     }
 }
