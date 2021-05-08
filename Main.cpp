@@ -158,8 +158,8 @@ int main(int argc, char **argv)
 #pragma endregion
 
         SceneLoader loader(window, cbh, timeinfo);
-        loader.SetUnloadCb([&](SceneLoader *) { glfwSetWindowShouldClose(window, 2); });
-        loader.Load(ROOT_Directory + "/scenes/bin/Model.scene");
+        loader.SetUnloadCb([&](SceneLoader *) { glfwSetWindowShouldClose(window, 2); return true;});
+        loader.Load(ROOT_Directory + "/scenes/bin/Menu.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);
