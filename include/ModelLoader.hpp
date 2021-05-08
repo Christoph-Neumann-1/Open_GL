@@ -13,6 +13,20 @@
 
 namespace GL
 {
+
+    struct InstanceBufferLayout
+    {
+        struct Attribute
+        {
+            GLenum type;
+            uint count;
+            void *offset;
+        };
+
+        u_int stride;
+        std::vector<Attribute> attributes;
+    };
+
     struct Vertex
     {
         glm::vec3 Position;
@@ -107,7 +121,24 @@ namespace GL
             glBindVertexArray(0);
         }
 
-        void Draw(Shader &shader)
+        void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
+        {
+            glBindVertexArray(va);
+            glBindBuffer(GL_ARRAY_BUFFER, Buffer);
+            u_int attribute_index = 3;
+
+            for (auto &attrib : layout.attributes)
+            {
+                glEnableVertexAttribArray(attribute_index);
+                glVertexAttribPointer(attribute_index, attrib.count, attrib.type, false, layout.stride, attrib.offset);
+                glVertexAttribDivisor(attribute_index, 1);
+                attribute_index++;
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+
+        void Draw(Shader &shader, uint count = 0)
         {
             glBindVertexArray(va);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
@@ -135,7 +166,10 @@ namespace GL
                 shader.SetUniform1i(name + number, i);
                 glBindTexture(GL_TEXTURE_2D, textures[i].id);
             }
-            glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+            if (count)
+                glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, count);
+            else
+                glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
             glBindVertexArray(0);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -286,10 +320,18 @@ namespace GL
             ProcessNode(scene->mRootNode, scene);
         }
 
-        void Draw(Shader &shader)
+        void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
         {
             for (auto &mesh : meshes)
-                mesh.Draw(shader);
+            {
+                mesh.AddInstanceBuffer(layout, Buffer);
+            }
+        }
+
+        void Draw(Shader &shader, uint count = 0)
+        {
+            for (auto &mesh : meshes)
+                mesh.Draw(shader, count);
         }
     };
 }
