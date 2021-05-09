@@ -41,6 +41,19 @@ namespace GL
             functions = load_func();
         }
 
+        std::vector<std::string> GetFunctionNames()
+        {
+            if (!loaded)
+                return std::vector<std::string>();
+
+            std::vector<std::string> names;
+            for (auto &i : *functions)
+            {
+                names.push_back(i.first);
+            }
+            return names;
+        }
+
         /**
          * @brief Retrive function by name
          * 
