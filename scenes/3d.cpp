@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <Shader.hpp>
 #include <Data.hpp>
-#include <FpCam.hpp>
+#include <Camera/FpCam.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <Logger.hpp>
 

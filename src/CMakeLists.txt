@@ -1,4 +1,4 @@
-file(GLOB SOURCES "*.cpp")
+file(GLOB_RECURSE SOURCES "*.cpp")
 
 add_library(OGL SHARED ${SOURCES} ../Libs/Image/stb_image.cpp)
 target_precompile_headers(OGL PRIVATE pch.hpp)

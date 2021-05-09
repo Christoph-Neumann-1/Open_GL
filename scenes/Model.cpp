@@ -2,7 +2,7 @@
 #include <Data.hpp>
 #include <Logger.hpp>
 #include <ModelLoader.hpp>
-#include <Flycam.hpp>
+#include <Camera/Flycam.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace GL;
