@@ -10,6 +10,13 @@ foreach(SCENE ${SCENES})
     string(REPLACE "." "__" SCENE_N ${SCENE_N})
     add_library(s_${SCENE_N} SHARED ${SCENE})
     target_link_libraries(s_${SCENE_N} glad GL glfw IMGUI OGL assimp pthread)
+
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${SCENE_N2}.sconf)
+    file(READ ${CMAKE_CURRENT_SOURCE_DIR}/${SCENE_N2}.sconf LIB_LIST)
+    target_link_libraries(s_${SCENE_N} ${LIB_LIST})
+    endif(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${SCENE_N2}.sconf)
+
+    
     add_dependencies(s_${SCENE_N} OGL)
     set_target_properties(s_${SCENE_N} PROPERTIES PREFIX "")
     add_custom_command(TARGET s_${SCENE_N}
