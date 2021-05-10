@@ -12,26 +12,57 @@ namespace GL::Voxel
 
         B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
     };
+    
+    const std::array<B_Vertex, 36> bvertices{
+        //Front
+        B_Vertex({-0.5f, -0.5f, 0.5f}, {64.0f, 64.0f}),
+        B_Vertex({0.5f, -0.5f, 0.5f}, {127.0f, 64.0f}),
+        B_Vertex({0.5f, 0.5f, 0.5f}, {127.0f, 127.0f}),
+        B_Vertex({0.5f, 0.5f, 0.5f}, {127.0f, 127.0f}),
+        B_Vertex({-0.5f, 0.5f, 0.5f}, {64.0f, 127.0f}),
+        B_Vertex({-0.5f, -0.5f, 0.5f}, {64.0f, 64.0f}),
 
-    const std::array<B_Vertex, 8> bvertices{
-        B_Vertex({-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}),
-        B_Vertex({0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}),
-        B_Vertex({0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}),
-        B_Vertex({-0.5f, 0.5f, 0.5f}, {0.0f, 0.0f}),
-
-        B_Vertex({-0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}),
+        //Back
+        B_Vertex({-0.5f, -0.5f, -0.5f}, {63.0f, 0.0f}),
+        B_Vertex({-0.5f, 0.5f, -0.5f}, {63.0f, 63.0f}),
+        B_Vertex({0.5f, 0.5f, -0.5f}, {0.0f, 63.0f}),
+        B_Vertex({0.5f, 0.5f, -0.5f}, {0.0f, 63.0f}),
         B_Vertex({0.5f, -0.5f, -0.5f}, {0.0f, 0.0f}),
-        B_Vertex({0.5f, 0.5f, -0.5f}, {0.0f, 0.0f}),
-        B_Vertex({-0.5f, 0.5f, -0.5f}, {0.0f, 0.0f}),
-    };
+        B_Vertex({-0.5f, -0.5f, -0.5f}, {63.0f, 0.0f}),
 
-    const std::array<uint, 36> bindices{
-        0, 1, 2, 2, 3, 0,
-        4, 7, 6, 6, 5, 4,
-        0, 4, 5, 5, 1, 0,
-        3, 2, 6, 6, 7, 3,
-        1, 5, 6, 6, 2, 1,
-        0, 3, 7, 7, 4, 0};
+        //Bottom
+        B_Vertex({-0.5f, -0.5f, 0.5f}, {64.0f, 63.0f}),
+        B_Vertex({-0.5f, -0.5f, -0.5f}, {64.0f, 0.0f}),
+        B_Vertex({0.5f, -0.5f, -0.5f}, {127.0f, 0.0f}),
+        B_Vertex({0.5f, -0.5f, -0.5f}, {127.0f, 0.0f}),
+        B_Vertex({0.5f, -0.5f, 0.5f}, {127.0f, 63.0f}),
+        B_Vertex({-0.5f, -0.5f, 0.5f}, {64.0f, 63.0f}),
+
+        //Top
+        B_Vertex({-0.5f, 0.5f, 0.5f}, {64.0f, 128.0f}),
+        B_Vertex({0.5f, 0.5f, 0.5f}, {127.0f, 128.0f}),
+        B_Vertex({0.5f, 0.5f, -0.5f}, {127.0f, 191.0f}),
+        B_Vertex({0.5f, 0.5f, -0.5f}, {127.0f, 191.0f}),
+        B_Vertex({-0.5f, 0.5f, -0.5f}, {64.0f, 191.0f}),
+        B_Vertex({-0.5f, 0.5f, 0.5f}, {64.0f, 128.0f}),
+
+        //Right
+        B_Vertex({0.5f, -0.5f, 0.5f}, {128.0f, 64.0f}),
+        B_Vertex({0.5f, -0.5f, -0.5f}, {191.0f, 64.0f}),
+        B_Vertex({0.5f, 0.5f, -0.5f}, {191.0f, 127.0f}),
+        B_Vertex({0.5f, 0.5f, -0.5f}, {191.0f, 127.0f}),
+        B_Vertex({0.5f, 0.5f, 0.5f}, {128.0f, 127.0f}),
+        B_Vertex({0.5f, -0.5f, 0.5f}, {128.0f, 64.0f}),
+
+        //Left
+        B_Vertex({-0.5f, -0.5f, 0.5f}, {63.0f, 64.0f}),
+        B_Vertex({-0.5f, 0.5f, 0.5f}, {63.0f, 127.0f}),
+        B_Vertex({-0.5f, 0.5f, -0.5f}, {0.0f, 127.0f}),
+        B_Vertex({-0.5f, 0.5f, -0.5f}, {0.0f, 127.0f}),
+        B_Vertex({-0.5f, -0.5f, -0.5f}, {0.0f, 64.0f}),
+        B_Vertex({-0.5f, -0.5f, 0.5f}, {63.0f, 64.0f})
+
+    };
 
     struct Block
     {
