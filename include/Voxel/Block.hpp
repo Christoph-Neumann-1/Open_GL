@@ -13,7 +13,7 @@ namespace GL::Voxel
         B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
     };
     
-    const std::array<B_Vertex, 36> bvertices{
+    static const std::array<B_Vertex, 36> bvertices{
         //Front
         B_Vertex({-0.5f, -0.5f, 0.5f}, {64.0f, 64.0f}),
         B_Vertex({0.5f, -0.5f, 0.5f}, {127.0f, 64.0f}),
@@ -62,14 +62,5 @@ namespace GL::Voxel
         B_Vertex({-0.5f, -0.5f, -0.5f}, {0.0f, 64.0f}),
         B_Vertex({-0.5f, -0.5f, 0.5f}, {63.0f, 64.0f})
 
-    };
-
-    struct Block
-    {
-
-        struct Vertex
-        {
-            glm::vec4 color;
-        };
     };
 }

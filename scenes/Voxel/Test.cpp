@@ -6,10 +6,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <Camera/Fplocked.hpp>
 #include <Image/stb_image.h>
+#include <Voxel/Chunk.hpp>
 
-const float offsets[5 * 2]{
-    -1, 0, 0, 0, 1,
-    1, 0.5, 0.9, 1, 1};
+const float offsets[4 * 2]{
+    -1, 0, 0, 0,
+    1, 0.5, 0.9, 0};
 
 class Voxel_t final : public GL::Scene
 {
@@ -20,6 +21,8 @@ class Voxel_t final : public GL::Scene
 
     GL::Camera3D camera;
     GL::Fplocked controller;
+
+    GL::Voxel::Chunk c;
 
     void Render()
     {
@@ -56,24 +59,34 @@ public:
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
+        c.Load(1, 0);
+        c.Store();
+        float offs[4*2];
+        memcpy(offs,offsets,4*2*sizeof(float));
+        printf("%i\n",int(c.GetTypeAtIndex(0,0,0)));
+        printf("%i\n",int(c.GetTypeAtIndex(0,0,1)));
+        offs[3]=c.GetTypeAtIndex(0,0,0);
+        offs[7]=c.GetTypeAtIndex(0,0,1);
+
         glBindBuffer(GL_ARRAY_BUFFER, instbuff);
-        glBufferData(GL_ARRAY_BUFFER, 5 * 2 * sizeof(float), offsets, GL_STATIC_DRAW);
-        glVertexAttribPointer(2, 3, GL_FLOAT, false, 5 * sizeof(float), 0);
-        glVertexAttribPointer(3, 2, GL_FLOAT, false, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+        glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), offs, GL_STATIC_DRAW);
+        glVertexAttribPointer(2, 3, GL_FLOAT, false, 4 * sizeof(float), 0);
+        glVertexAttribPointer(3, 1, GL_FLOAT, false, 4 * sizeof(float), (void *)(3 * sizeof(float)));
         glEnableVertexAttribArray(2);
         glEnableVertexAttribArray(3);
-        glVertexAttribDivisor(2,1);
-        glVertexAttribDivisor(3,1);
+        glVertexAttribDivisor(2, 1);
+        glVertexAttribDivisor(3, 1);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
         shader.Bind();
         shader.SetUniform1i("u_Texture", 0);
-        shader.SetUniform2f("tex_size", 2*192.0f, 2*192.0f);
+        shader.SetUniform1f("tex_size", 2 * 192.0f);
         shader.UnBind();
 
         TexSetup();
+
     }
     ~Voxel_t()
     {
