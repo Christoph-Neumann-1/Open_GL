@@ -34,7 +34,7 @@ namespace GL::Voxel
         {
             posx = x;
             posy = y;
-            auto f = fopen((ROOT_Directory + "/res/world/" + std::to_string(posx) + "|" + std::to_string(posy)).c_str(), "a+");
+            auto f = fopen((ROOT_Directory + "/res/world/" + std::to_string(posx) + "|" + std::to_string(posy)).c_str(), "a+b");
             rewind(f);
             if (getc(f) == EOF)
             {
@@ -52,7 +52,7 @@ namespace GL::Voxel
 
         void Store()
         {
-            auto f = fopen((ROOT_Directory + "/res/world/" + std::to_string(posx) + "|" + std::to_string(posy)).c_str(), "a+");
+            auto f = fopen((ROOT_Directory + "/res/world/" + std::to_string(posx) + "|" + std::to_string(posy)).c_str(), "a+b");
             rewind(f);
             fwrite(blocks, 1, 16 * 16 * 64, f);
             fclose(f);
