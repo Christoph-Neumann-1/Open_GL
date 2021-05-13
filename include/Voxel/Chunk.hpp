@@ -109,7 +109,6 @@ namespace GL::Voxel
 
             GenFaces();
 
-            Logger()(GenFace({0, 0, 0}, Front).vertices[0].tex);
         }
 
         ~Chunk()

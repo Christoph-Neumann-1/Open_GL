@@ -178,7 +178,7 @@ int main(int argc, char **argv)
 
         while (!glfwWindowShouldClose(window))
         {
-            glClearColor(0.2, 0.2, 0.2, 1);
+            glClearColor(21/255.0,132/255.0, 201/255.0, 1);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             prerendercb();
