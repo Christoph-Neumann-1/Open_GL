@@ -101,7 +101,7 @@ namespace GL::Voxel
                             faces.push_back(GenFace({x, y, z}, Bottom));
                             special = true;
                         }
-                        else if (y == 15)
+                        else if (y == 63)
                         {
                             faces.push_back(GenFace({x, y, z}, Top));
                             special = true;
