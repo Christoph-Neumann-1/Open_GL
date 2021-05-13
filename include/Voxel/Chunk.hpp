@@ -58,8 +58,90 @@ namespace GL::Voxel
                     {
                         if (blocks[x][y][z] == 0)
                             continue;
-                        if (z == 0)
+                        bool special = false;
+#pragma region CheckEdge
+                        if (z == 15)
+                        {
                             faces.push_back(GenFace({x, y, z}, Front));
+                            special = true;
+                        }
+                        else if (z == 0)
+                        {
+                            faces.push_back(GenFace({x, y, z}, Back));
+                            special = true;
+                        }
+
+                        if (x == 0)
+                        {
+                            faces.push_back(GenFace({x, y, z}, Left));
+                            special = true;
+                        }
+                        else if (x == 15)
+                        {
+                            faces.push_back(GenFace({x, y, z}, Right));
+                            special = true;
+                        }
+
+                        if (y == 0)
+                        {
+                            faces.push_back(GenFace({x, y, z}, Bottom));
+                            special = true;
+                        }
+                        else if (y == 15)
+                        {
+                            faces.push_back(GenFace({x, y, z}, Top));
+                            special = true;
+                        }
+#pragma endregion
+
+                        if (special)
+                        {
+                            if (x != 0)
+                            {
+                                if (blocks[x - 1][y][z] == 0)
+                                    faces.push_back(GenFace({x, y, z}, Left));
+                            }
+                            if (x != 15)
+                            {
+                                if (blocks[x + 1][y][z] == 0)
+                                    faces.push_back(GenFace({x, y, z}, Right));
+                            }
+                            if (y != 0)
+                            {
+                                if (blocks[x][y - 1][z] == 0)
+                                    faces.push_back(GenFace({x, y, z}, Bottom));
+                            }
+                            if (y != 63)
+                            {
+                                if (blocks[x][y + 1][z] == 0)
+                                    faces.push_back(GenFace({x, y, z}, Top));
+                            }
+                            if (z != 0)
+                            {
+                                if (blocks[x][y][z - 1] == 0)
+                                    faces.push_back(GenFace({x, y, z}, Back));
+                            }
+                            if (z != 15)
+                            {
+                                if (blocks[x][y][z + 1] == 0)
+                                    faces.push_back(GenFace({x, y, z}, Front));
+                            }
+                        }
+                        else
+                        {
+                            if (blocks[x - 1][y][z] == 0)
+                                faces.push_back(GenFace({x, y, z}, Left));
+                            if (blocks[x + 1][y][z] == 0)
+                                faces.push_back(GenFace({x, y, z}, Right));
+                            if (blocks[x][y - 1][z] == 0)
+                                faces.push_back(GenFace({x, y, z}, Bottom));
+                            if (blocks[x][y + 1][z] == 0)
+                                faces.push_back(GenFace({x, y, z}, Top));
+                            if (blocks[x][y][z - 1] == 0)
+                                faces.push_back(GenFace({x, y, z}, Back));
+                            if (blocks[x][y][z + 1] == 0)
+                                faces.push_back(GenFace({x, y, z}, Front));
+                        }
                     }
                 }
             }
@@ -81,7 +163,6 @@ namespace GL::Voxel
                     }
                 }
             }
-
             for (int x = 0; x < 16; x++)
             {
                 for (int y = 16; y < 64; y++)
@@ -108,7 +189,6 @@ namespace GL::Voxel
             glBindVertexArray(0);
 
             GenFaces();
-
         }
 
         ~Chunk()
