@@ -28,7 +28,9 @@ namespace GL
         void SetUniform2f(const std::string &name, float v0, float v1);
         void SetUniform2f(const std::string &name, const float values[2]);
         void SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3); ///<Set a vec4 uniform of floats
-        void SetUniform4f(const std::string &name, const float values[4]);                  ///<Same as @ref SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3) "above" but the parameter is an array
-        void SetUniformMat4f(const std::string &name, const glm::mat4 &matrix);             ///<Set a mat4 uniform
+        void SetUniform4f(const std::string &name, const float values[4]);
+        void SetUniform3f(const std::string &name, float v0, float v1, float v2);
+        void SetUniform3f(const std::string &name, const float values[3]);
+        void SetUniformMat4f(const std::string &name, const glm::mat4 &matrix); ///<Set a mat4 uniform
     };
 }

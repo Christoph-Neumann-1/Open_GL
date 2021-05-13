@@ -10,7 +10,7 @@
 
 const float offsets[4 * 2]{
     -1, 0, 0, 0,
-    1, 0.5, 0.9, 0};
+    1, 0.5, 0.9, 1};
 
 class Voxel_t final : public GL::Scene
 {
@@ -21,8 +21,8 @@ class Voxel_t final : public GL::Scene
 
     GL::Camera3D camera;
     GL::Fplocked controller;
+    GL::Voxel::Chunk *c;
 
-    GL::Voxel::Chunk c;
 
     void Render()
     {
@@ -36,8 +36,11 @@ class Voxel_t final : public GL::Scene
 
         glDrawArraysInstanced(GL_TRIANGLES, 0, 36, 2);
 
-        shader.UnBind();
         glBindVertexArray(0);
+
+        c->Draw();
+
+        shader.UnBind();
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
@@ -59,17 +62,8 @@ public:
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
-        c.Load(1, 0);
-        c.Store();
-        float offs[4*2];
-        memcpy(offs,offsets,4*2*sizeof(float));
-        printf("%i\n",int(c.GetTypeAtIndex(0,0,0)));
-        printf("%i\n",int(c.GetTypeAtIndex(0,0,1)));
-        offs[3]=c.GetTypeAtIndex(0,0,0);
-        offs[7]=c.GetTypeAtIndex(0,0,1);
-
         glBindBuffer(GL_ARRAY_BUFFER, instbuff);
-        glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), offs, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), offsets, GL_STATIC_DRAW);
         glVertexAttribPointer(2, 3, GL_FLOAT, false, 4 * sizeof(float), 0);
         glVertexAttribPointer(3, 1, GL_FLOAT, false, 4 * sizeof(float), (void *)(3 * sizeof(float)));
         glEnableVertexAttribArray(2);
@@ -87,12 +81,15 @@ public:
 
         TexSetup();
 
+        c=new GL::Voxel::Chunk(vb,{0,-1});
+
     }
     ~Voxel_t()
     {
         glDeleteVertexArrays(1, &va);
         glDeleteBuffers(2, &vb);
         RemoveFunctions();
+        delete c;
     }
 };
 
