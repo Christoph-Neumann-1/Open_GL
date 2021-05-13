@@ -9,10 +9,22 @@
 
 using std::array;
 using std::vector;
+
+static int CSeed=2156465;
 namespace GL::Voxel
 {
     class Chunk
     {
+
+    public:
+        static void NewSeed()
+        {
+            int nseed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+            seed48((u_short *)&nseed);
+            CSeed = rand();
+        }
+
+    private:
         struct Face
         {
             struct Vertex
@@ -158,18 +170,24 @@ namespace GL::Voxel
             GL::Logger logger;
             FastNoiseLite noise;
             noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-            noise.SetFractalOctaves(2);
-            noise.SetSeed(35);
+            noise.SetFractalType(FastNoiseLite::FractalType::FractalType_DomainWarpIndependent);
+            noise.SetFractalOctaves(6);
+            noise.SetFrequency(0.009);
+            noise.SetSeed(CSeed);
 
             memset(&blocks, 0, sizeof(blocks));
             for (int x = 0; x < 16; x++)
             {
                 for (int z = 0; z < 16; z++)
                 {
-                    double val = noise.GetNoise((float)x-8+16*position.x, (float)z-8+16*position.y);
-                    int heigth = std::clamp((int)((val+1) * 10)-4,2,63);
+                    double val = noise.GetNoise((float)x - 8 + 16 * position.x, (float)z - 8 + 16 * position.y);
+                    int heigth = std::clamp((int)((val + 1) * 16), 1, 63);
                     blocks[x][heigth][z] = 1;
-                    for (int y = 0; y < heigth; y++)
+                    for (int y = 0; y < heigth - 3; y++)
+                    {
+                        blocks[x][y][z] = 3;
+                    }
+                    for (int y = heigth - 3 > 0 ? heigth - 3 : 0; y < heigth; y++)
                     {
                         blocks[x][y][z] = 2;
                     }
@@ -204,6 +222,11 @@ namespace GL::Voxel
             glBindVertexArray(va);
             glDrawArrays(GL_TRIANGLES, 0, 6 * faces.size());
             glBindVertexArray(0);
+        }
+
+        float &operator()(int x, int y, int z)
+        {
+            return blocks[x][y][z];
         }
     };
 }

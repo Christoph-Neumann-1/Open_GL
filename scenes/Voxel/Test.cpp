@@ -53,6 +53,8 @@ public:
         TexSetup();
         cshader.UnBind();
 
+        GL::Voxel::Chunk::NewSeed();
+
         chunks = (GL::Voxel::Chunk *)malloc(16 * 16 * sizeof(GL::Voxel::Chunk));
         for (int x = 0; x < 16; x++)
         {
