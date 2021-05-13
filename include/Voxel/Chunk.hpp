@@ -1,9 +1,11 @@
 #pragma once
 #include <Voxel/Block.hpp>
 
+#include <Noise/FastNoiseLite.h>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 #include <array>
+#include <string.h>
 
 using std::array;
 using std::vector;
@@ -153,23 +155,23 @@ namespace GL::Voxel
     public:
         Chunk(glm::ivec2 position) : chunk_offset(position)
         {
+            GL::Logger logger;
+            FastNoiseLite noise;
+            noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+            noise.SetFractalOctaves(2);
+            noise.SetSeed(35);
+
+            memset(&blocks, 0, sizeof(blocks));
             for (int x = 0; x < 16; x++)
             {
-                for (int y = 0; y < 16; y++)
+                for (int z = 0; z < 16; z++)
                 {
-                    for (int z = 0; z < 16; z++)
+                    double val = noise.GetNoise((float)x-8+16*position.x, (float)z-8+16*position.y);
+                    int heigth = std::clamp((int)((val+1) * 10)-4,2,63);
+                    blocks[x][heigth][z] = 1;
+                    for (int y = 0; y < heigth; y++)
                     {
-                        blocks[x][y][z] = 1;
-                    }
-                }
-            }
-            for (int x = 0; x < 16; x++)
-            {
-                for (int y = 16; y < 64; y++)
-                {
-                    for (int z = 0; z < 16; z++)
-                    {
-                        blocks[x][y][z] = 0;
+                        blocks[x][y][z] = 2;
                     }
                 }
             }

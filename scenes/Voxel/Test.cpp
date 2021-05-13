@@ -16,7 +16,7 @@ class Voxel_t final : public GL::Scene
 
     GL::Camera3D camera;
     GL::Fplocked controller;
-    GL::Voxel::Chunk *c, *c2;
+    GL::Voxel::Chunk *chunks;
 
     void Render()
     {
@@ -28,8 +28,11 @@ class Voxel_t final : public GL::Scene
 
         cshader.Bind();
         cshader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
-        c->Draw();
-        c2->Draw();
+
+        for (int i = 0; i < 16 * 16; i++)
+        {
+            chunks[i].Draw();
+        }
 
         cshader.UnBind();
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -40,7 +43,7 @@ class Voxel_t final : public GL::Scene
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 0, 2}), controller(&camera, loader->GetWindow(), 8)
+                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16)
     {
         RegisterFunc(std::bind(&Voxel_t::Render, this), GL::CallbackType::Render);
 
@@ -50,13 +53,21 @@ public:
         TexSetup();
         cshader.UnBind();
 
-        c = new GL::Voxel::Chunk({0, -1});
-        c2=new GL::Voxel::Chunk({-1,-1});
+        chunks = (GL::Voxel::Chunk *)malloc(16 * 16 * sizeof(GL::Voxel::Chunk));
+        for (int x = 0; x < 16; x++)
+        {
+            for (int z = 0; z < 16; z++)
+            {
+                new (&chunks[x * 16 + z]) GL::Voxel::Chunk({x - 8, z - 8});
+            }
+        }
     }
     ~Voxel_t()
     {
         RemoveFunctions();
-        delete c;
+        for (int i = 0; i < 16 * 16; i++)
+            chunks[i].~Chunk();
+        free(chunks);
     }
 };
 
