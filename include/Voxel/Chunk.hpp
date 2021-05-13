@@ -3,25 +3,92 @@
 
 #include <glm/glm.hpp>
 #include <glad/glad.h>
+#include <array>
 
+using std::array;
+using std::vector;
 namespace GL::Voxel
 {
     class Chunk
     {
+        struct Face
+        {
+            struct Vertex
+            {
+                glm::vec3 pos;
+                glm::vec2 tex;
+            };
+            array<Vertex, 6> vertices;
+        };
+
+        enum FaceIndices
+        {
+            Front = 0,
+            Back = 6,
+            Bottom = 12,
+            Top = 18,
+            Right = 24,
+            Left = 30
+        };
+
         glm::ivec2 chunk_offset;
-        std::vector<glm::vec4> blocks;
+        vector<Face> faces;
+        array<array<array<float, 16>, 64>, 16> blocks;
         uint buffer, va;
 
-    public:
-        Chunk(uint vb, glm::ivec2 position) : chunk_offset(position)
+        Face GenFace(glm::ivec3 pos, FaceIndices type)
         {
-            for (int i = 0; i < 16; i++)
+            Face face;
+            for (int i = 0; i < 6; i++)
             {
-                for (int j = 0; j < 16; j++)
+                auto vert = bvertices[i + type];
+                face.vertices[i].tex = {vert.tex.x + (blocks[pos.x][pos.y][pos.z] - 1) * 192, vert.tex.y};
+                face.vertices[i].pos = {vert.pos.x - 8 + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z - 8 + 16 * chunk_offset.y + pos.z};
+            };
+            return face;
+        }
+
+        void GenFaces()
+        {
+            for (int x = 0; x < 16; x++)
+            {
+                for (int y = 0; y < 64; y++)
                 {
-                    for (int k = 0; k < 16; k++)
+                    for (int z = 0; z < 16; z++)
                     {
-                        blocks.emplace_back(i + chunk_offset.x * 16, j, k + chunk_offset.y * 16, 0);
+                        if (blocks[x][y][z] == 0)
+                            continue;
+                        if (z == 0)
+                            faces.push_back(GenFace({x, y, z}, Front));
+                    }
+                }
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
+            glBufferData(GL_ARRAY_BUFFER, faces.size() * sizeof(Face), &faces[0], GL_STATIC_DRAW);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
+
+    public:
+        Chunk(glm::ivec2 position) : chunk_offset(position)
+        {
+            for (int x = 0; x < 16; x++)
+            {
+                for (int y = 0; y < 16; y++)
+                {
+                    for (int z = 0; z < 16; z++)
+                    {
+                        blocks[x][y][z] = 1;
+                    }
+                }
+            }
+
+            for (int x = 0; x < 16; x++)
+            {
+                for (int y = 16; y < 64; y++)
+                {
+                    for (int z = 0; z < 16; z++)
+                    {
+                        blocks[x][y][z] = 0;
                     }
                 }
             }
@@ -31,23 +98,18 @@ namespace GL::Voxel
 
             glBindVertexArray(va);
 
-            glBindBuffer(GL_ARRAY_BUFFER, vb);
+            glBindBuffer(GL_ARRAY_BUFFER, buffer);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * sizeof(float), 0);
             glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * sizeof(float), (void *)(3 * sizeof(float)));
             glEnableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
 
-            glBindBuffer(GL_ARRAY_BUFFER, buffer);
-            glBufferData(GL_ARRAY_BUFFER, 4 * blocks.size() * sizeof(float), &blocks[0], GL_STATIC_DRAW);
-            glVertexAttribPointer(2, 3, GL_FLOAT, false, 4 * sizeof(float), 0);
-            glVertexAttribPointer(3, 1, GL_FLOAT, false, 4 * sizeof(float), (void *)(3 * sizeof(float)));
-            glEnableVertexAttribArray(2);
-            glEnableVertexAttribArray(3);
-            glVertexAttribDivisor(2, 1);
-            glVertexAttribDivisor(3, 1);
-
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
+
+            GenFaces();
+
+            Logger()(GenFace({0, 0, 0}, Front).vertices[0].tex);
         }
 
         ~Chunk()
@@ -59,7 +121,7 @@ namespace GL::Voxel
         void Draw()
         {
             glBindVertexArray(va);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 36, blocks.size());
+            glDrawArrays(GL_TRIANGLES, 0, 6 * faces.size());
             glBindVertexArray(0);
         }
     };

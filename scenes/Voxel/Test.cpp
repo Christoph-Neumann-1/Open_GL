@@ -17,12 +17,12 @@ class Voxel_t final : public GL::Scene
     uint va, vb, instbuff;
     uint texid;
     GL::Shader shader;
+    GL::Shader cshader;
     glm::mat4 proj = glm::perspective(glm::radians(60.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 500.0f);
 
     GL::Camera3D camera;
     GL::Fplocked controller;
     GL::Voxel::Chunk *c;
-
 
     void Render()
     {
@@ -38,16 +38,20 @@ class Voxel_t final : public GL::Scene
 
         glBindVertexArray(0);
 
+        cshader.Bind();
+        cshader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
         c->Draw();
 
-        shader.UnBind();
+        cshader.UnBind();
         glBindTexture(GL_TEXTURE_2D, 0);
+
     }
 
     void TexSetup();
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), shader(ROOT_Directory + "/shader/Voxel/Block.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
+                                        cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         camera({0, 0, 2}), controller(&camera, loader->GetWindow())
     {
         RegisterFunc(std::bind(&Voxel_t::Render, this), GL::CallbackType::Render);
@@ -79,10 +83,14 @@ public:
         shader.SetUniform1f("tex_size", 2 * 192.0f);
         shader.UnBind();
 
+        cshader.Bind();
+        cshader.SetUniform1i("u_Texture", 0);
+        cshader.SetUniform1f("tex_size", 2 * 192.0f);
+        cshader.UnBind();
+
         TexSetup();
 
-        c=new GL::Voxel::Chunk(vb,{0,-1});
-
+        c = new GL::Voxel::Chunk({0, -1});
     }
     ~Voxel_t()
     {
@@ -108,7 +116,7 @@ void Voxel_t::TexSetup()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, local_buffer);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    // glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 

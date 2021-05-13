@@ -10,9 +10,9 @@ namespace GL::Voxel
         glm::vec3 pos;
         glm::vec2 tex;
 
-        B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
+        constexpr B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
     };
-    
+
     static const std::array<B_Vertex, 36> bvertices{
         //Front
         B_Vertex({-0.5f, -0.5f, 0.5f}, {64.0f, 64.0f}),
