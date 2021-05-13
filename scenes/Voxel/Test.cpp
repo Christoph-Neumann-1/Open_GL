@@ -26,6 +26,7 @@ class Voxel_t final : public GL::Scene
 
     void Render()
     {
+        glDisable(GL_MULTISAMPLE);
         shader.Bind();
         controller.Update(loader->GetTimeInfo().RenderDeltaTime());
         shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
@@ -44,7 +45,7 @@ class Voxel_t final : public GL::Scene
 
         cshader.UnBind();
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        glEnable(GL_MULTISAMPLE);
     }
 
     void TexSetup();
@@ -52,7 +53,7 @@ class Voxel_t final : public GL::Scene
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), shader(ROOT_Directory + "/shader/Voxel/Block.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 0, 2}), controller(&camera, loader->GetWindow())
+                                        camera({0, 0, 2}), controller(&camera, loader->GetWindow(),8)
     {
         RegisterFunc(std::bind(&Voxel_t::Render, this), GL::CallbackType::Render);
         glGenVertexArrays(1, &va);
@@ -116,7 +117,7 @@ void Voxel_t::TexSetup()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, local_buffer);
-    // glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
