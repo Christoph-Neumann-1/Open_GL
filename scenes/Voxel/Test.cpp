@@ -22,7 +22,7 @@ class Voxel_t final : public GL::Scene
 
     glm::ivec2 GetChunk(int x, int z)
     {
-        return {ceil((x + 1) / 16.0f)-1, ceil((z + 1) / 16.0f)-1};
+        return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
     }
 
     float &GetBlockAt(int x, int y, int z)
@@ -33,9 +33,8 @@ class Voxel_t final : public GL::Scene
 
     void RayCast()
     {
-        auto ray_end = camera.position + camera.Forward();
         auto ray_pos = camera.position;
-        auto stepvec = camera.Forward() / 16.0f*raydist;
+        auto stepvec = camera.Forward() / 16.0f * raydist;
         for (int i = 0; i < 16; i++)
         {
             ray_pos += stepvec;
@@ -44,7 +43,7 @@ class Voxel_t final : public GL::Scene
             int z = round(ray_pos.z);
 
             float &block = GetBlockAt(x, y, z);
-            if (int(block) != 0 &&int(block) != 6)
+            if (int(block) != 0 && int(block) != 6)
             {
                 block = 0;
                 auto chunk = GetChunk(x, z);
@@ -52,8 +51,25 @@ class Voxel_t final : public GL::Scene
                 return;
             }
         }
-        fflush(stdout);
+    }
 
+    void Collide()
+    {
+        float blocks[3][3];
+        int y = ceil(camera.position.y - 2);
+        for (int x = 0; x < 3; x++)
+            for (int z = 0; z < 3; z++)
+            {
+                blocks[x][z] = GetBlockAt(x - 1 + round(camera.position.x), y, z - 1 + round(camera.position.z));
+            }
+        for (int x = 0; x < 3; x++)
+            for (int z = 0; z < 3; z++)
+            {
+                if (camera.position.y - y < 2 && blocks[x][z] != 0 && blocks[x][z] != 6)
+                {
+                    camera.position.y = y+2;
+                }
+            }
     }
 
     void Render()
@@ -80,6 +96,7 @@ class Voxel_t final : public GL::Scene
         glEnable(GL_MULTISAMPLE);
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             RayCast();
+        Collide();
     }
 
     void TexSetup();
@@ -106,6 +123,7 @@ public:
                 new (&chunks[x * 16 + z]) GL::Voxel::Chunk({x - 8, z - 8});
             }
         }
+        loader->GetFlag("hide_menu")=1;
     }
     ~Voxel_t()
     {
