@@ -48,7 +48,7 @@ namespace GL
             float m_dt = movement * deltatime;
             float r_dt = rotation * deltatime;
 
-            glm::vec3 forward = cam->Forward();
+            glm::vec3 forward = glm::normalize(glm::vec3{cam->Forward().x,0,cam->Forward().z});
             glm::vec3 right = cam->Right();
 
             cam->position += m_dt * forward * (float)glfwGetKey(window, GLFW_KEY_W) - m_dt * forward * (float)glfwGetKey(window, GLFW_KEY_S);
