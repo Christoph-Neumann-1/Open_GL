@@ -192,6 +192,88 @@ namespace GL::Voxel
                             faces_transparent.push_back(GenFace({x, y, z}, Top));
                             faces_transparent.push_back(GenFace({x, y, z}, Back));
                             faces_transparent.push_back(GenFace({x, y, z}, Front));
+
+                            if (z == 15)
+                            {
+                                faces_transparent.push_back(GenFace({x, y, z}, Front));
+                                special = true;
+                            }
+                            else if (z == 0)
+                            {
+                                faces_transparent.push_back(GenFace({x, y, z}, Back));
+                                special = true;
+                            }
+
+                            if (x == 0)
+                            {
+                                faces_transparent.push_back(GenFace({x, y, z}, Left));
+                                special = true;
+                            }
+                            else if (x == 15)
+                            {
+                                faces_transparent.push_back(GenFace({x, y, z}, Right));
+                                special = true;
+                            }
+
+                            if (y == 0)
+                            {
+                                faces_transparent.push_back(GenFace({x, y, z}, Bottom));
+                                special = true;
+                            }
+                            else if (y == 63)
+                            {
+                                faces_transparent.push_back(GenFace({x, y, z}, Top));
+                                special = true;
+                            }
+
+                            if (special)
+                            {
+                                if (x != 0)
+                                {
+                                    if (blocks[x-1][y][z]==0)
+                                        faces_transparent.push_back(GenFace({x, y, z}, Left));
+                                }
+                                if (x != 15)
+                                {
+                                    if (blocks[x+1][y][z]==0)
+                                        faces_transparent.push_back(GenFace({x, y, z}, Right));
+                                }
+                                if (y != 0)
+                                {
+                                    if (blocks[x][y-1][z]==0)
+                                        faces_transparent.push_back(GenFace({x, y, z}, Bottom));
+                                }
+                                if (y != 63)
+                                {
+                                    if (blocks[x][y+1][z]==0)
+                                        faces_transparent.push_back(GenFace({x, y, z}, Top));
+                                }
+                                if (z != 0)
+                                {
+                                    if (blocks[x][y][z-1]==0)
+                                        faces_transparent.push_back(GenFace({x, y, z}, Back));
+                                }
+                                if (z != 15)
+                                {
+                                    if (blocks[x][y][z+1]==0)
+                                        faces_transparent.push_back(GenFace({x, y, z}, Front));
+                                }
+                            }
+                            else
+                            {
+                                if (blocks[x-1][y][z]==0)
+                                    faces_transparent.push_back(GenFace({x, y, z}, Left));
+                                if (blocks[x+1][y][z]==0)
+                                    faces_transparent.push_back(GenFace({x, y, z}, Right));
+                                if (blocks[x][y-1][z]==0)
+                                    faces_transparent.push_back(GenFace({x, y, z}, Bottom));
+                                if (blocks[x][y+1][z]==0)
+                                    faces_transparent.push_back(GenFace({x, y, z}, Top));
+                                if (blocks[x][y-1][z]==0)
+                                    faces_transparent.push_back(GenFace({x, y, z}, Back));
+                                if (blocks[x][y+1][z]==0)
+                                    faces_transparent.push_back(GenFace({x, y, z}, Front));
+                            }
                         }
                     }
                 }
