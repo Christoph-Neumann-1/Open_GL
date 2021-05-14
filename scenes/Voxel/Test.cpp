@@ -31,9 +31,12 @@ class Voxel_t final : public GL::Scene
 
         for (int i = 0; i < 16 * 16; i++)
         {
-            chunks[i].Draw();
+            chunks[i].DrawOpaque();
         }
-
+        for (int i = 0; i < 16 * 16; i++)
+        {
+            chunks[i].DrawTransparent();
+        }
         cshader.UnBind();
         glBindTexture(GL_TEXTURE_2D, 0);
         glEnable(GL_MULTISAMPLE);
@@ -77,7 +80,7 @@ void Voxel_t::TexSetup()
 {
     stbi_set_flip_vertically_on_load(1);
     int w, h, bpp;
-    auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/Block.png").c_str(), &w, &h, &bpp, 3);
+    auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/Block.png").c_str(), &w, &h, &bpp, 4);
 
     glGenTextures(1, &texid);
     glBindTexture(GL_TEXTURE_2D, texid);
@@ -87,7 +90,7 @@ void Voxel_t::TexSetup()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, local_buffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, local_buffer);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
