@@ -8,6 +8,8 @@
 #include <Image/stb_image.h>
 #include <Voxel/Chunk.hpp>
 
+const float raydist = 8;
+
 class Voxel_t final : public GL::Scene
 {
     uint texid;
@@ -17,6 +19,42 @@ class Voxel_t final : public GL::Scene
     GL::Camera3D camera;
     GL::Fplocked controller;
     GL::Voxel::Chunk *chunks;
+
+    glm::ivec2 GetChunk(int x, int z)
+    {
+        return {ceil((x + 1) / 16.0f)-1, ceil((z + 1) / 16.0f)-1};
+    }
+
+    float &GetBlockAt(int x, int y, int z)
+    {
+        auto chunk = GetChunk(x, z);
+        return chunks[(chunk.x + 8) * 16 + chunk.y + 8](x - 16 * chunk.x, y, z - 16 * chunk.y);
+    }
+
+    void RayCast()
+    {
+        auto ray_end = camera.position + camera.Forward();
+        auto ray_pos = camera.position;
+        auto stepvec = camera.Forward() / 16.0f*raydist;
+        for (int i = 0; i < 16; i++)
+        {
+            ray_pos += stepvec;
+            int x = round(ray_pos.x);
+            int y = round(ray_pos.y);
+            int z = round(ray_pos.z);
+
+            float &block = GetBlockAt(x, y, z);
+            if (int(block) != 0 &&int(block) != 6)
+            {
+                block = 0;
+                auto chunk = GetChunk(x, z);
+                chunks[(chunk.x + 8) * 16 + chunk.y + 8].GenFaces();
+                return;
+            }
+        }
+        fflush(stdout);
+
+    }
 
     void Render()
     {
@@ -40,6 +78,8 @@ class Voxel_t final : public GL::Scene
         cshader.UnBind();
         glBindTexture(GL_TEXTURE_2D, 0);
         glEnable(GL_MULTISAMPLE);
+        if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+            RayCast();
     }
 
     void TexSetup();

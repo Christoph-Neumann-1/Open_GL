@@ -75,13 +75,16 @@ namespace GL::Voxel
             {
                 auto vert = bvertices[i + type];
                 face.vertices[i].tex = {vert.tex.x + (blocks[pos.x][pos.y][pos.z] - 1) * 192, vert.tex.y};
-                face.vertices[i].pos = {vert.pos.x - 8 + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z - 8 + 16 * chunk_offset.y + pos.z};
+                face.vertices[i].pos = {vert.pos.x + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z + 16 * chunk_offset.y + pos.z};
             };
             return face;
         }
 
+    public:
         void GenFaces()
         {
+            faces.clear();
+            faces_transparent.clear();
             for (int x = 0; x < 16; x++)
             {
                 for (int y = 0; y < 64; y++)
@@ -230,48 +233,48 @@ namespace GL::Voxel
                             {
                                 if (x != 0)
                                 {
-                                    if (blocks[x-1][y][z]==0)
+                                    if (blocks[x - 1][y][z] == 0)
                                         faces_transparent.push_back(GenFace({x, y, z}, Left));
                                 }
                                 if (x != 15)
                                 {
-                                    if (blocks[x+1][y][z]==0)
+                                    if (blocks[x + 1][y][z] == 0)
                                         faces_transparent.push_back(GenFace({x, y, z}, Right));
                                 }
                                 if (y != 0)
                                 {
-                                    if (blocks[x][y-1][z]==0)
+                                    if (blocks[x][y - 1][z] == 0)
                                         faces_transparent.push_back(GenFace({x, y, z}, Bottom));
                                 }
                                 if (y != 63)
                                 {
-                                    if (blocks[x][y+1][z]==0)
+                                    if (blocks[x][y + 1][z] == 0)
                                         faces_transparent.push_back(GenFace({x, y, z}, Top));
                                 }
                                 if (z != 0)
                                 {
-                                    if (blocks[x][y][z-1]==0)
+                                    if (blocks[x][y][z - 1] == 0)
                                         faces_transparent.push_back(GenFace({x, y, z}, Back));
                                 }
                                 if (z != 15)
                                 {
-                                    if (blocks[x][y][z+1]==0)
+                                    if (blocks[x][y][z + 1] == 0)
                                         faces_transparent.push_back(GenFace({x, y, z}, Front));
                                 }
                             }
                             else
                             {
-                                if (blocks[x-1][y][z]==0)
+                                if (blocks[x - 1][y][z] == 0)
                                     faces_transparent.push_back(GenFace({x, y, z}, Left));
-                                if (blocks[x+1][y][z]==0)
+                                if (blocks[x + 1][y][z] == 0)
                                     faces_transparent.push_back(GenFace({x, y, z}, Right));
-                                if (blocks[x][y-1][z]==0)
+                                if (blocks[x][y - 1][z] == 0)
                                     faces_transparent.push_back(GenFace({x, y, z}, Bottom));
-                                if (blocks[x][y+1][z]==0)
+                                if (blocks[x][y + 1][z] == 0)
                                     faces_transparent.push_back(GenFace({x, y, z}, Top));
-                                if (blocks[x][y-1][z]==0)
+                                if (blocks[x][y - 1][z] == 0)
                                     faces_transparent.push_back(GenFace({x, y, z}, Back));
-                                if (blocks[x][y+1][z]==0)
+                                if (blocks[x][y + 1][z] == 0)
                                     faces_transparent.push_back(GenFace({x, y, z}, Front));
                             }
                         }
@@ -286,7 +289,6 @@ namespace GL::Voxel
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 
-    public:
         void GenTree(int x, int y, int z)
         {
             int heigth = y + 4 + rand() % 4;
@@ -313,7 +315,7 @@ namespace GL::Voxel
                 {
                     double val = noise.GetNoise((float)x - 8 + 16 * position.x, (float)z - 8 + 16 * position.y);
                     int heigth = std::clamp((int)((val + 1) * 18), 1, 63);
-                    blocks[x][heigth][z] = heigth>=sealevel ? 1 : 7;
+                    blocks[x][heigth][z] = heigth >= sealevel ? 1 : 7;
                     for (int y = 0; y < heigth - 3; y++)
                     {
                         blocks[x][y][z] = 3;
