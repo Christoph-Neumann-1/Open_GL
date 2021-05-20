@@ -26,13 +26,26 @@ namespace GL::Voxel
             CSeed = rand();
         }
 
+        enum BlockTypes
+        {
+            BAir = 0,
+            BGrass = 1,
+            BDirt = 2,
+            BStone = 3,
+            BWood = 4,
+            BLeaves = 5,
+            BSand = 6,
+            BWater = 7,
+
+        };
+
     private:
         struct Face
         {
             struct Vertex
             {
                 glm::vec3 pos;
-                glm::vec2 tex;
+                glm::vec3 tex;
             };
             array<Vertex, 6> vertices;
         };
@@ -74,7 +87,7 @@ namespace GL::Voxel
             for (int i = 0; i < 6; i++)
             {
                 auto vert = bvertices[i + type];
-                face.vertices[i].tex = {vert.tex.x + (blocks[pos.x][pos.y][pos.z] - 1) * 192, vert.tex.y};
+                face.vertices[i].tex = {vert.tex, blocks[pos.x][pos.y][pos.z] - 1};
                 face.vertices[i].pos = {vert.pos.x + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z + 16 * chunk_offset.y + pos.z};
             };
             return face;
@@ -343,16 +356,16 @@ namespace GL::Voxel
             glBindVertexArray(va);
 
             glBindBuffer(GL_ARRAY_BUFFER, buffer);
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * sizeof(float), 0);
-            glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
             glEnableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
 
             glBindVertexArray(va_transparent);
 
             glBindBuffer(GL_ARRAY_BUFFER, buffer_transparent);
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * sizeof(float), 0);
-            glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * sizeof(float), (void *)(3 * sizeof(float)));
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
             glEnableVertexAttribArray(0);
             glEnableVertexAttribArray(1);
 
@@ -385,6 +398,11 @@ namespace GL::Voxel
         float &operator()(int x, int y, int z)
         {
             return blocks[x][y][z];
+        }
+
+        glm::ivec2 GetPos()
+        {
+            return chunk_offset;
         }
     };
 }

@@ -67,18 +67,19 @@ class Voxel_t final : public GL::Scene
             {
                 if (camera.position.y - y < 2 && blocks[x][z] != 0 && blocks[x][z] != 6)
                 {
-                    camera.position.y = y+2;
+                    camera.position.y = y + 2;
                 }
             }
     }
 
+
+
     void Render()
     {
-        glDisable(GL_MULTISAMPLE);
         controller.Update(loader->GetTimeInfo().RenderDeltaTime());
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texid);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, texid);
 
         cshader.Bind();
         cshader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
@@ -92,8 +93,7 @@ class Voxel_t final : public GL::Scene
             chunks[i].DrawTransparent();
         }
         cshader.UnBind();
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glEnable(GL_MULTISAMPLE);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             RayCast();
         Collide();
@@ -123,7 +123,7 @@ public:
                 new (&chunks[x * 16 + z]) GL::Voxel::Chunk({x - 8, z - 8});
             }
         }
-        loader->GetFlag("hide_menu")=1;
+        loader->GetFlag("hide_menu") = 1;
     }
     ~Voxel_t()
     {
@@ -141,17 +141,17 @@ void Voxel_t::TexSetup()
     auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/Block.png").c_str(), &w, &h, &bpp, 4);
 
     glGenTextures(1, &texid);
-    glBindTexture(GL_TEXTURE_2D, texid);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, texid);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, local_buffer);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, 192, 192, h / 192, 0, GL_RGBA, GL_UNSIGNED_BYTE, local_buffer);
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
     if (local_buffer)
         stbi_image_free(local_buffer);
