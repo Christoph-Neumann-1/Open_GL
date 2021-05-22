@@ -137,7 +137,6 @@ void Voxel_t::TexSetup()
     if (local_buffer)
         stbi_image_free(local_buffer);
 
-    cshader.SetUniform1f("tex_size", w);
 }
 
 SCENE_LOAD_FUNC(Voxel_t)

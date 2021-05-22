@@ -56,9 +56,7 @@ namespace GL::Voxel
             {
             case 0:
                 return true;
-            case 5:
-                return true;
-            case 6:
+            case 4:
                 return true;
             default:
                 return false;
@@ -185,7 +183,7 @@ namespace GL::Voxel
                         }
                         else
                         {
-                            if (blocks[x][y][z] == 6)
+                            if (blocks[x][y][z] == config.FindByName("Water"))
                             {
                                 if (y == sealevel)
                                 {
@@ -298,7 +296,7 @@ namespace GL::Voxel
             int heigth = y + 4 + rand() % 4;
             for (int i = y; i <= heigth; i++)
             {
-                blocks[x][i][z] = 4;
+                blocks[x][i][z] = 6;
             }
         }
 
@@ -319,7 +317,7 @@ namespace GL::Voxel
                 {
                     double val = noise.GetNoise((float)x - 8 + 16 * position.x, (float)z - 8 + 16 * position.y);
                     int heigth = std::clamp((int)((val + 1) * 18), 1, 63);
-                    blocks[x][heigth][z] = heigth >= sealevel ? 1 : 7;
+                    blocks[x][heigth][z] = heigth >= sealevel ? 1 : 5;
                     for (int y = 0; y < heigth - 3; y++)
                     {
                         blocks[x][y][z] = 3;
@@ -336,7 +334,7 @@ namespace GL::Voxel
                     if (heigth < sealevel)
                     {
                         for (int i = heigth + 1; i <= sealevel; i++)
-                            blocks[x][i][z] = 6;
+                            blocks[x][i][z] = 4;
                     }
                 }
             }
