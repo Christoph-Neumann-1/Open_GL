@@ -15,7 +15,7 @@ class Voxel_t final : public GL::Scene
 {
     uint texid;
     GL::Shader cshader;
-    glm::mat4 proj = glm::perspective(glm::radians(60.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 500.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 500.0f);
 
     GL::Camera3D camera;
     GL::Fplocked controller;
@@ -45,7 +45,7 @@ class Voxel_t final : public GL::Scene
             int z = round(ray_pos.z);
 
             float &block = GetBlockAt(x, y, z);
-            if (int(block) != 0 && int(block) != 6)
+            if (int(block) != 0 && int(block) != blocks.FindByName("Water"))
             {
                 block = 0;
                 auto chunk = GetChunk(x, z);

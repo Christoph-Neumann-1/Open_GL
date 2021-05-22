@@ -58,9 +58,9 @@ void SceneMenu::ImGui()
         {
             scene.UnLoad();
         }
-        if (ImGui::Button("Exit") || glfwGetKey(loader->GetWindow(), GLFW_KEY_ESCAPE))
+        if (ImGui::Button("Exit"))
         {
-            loader->GetCallback().SynchronizedCall([&]() { glfwSetWindowShouldClose(loader->GetWindow(), 2); });
+            glfwSetWindowShouldClose(loader->GetWindow(), 2);
         }
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
