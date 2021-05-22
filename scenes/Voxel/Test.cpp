@@ -7,6 +7,7 @@
 #include <Camera/Fplocked.hpp>
 #include <Image/stb_image.h>
 #include <Voxel/Chunk.hpp>
+#include <Voxel/ConfigReader.hpp>
 
 const float raydist = 8;
 
@@ -19,6 +20,7 @@ class Voxel_t final : public GL::Scene
     GL::Camera3D camera;
     GL::Fplocked controller;
     GL::Voxel::Chunk *chunks;
+    GL::Voxel::TexConfig blocks;
 
     glm::ivec2 GetChunk(int x, int z)
     {
@@ -53,26 +55,6 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-    void Collide()
-    {
-        float blocks[3][3];
-        int y = ceil(camera.position.y - 2);
-        for (int x = 0; x < 3; x++)
-            for (int z = 0; z < 3; z++)
-            {
-                blocks[x][z] = GetBlockAt(x - 1 + round(camera.position.x), y, z - 1 + round(camera.position.z));
-            }
-        for (int x = 0; x < 3; x++)
-            for (int z = 0; z < 3; z++)
-            {
-                if (camera.position.y - y < 2 && blocks[x][z] != 0 && blocks[x][z] != 6)
-                {
-                    camera.position.y = y + 2;
-                }
-            }
-    }
-
-
 
     void Render()
     {
@@ -96,14 +78,13 @@ class Voxel_t final : public GL::Scene
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             RayCast();
-        Collide();
     }
 
     void TexSetup();
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16)
+                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg")
     {
         RegisterFunc(std::bind(&Voxel_t::Render, this), GL::CallbackType::Render);
 
@@ -120,7 +101,7 @@ public:
         {
             for (int z = 0; z < 16; z++)
             {
-                new (&chunks[x * 16 + z]) GL::Voxel::Chunk({x - 8, z - 8});
+                new (&chunks[x * 16 + z]) GL::Voxel::Chunk({x - 8, z - 8},blocks);
             }
         }
         loader->GetFlag("hide_menu") = 1;
@@ -138,7 +119,7 @@ void Voxel_t::TexSetup()
 {
     stbi_set_flip_vertically_on_load(1);
     int w, h, bpp;
-    auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/Block.png").c_str(), &w, &h, &bpp, 4);
+    auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/Newblock.png").c_str(), &w, &h, &bpp, 4);
 
     glGenTextures(1, &texid);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texid);
@@ -148,7 +129,7 @@ void Voxel_t::TexSetup()
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, 192, 192, h / 192, 0, GL_RGBA, GL_UNSIGNED_BYTE, local_buffer);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, 64, 64, h / 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, local_buffer);
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, 0);

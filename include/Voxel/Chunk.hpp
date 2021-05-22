@@ -6,6 +6,7 @@
 #include <glad/glad.h>
 #include <array>
 #include <string.h>
+#include <Voxel/ConfigReader.hpp>
 
 using std::array;
 using std::vector;
@@ -17,7 +18,9 @@ namespace GL::Voxel
 {
     class Chunk
     {
-
+        float & At(glm::ivec3 pos){
+            return blocks[pos.x][pos.y][pos.z];
+        }
     public:
         static void NewSeed()
         {
@@ -25,19 +28,6 @@ namespace GL::Voxel
             seed48((u_short *)&nseed);
             CSeed = rand();
         }
-
-        enum BlockTypes
-        {
-            BAir = 0,
-            BGrass = 1,
-            BDirt = 2,
-            BStone = 3,
-            BWood = 4,
-            BLeaves = 5,
-            BSand = 6,
-            BWater = 7,
-
-        };
 
     private:
         struct Face
@@ -80,14 +70,15 @@ namespace GL::Voxel
         vector<Face> faces_transparent;
         array<array<array<float, 16>, 64>, 16> blocks;
         uint buffer, buffer_transparent, va, va_transparent;
+        const TexConfig &config;
 
         Face GenFace(glm::ivec3 pos, FaceIndices type)
         {
             Face face;
             for (int i = 0; i < 6; i++)
             {
-                auto vert = bvertices[i + type];
-                face.vertices[i].tex = {vert.tex, blocks[pos.x][pos.y][pos.z] - 1};
+                auto vert = bvertices[i + type]; 
+                face.vertices[i].tex = {(vert.tex.x+0.5)/64.0,(vert.tex.y+0.5)/64.0, config[At(pos)].faces[type / 6]};
                 face.vertices[i].pos = {vert.pos.x + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z + 16 * chunk_offset.y + pos.z};
             };
             return face;
@@ -311,7 +302,7 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(glm::ivec2 position) : chunk_offset(position)
+        Chunk(glm::ivec2 position, const TexConfig &cfg) : chunk_offset(position), config(cfg)
         {
             GL::Logger logger;
             FastNoiseLite noise;
