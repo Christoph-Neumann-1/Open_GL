@@ -41,7 +41,7 @@ class S3D final : public Scene
     }
 
 public:
-    S3D(SceneLoader *_loader) : Scene(_loader), fpcam(&camera, loader->GetWindow(), 1.0f, 6.0f, 0.4f),
+    S3D(SceneLoader *_loader) : Scene(_loader), fpcam(&camera, loader->GetWindow(), 1.0f, 6.0f),
                                 shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
     {
         glGenVertexArrays(1, &VAO);

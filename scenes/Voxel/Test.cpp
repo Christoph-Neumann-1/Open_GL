@@ -9,7 +9,7 @@
 #include <Voxel/Chunk.hpp>
 #include <Voxel/ConfigReader.hpp>
 
-const float raydist = 8;
+const double raydist = 8;
 
 class Voxel_t final : public GL::Scene
 {
@@ -36,7 +36,7 @@ class Voxel_t final : public GL::Scene
     void RayCast()
     {
         auto ray_pos = camera.position;
-        auto stepvec = camera.Forward() / 16.0f * raydist;
+        auto stepvec = camera.Forward() / 16.0 * raydist;
         for (int i = 0; i < 16; i++)
         {
             ray_pos += stepvec;

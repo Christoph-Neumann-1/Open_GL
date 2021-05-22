@@ -12,17 +12,17 @@ namespace GL
     class Camera3D
     {
     public:
-        glm::quat rotation;
-        glm::vec3 position;
+        glm::dquat rotation;
+        glm::dvec3 position;
 
-        Camera3D(glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::quat rot = glm::quat(1, 0, 0, 0)) : rotation(rot), position(pos) {}
+        Camera3D(glm::dvec3 pos = glm::dvec3(0.0f, 0.0f, 0.0f), glm::dquat rot = glm::dquat(1, 0, 0, 0)) : rotation(rot), position(pos) {}
 
-        glm::vec3 Up() const
+        glm::dvec3 Up() const
         {
-            return glm::vec3(glm::vec4{0, 1, 0, 0} * glm::toMat4(rotation));
+            return glm::dvec3(glm::vec4{0, 1, 0, 0} * glm::toMat4(rotation));
         }
-        glm::vec3 Forward() const { return glm::vec3(glm::vec4{0, 0, -1, 0} * glm::toMat4(rotation)); }
-        glm::vec3 Right() const { return glm::cross(Forward(), Up()); }
+        glm::dvec3 Forward() const { return glm::dvec3(glm::vec4{0, 0, -1, 0} * glm::toMat4(rotation)); }
+        glm::dvec3 Right() const { return glm::cross(Forward(), Up()); }
 
         glm::mat4 ComputeMatrix() const
         {

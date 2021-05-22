@@ -16,7 +16,7 @@ namespace GL
          * 
          * @param deltatime in seconds
          */
-        virtual void Update(float deltatime)=0;
+        virtual void Update(double deltatime)=0;
 
         CameraControler(Camera3D *_cam, GLFWwindow *_window = nullptr) : cam(_cam), window(_window) {}
         virtual ~CameraControler() {}

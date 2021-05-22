@@ -30,7 +30,7 @@ namespace GL
         float deltatime_update = 0.0f;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> last_render;
-        float deltatime_render;
+        double deltatime_render;
 
         uint objid;
 
@@ -51,6 +51,6 @@ namespace GL
         ///@attention Should only be called from physics thread
         void SetUpdateInterval(float interval) { deltatime_update = interval; }
         float UpdateInterval() const { return deltatime_update; }
-        float RenderDeltaTime() const { return deltatime_render; }
+        double RenderDeltaTime() const { return deltatime_render; }
     };
 }
