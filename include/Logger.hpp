@@ -27,7 +27,7 @@ namespace GL
          * 
          * This function is synchronized to avoid print statements interfering.
          */
-        void print();
+        void print(bool newline=true);
 
         /**
          * @brief Adds the message to the stringstream.
