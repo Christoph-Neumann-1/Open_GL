@@ -21,7 +21,7 @@ namespace GL
         double pitch = 0, yaw = 0;
 
     public:
-        Fplocked(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 0.15) : CameraControler(_cam, _window), movement(move), rotation(rot)
+        Fplocked(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 0.12) : CameraControler(_cam, _window), movement(move), rotation(rot)
         {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);

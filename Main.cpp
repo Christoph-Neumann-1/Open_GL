@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        GLFWwindow *_window = glfwCreateWindow(800, 600, "OpenGL", NULL, NULL);
+        GLFWwindow *_window = glfwCreateWindow(1920, 1080, "OpenGL", glfwGetPrimaryMonitor(), NULL);
         if (!_window)
         {
             log << "Failed to create window";
@@ -119,6 +119,7 @@ int main(int argc, char **argv)
         Window window(_window, cbh.GetList(cbt::OnWindowResize));
 
         glfwMakeContextCurrent(window);
+        glfwWindowHint(GLFW_REFRESH_RATE, 60);
         glfwSwapInterval(1);
 
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -226,6 +227,15 @@ int main(int argc, char **argv)
         }
 
         log << "Window closed with Flag " << glfwWindowShouldClose(window);
+        switch (glfwWindowShouldClose(window))
+        {
+        case 1:
+            log<<" (Window closed normally)";
+            break;
+        case 2:
+            log<<" (Window closed by exit button)";
+            break;
+        }
         log.print();
 
         ImGui_ImplOpenGL3_Shutdown();
