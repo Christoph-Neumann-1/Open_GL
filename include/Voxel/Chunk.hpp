@@ -18,9 +18,11 @@ namespace GL::Voxel
 {
     class Chunk
     {
-        float & At(glm::ivec3 pos){
+        float &At(glm::ivec3 pos)
+        {
             return blocks[pos.x][pos.y][pos.z];
         }
+
     public:
         static void NewSeed()
         {
@@ -30,6 +32,23 @@ namespace GL::Voxel
         }
 
     private:
+        std::array<uint, 7> lookup_cache;
+
+        enum BlockTypes
+        {
+            BAir,
+            BGrass,
+            BDirt,
+            BStone,
+            BWater,
+            BSand,
+            BWood,
+        };
+
+        uint &lookup(BlockTypes index)
+        {
+            return lookup_cache[index-1];
+        };
         struct Face
         {
             struct Vertex
@@ -54,9 +73,9 @@ namespace GL::Voxel
         {
             switch (int(blocks[x][y][z]))
             {
-            case 0:
+            case BAir:
                 return true;
-            case 4:
+            case BWater:
                 return true;
             default:
                 return false;
@@ -75,14 +94,24 @@ namespace GL::Voxel
             Face face;
             for (int i = 0; i < 6; i++)
             {
-                auto vert = bvertices[i + type]; 
-                face.vertices[i].tex = {(vert.tex.x+0.5)/64.0,(vert.tex.y+0.5)/64.0, config[At(pos)].faces[type / 6]};
+                auto vert = bvertices[i + type];
+                face.vertices[i].tex = {(vert.tex.x + 0.5) / 64.0, (vert.tex.y + 0.5) / 64.0, config[lookup((BlockTypes)At(pos))].faces[type / 6]};
                 face.vertices[i].pos = {vert.pos.x + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z + 16 * chunk_offset.y + pos.z};
             };
             return face;
         }
 
     public:
+        void UpdateCache()
+        {
+            lookup(BGrass) = config.FindByName("Grass");
+            lookup(BDirt) = config.FindByName("Dirt");
+            lookup(BStone) = config.FindByName("Stone");
+            lookup(BWater) = config.FindByName("Water");
+            lookup(BSand) = config.FindByName("Sand");
+            lookup(BWood) = config.FindByName("Wood");
+        };
+
         void GenFaces()
         {
             faces.clear();
@@ -93,7 +122,7 @@ namespace GL::Voxel
                 {
                     for (int z = 0; z < 16; z++)
                     {
-                        if (blocks[x][y][z] == 0)
+                        if ((int)blocks[x][y][z] == BAir)
                             continue;
                         bool special = false;
 
@@ -183,7 +212,7 @@ namespace GL::Voxel
                         }
                         else
                         {
-                            if (blocks[x][y][z] == config.FindByName("Water"))
+                            if ((int)blocks[x][y][z] == BWater)
                             {
                                 if (y == sealevel)
                                 {
@@ -296,7 +325,7 @@ namespace GL::Voxel
             int heigth = y + 4 + rand() % 4;
             for (int i = y; i <= heigth; i++)
             {
-                blocks[x][i][z] = 6;
+                blocks[x][i][z] = BWood;
             }
         }
 
@@ -310,6 +339,8 @@ namespace GL::Voxel
             noise.SetFrequency(0.009);
             noise.SetSeed(CSeed);
 
+            UpdateCache();
+
             memset(&blocks, 0, sizeof(blocks));
             for (int x = 0; x < 16; x++)
             {
@@ -317,14 +348,14 @@ namespace GL::Voxel
                 {
                     double val = noise.GetNoise((float)x - 8 + 16 * position.x, (float)z - 8 + 16 * position.y);
                     int heigth = std::clamp((int)((val + 1) * 18), 1, 63);
-                    blocks[x][heigth][z] = heigth >= sealevel ? 1 : 5;
+                    blocks[x][heigth][z] = heigth >= sealevel ? BGrass : BSand;
                     for (int y = 0; y < heigth - 3; y++)
                     {
-                        blocks[x][y][z] = 3;
+                        blocks[x][y][z] = BStone;
                     }
                     for (int y = heigth - 3 > 0 ? heigth - 3 : 0; y < heigth; y++)
                     {
-                        blocks[x][y][z] = 2;
+                        blocks[x][y][z] = BDirt;
                     }
 
                     if (heigth >= sealevel && rand() % 200 == 1 && heigth < 48)
@@ -334,7 +365,7 @@ namespace GL::Voxel
                     if (heigth < sealevel)
                     {
                         for (int i = heigth + 1; i <= sealevel; i++)
-                            blocks[x][i][z] = 4;
+                            blocks[x][i][z] = BWater;
                     }
                 }
             }
