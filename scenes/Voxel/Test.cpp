@@ -8,7 +8,7 @@
 #include <Image/stb_image.h>
 #include <Voxel/Chunk.hpp>
 #include <Voxel/ConfigReader.hpp>
-
+#include <Voxel/ChunkManager.hpp>
 const double raydist = 8;
 
 class Voxel_t final : public GL::Scene
@@ -55,7 +55,6 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-
     void Render()
     {
         controller.Update(loader->GetTimeInfo().RenderDeltaTime());
@@ -78,6 +77,14 @@ class Voxel_t final : public GL::Scene
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             RayCast();
+        if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
+        {
+            GL::Voxel::Chunk::NewSeed();
+            for(int i=0;i<16*16;i++){
+                chunks[i].Generate();
+                chunks[i].GenFaces();
+            }
+        }
     }
 
     void TexSetup();
@@ -101,7 +108,8 @@ public:
         {
             for (int z = 0; z < 16; z++)
             {
-                new (&chunks[x * 16 + z]) GL::Voxel::Chunk({x - 8, z - 8},blocks);
+                new (&chunks[x * 16 + z]) GL::Voxel::Chunk(blocks);
+                chunks[x * 16 + z].Load({x - 8, z - 8});
             }
         }
         loader->GetFlag("hide_menu") = 1;
@@ -136,7 +144,6 @@ void Voxel_t::TexSetup()
 
     if (local_buffer)
         stbi_image_free(local_buffer);
-
 }
 
 SCENE_LOAD_FUNC(Voxel_t)

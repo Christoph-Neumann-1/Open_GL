@@ -12,6 +12,7 @@ namespace GL::Voxel
 {
     class Chunk
     {
+        bool isactive=false;
         const static int sealevel = 8;
         static int Seed;
 
@@ -24,7 +25,7 @@ namespace GL::Voxel
         static void NewSeed()
         {
             int nseed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-            seed48((u_short *)&nseed);
+            seed48((u_short *)((char*)&nseed));
             Seed = rand();
         }
         enum BlockTypes
@@ -87,7 +88,10 @@ namespace GL::Voxel
 
         Face GenFace(glm::ivec3 pos, FaceIndices type);
 
+
     public:
+        void Generate();
+
         void UpdateCache();
 
         void GenFaces();
@@ -101,11 +105,16 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(glm::ivec2 position, const TexConfig &cfg);
+        Chunk(const TexConfig &cfg);
         
+        void Load(glm::ivec2 position);
+
+        void UnLoad();
 
         ~Chunk()
         {
+            if(isactive)
+                UnLoad();
             glDeleteBuffers(2, &buffer);
             glDeleteVertexArrays(2, &va);
         }

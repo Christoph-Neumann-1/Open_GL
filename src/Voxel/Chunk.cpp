@@ -1,4 +1,5 @@
 #include <Voxel/Chunk.hpp>
+#include <Data.hpp>
 
 #define SET_TEX_INDEX(x) lookup(B##x) = config.FindByName(#x)
 namespace GL::Voxel
@@ -17,6 +18,46 @@ namespace GL::Voxel
         return face;
     }
 
+    void Chunk::Generate()
+    {
+        FastNoiseLite noise;
+        noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
+        noise.SetFractalType(FastNoiseLite::FractalType::FractalType_DomainWarpIndependent);
+        noise.SetFractalOctaves(3);
+        noise.SetFrequency(0.009);
+        noise.SetSeed(Seed);
+
+        memset(&blocks, 0, sizeof(blocks));
+
+        for (int x = 0; x < 16; x++)
+        {
+            for (int z = 0; z < 16; z++)
+            {
+                double val = noise.GetNoise((float)x - 8 + 16 * chunk_offset.x, (float)z - 8 + 16 * chunk_offset.y);
+                int heigth = std::clamp((int)((val + 1) * 18), 1, 63);
+                blocks[x][heigth][z] = heigth >= sealevel ? BGrass : BSand;
+                for (int y = 0; y < heigth - 3; y++)
+                {
+                    blocks[x][y][z] = BStone;
+                }
+                for (int y = heigth - 3 > 0 ? heigth - 3 : 0; y < heigth; y++)
+                {
+                    blocks[x][y][z] = BDirt;
+                }
+
+                if (heigth >= sealevel && rand() % 200 == 1 && heigth < 48)
+                {
+                    GenTree(x, heigth + 1, z);
+                }
+                if (heigth < sealevel)
+                {
+                    for (int i = heigth + 1; i <= sealevel; i++)
+                        blocks[x][i][z] = BWater;
+                }
+            }
+        }
+    }
+
     void Chunk::UpdateCache()
     {
         SET_TEX_INDEX(Grass);
@@ -27,71 +68,57 @@ namespace GL::Voxel
         SET_TEX_INDEX(Wood);
     };
 
-    Chunk::Chunk(glm::ivec2 position, const TexConfig &cfg) : chunk_offset(position), config(cfg)
+    Chunk::Chunk(const TexConfig &cfg) : config(cfg)
     {
-            GL::Logger logger;
-            FastNoiseLite noise;
-            noise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2);
-            noise.SetFractalType(FastNoiseLite::FractalType::FractalType_DomainWarpIndependent);
-            noise.SetFractalOctaves(3);
-            noise.SetFrequency(0.009);
-            noise.SetSeed(Seed);
 
-            UpdateCache();
+        UpdateCache();
 
-            memset(&blocks, 0, sizeof(blocks));
-            for (int x = 0; x < 16; x++)
-            {
-                for (int z = 0; z < 16; z++)
-                {
-                    double val = noise.GetNoise((float)x - 8 + 16 * position.x, (float)z - 8 + 16 * position.y);
-                    int heigth = std::clamp((int)((val + 1) * 18), 1, 63);
-                    blocks[x][heigth][z] = heigth >= sealevel ? BGrass : BSand;
-                    for (int y = 0; y < heigth - 3; y++)
-                    {
-                        blocks[x][y][z] = BStone;
-                    }
-                    for (int y = heigth - 3 > 0 ? heigth - 3 : 0; y < heigth; y++)
-                    {
-                        blocks[x][y][z] = BDirt;
-                    }
+        glGenVertexArrays(2, &va);
+        glGenBuffers(2, &buffer);
 
-                    if (heigth >= sealevel && rand() % 200 == 1 && heigth < 48)
-                    {
-                        GenTree(x, heigth + 1, z);
-                    }
-                    if (heigth < sealevel)
-                    {
-                        for (int i = heigth + 1; i <= sealevel; i++)
-                            blocks[x][i][z] = BWater;
-                    }
-                }
-            }
+        glBindVertexArray(va);
 
-            glGenVertexArrays(2, &va);
-            glGenBuffers(2, &buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
 
-            glBindVertexArray(va);
+        glBindVertexArray(va_transparent);
 
-            glBindBuffer(GL_ARRAY_BUFFER, buffer);
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_transparent);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
 
-            glBindVertexArray(va_transparent);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
 
-            glBindBuffer(GL_ARRAY_BUFFER, buffer_transparent);
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1);
+    void Chunk::Load(glm::ivec2 position)
+    {
+        chunk_offset = position;
 
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindVertexArray(0);
-
-            GenFaces();
+        auto file = fopen((ROOT_Directory + "/res/world/" + std::to_string(position.x) + "__" + std::to_string(position.y)).c_str(), "r");
+        if (!file)
+            Generate();
+        else
+        {
+            fread(&blocks, sizeof(blocks), 1, file);
         }
+
+        GenFaces();
+
+        isactive = true;
+    }
+
+    void Chunk::UnLoad()
+    {
+        auto file = fopen((ROOT_Directory + "/res/world/" + std::to_string(chunk_offset.x) + "__" + std::to_string(chunk_offset.y)).c_str(), "w");
+        fwrite(&blocks,sizeof(blocks),1,file);
+        isactive = false;
+    }
 
     void Chunk::GenFaces()
     {
