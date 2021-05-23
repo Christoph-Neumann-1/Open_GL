@@ -27,7 +27,7 @@ class Voxel_t final : public GL::Scene
         return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
     }
 
-    float &GetBlockAt(int x, int y, int z)
+    uint &GetBlockAt(int x, int y, int z)
     {
         auto chunk = GetChunk(x, z);
         return chunks[(chunk.x + 8) * 16 + chunk.y + 8](x - 16 * chunk.x, y, z - 16 * chunk.y);
@@ -44,8 +44,8 @@ class Voxel_t final : public GL::Scene
             int y = round(ray_pos.y);
             int z = round(ray_pos.z);
 
-            float &block = GetBlockAt(x, y, z);
-            if (int(block) != 0 && int(block) != blocks.FindByName("Water"))
+            uint &block = GetBlockAt(x, y, z);
+            if (block != GL::Voxel::Chunk::BAir && block != GL::Voxel::Chunk::BWater)
             {
                 block = 0;
                 auto chunk = GetChunk(x, z);

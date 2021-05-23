@@ -11,14 +11,14 @@
 using std::array;
 using std::vector;
 
-const int sealevel = 8;
-
-static int CSeed = 2156465;
 namespace GL::Voxel
 {
     class Chunk
     {
-        float &At(glm::ivec3 pos)
+        const static int sealevel = 8;
+        static int Seed;
+
+        uint &At(glm::ivec3 pos)
         {
             return blocks[pos.x][pos.y][pos.z];
         }
@@ -28,12 +28,8 @@ namespace GL::Voxel
         {
             int nseed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             seed48((u_short *)&nseed);
-            CSeed = rand();
+            Seed = rand();
         }
-
-    private:
-        std::array<uint, 7> lookup_cache;
-
         enum BlockTypes
         {
             BAir,
@@ -45,9 +41,12 @@ namespace GL::Voxel
             BWood,
         };
 
+    private:
+        std::array<uint, 7> lookup_cache;
+
         uint &lookup(BlockTypes index)
         {
-            return lookup_cache[index-1];
+            return lookup_cache[index - 1];
         };
         struct Face
         {
@@ -71,7 +70,7 @@ namespace GL::Voxel
 
         bool IsTransparent(int x, int y, int z)
         {
-            switch (int(blocks[x][y][z]))
+            switch (blocks[x][y][z])
             {
             case BAir:
                 return true;
@@ -85,7 +84,7 @@ namespace GL::Voxel
         glm::ivec2 chunk_offset;
         vector<Face> faces;
         vector<Face> faces_transparent;
-        array<array<array<float, 16>, 64>, 16> blocks;
+        array<array<array<uint, 16>, 64>, 16> blocks;
         uint buffer, buffer_transparent, va, va_transparent;
         const TexConfig &config;
 
@@ -104,6 +103,7 @@ namespace GL::Voxel
     public:
         void UpdateCache()
         {
+
             lookup(BGrass) = config.FindByName("Grass");
             lookup(BDirt) = config.FindByName("Dirt");
             lookup(BStone) = config.FindByName("Stone");
@@ -122,7 +122,7 @@ namespace GL::Voxel
                 {
                     for (int z = 0; z < 16; z++)
                     {
-                        if ((int)blocks[x][y][z] == BAir)
+                        if (blocks[x][y][z] == BAir)
                             continue;
                         bool special = false;
 
@@ -212,7 +212,7 @@ namespace GL::Voxel
                         }
                         else
                         {
-                            if ((int)blocks[x][y][z] == BWater)
+                            if (blocks[x][y][z] == BWater)
                             {
                                 if (y == sealevel)
                                 {
@@ -337,7 +337,7 @@ namespace GL::Voxel
             noise.SetFractalType(FastNoiseLite::FractalType::FractalType_DomainWarpIndependent);
             noise.SetFractalOctaves(3);
             noise.SetFrequency(0.009);
-            noise.SetSeed(CSeed);
+            noise.SetSeed(Seed);
 
             UpdateCache();
 
@@ -415,7 +415,7 @@ namespace GL::Voxel
             glBindVertexArray(0);
         }
 
-        float &operator()(int x, int y, int z)
+        uint &operator()(int x, int y, int z)
         {
             return blocks[x][y][z];
         }
