@@ -19,19 +19,19 @@ class Voxel_t final : public GL::Scene
 
     GL::Camera3D camera;
     GL::Fplocked controller;
-    GL::Voxel::Chunk *chunks;
     GL::Voxel::TexConfig blocks;
+    GL::Voxel::ChunkManager chunks;
 
-    glm::ivec2 GetChunk(int x, int z)
-    {
-        return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
-    }
+    // glm::ivec2 GetChunk(int x, int z)
+    // {
+    //     return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
+    // }
 
-    uint &GetBlockAt(int x, int y, int z)
-    {
-        auto chunk = GetChunk(x, z);
-        return chunks[(chunk.x + 8) * 16 + chunk.y + 8](x - 16 * chunk.x, y, z - 16 * chunk.y);
-    }
+    // uint &GetBlockAt(int x, int y, int z)
+    // {
+    //     auto chunk = GetChunk(x, z);
+    //     return chunks[(chunk.x + 8) * 16 + chunk.y + 8](x - 16 * chunk.x, y, z - 16 * chunk.y);
+    // }
 
     void RayCast()
     {
@@ -43,13 +43,13 @@ class Voxel_t final : public GL::Scene
             int x = round(ray_pos.x);
             int y = round(ray_pos.y);
             int z = round(ray_pos.z);
+                auto chunk = chunks.GetChunkPos(x, z);
+                chunks.GetChunk(chunk)->GenFaces();
 
-            uint &block = GetBlockAt(x, y, z);
+            uint &block = chunks.GetBlockAt(x, y, z);
             if (block != GL::Voxel::Chunk::BAir && block != GL::Voxel::Chunk::BWater)
             {
                 block = 0;
-                auto chunk = GetChunk(x, z);
-                chunks[(chunk.x + 8) * 16 + chunk.y + 8].GenFaces();
                 return;
             }
         }
@@ -65,14 +65,7 @@ class Voxel_t final : public GL::Scene
         cshader.Bind();
         cshader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
 
-        for (int i = 0; i < 16 * 16; i++)
-        {
-            chunks[i].DrawOpaque();
-        }
-        for (int i = 0; i < 16 * 16; i++)
-        {
-            chunks[i].DrawTransparent();
-        }
+        chunks.DrawChunks();
         cshader.UnBind();
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
@@ -80,10 +73,7 @@ class Voxel_t final : public GL::Scene
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
         {
             GL::Voxel::Chunk::NewSeed();
-            for(int i=0;i<16*16;i++){
-                chunks[i].Generate();
-                chunks[i].GenFaces();
-            }
+            chunks.Regenerate();
         }
     }
 
@@ -91,7 +81,7 @@ class Voxel_t final : public GL::Scene
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg")
+                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"), chunks({0, 0}, blocks)
     {
         RegisterFunc(std::bind(&Voxel_t::Render, this), GL::CallbackType::Render);
 
@@ -103,23 +93,11 @@ public:
 
         GL::Voxel::Chunk::NewSeed();
 
-        chunks = (GL::Voxel::Chunk *)malloc(16 * 16 * sizeof(GL::Voxel::Chunk));
-        for (int x = 0; x < 16; x++)
-        {
-            for (int z = 0; z < 16; z++)
-            {
-                new (&chunks[x * 16 + z]) GL::Voxel::Chunk(blocks);
-                chunks[x * 16 + z].Load({x - 8, z - 8});
-            }
-        }
         loader->GetFlag("hide_menu") = 1;
     }
     ~Voxel_t()
     {
         RemoveFunctions();
-        for (int i = 0; i < 16 * 16; i++)
-            chunks[i].~Chunk();
-        free(chunks);
     }
 };
 
