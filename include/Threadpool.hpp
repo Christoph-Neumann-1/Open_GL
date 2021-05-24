@@ -26,7 +26,7 @@ class ThreadPool
         {
             {
                 std::unique_lock lk(queue_mutex);
-                cv.wait(lk, [&]() {return stop || terminate || !queue.empty(); });
+                cv.wait(lk, [&]() { return stop || terminate || !queue.empty(); });
                 if (stop && !queue.size())
                     return;
                 if (terminate)
@@ -44,19 +44,16 @@ public:
         threads.reserve(nThreads);
         for (uint i = 0; i < nThreads; i++)
         {
-            threads.emplace_back(std::bind(&ThreadPool::Loop,this));
+            threads.emplace_back(std::bind(&ThreadPool::Loop, this));
         }
     }
 
     ~ThreadPool()
     {
+        if (!stop && !terminate)
         {
-            std::scoped_lock lk(queue_mutex);
-            stop = true;
+            Terminate();
         }
-        cv.notify_all();
-        for (std::thread &thread : threads)
-            thread.join();
     }
 
     ///@brief Add new item to queue
@@ -84,15 +81,24 @@ public:
     ///@brief terminate once all tasks are finished. Does not accept new tasks anymore.
     void Stop()
     {
-        std::scoped_lock lk(queue_mutex);
+        std::unique_lock lk(queue_mutex);
         stop = true;
+        lk.unlock();
+        cv.notify_all();
+        for (std::thread &thread : threads)
+            thread.join();
     }
 
     ///@brief Stop as fast as possible
     void Terminate()
     {
-        std::scoped_lock lk(queue_mutex);
+        std::unique_lock lk(queue_mutex);
         terminate = true;
+        lk.unlock();
+        cv.notify_all();
+        for (std::thread &thread : threads)
+            thread.join();
+        while (!queue.empty())
+            queue.pop();
     }
-
 };

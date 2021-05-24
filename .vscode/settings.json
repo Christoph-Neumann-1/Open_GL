@@ -69,6 +69,7 @@
         "bitset": "cpp",
         "shared_mutex": "cpp",
         "future": "cpp",
-        "*.def": "cpp"
+        "*.def": "cpp",
+        "regex": "cpp"
     },
 }
