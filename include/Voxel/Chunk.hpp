@@ -107,7 +107,9 @@ namespace GL::Voxel
 
         Chunk(const TexConfig &cfg);
         
-        void Load(glm::ivec2 position);
+        void Load();
+
+        void PreLoad(glm::ivec2 position);
 
         void UnLoad();
 

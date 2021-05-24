@@ -96,7 +96,12 @@ namespace GL::Voxel
         glBindVertexArray(0);
     }
 
-    void Chunk::Load(glm::ivec2 position)
+    void Chunk::Load()
+    {
+        GenFaces();
+    }
+
+    void Chunk::PreLoad(glm::ivec2 position)
     {
         chunk_offset = position;
 
@@ -108,15 +113,13 @@ namespace GL::Voxel
             fread(&blocks, sizeof(blocks), 1, file);
         }
 
-        GenFaces();
-
         isactive = true;
     }
 
     void Chunk::UnLoad()
     {
         auto file = fopen((ROOT_Directory + "/res/world/" + std::to_string(chunk_offset.x) + "__" + std::to_string(chunk_offset.y)).c_str(), "w");
-        fwrite(&blocks,sizeof(blocks),1,file);
+        fwrite(&blocks, sizeof(blocks), 1, file);
         isactive = false;
     }
 

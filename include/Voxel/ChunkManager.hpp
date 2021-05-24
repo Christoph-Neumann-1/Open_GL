@@ -32,10 +32,11 @@ namespace GL::Voxel
                     auto ptr = free.back();
                     loaded.push_back(ptr);
                     free.pop_back();
+                    ptr->PreLoad({x, z});
                     if (x >= xbegin + preload && x <= xend - preload && z >= zbegin + preload && z <= zend - preload)
                     {
                         rendered.push_back(ptr);
-                        ptr->Load({x, z});
+                        ptr->Load();
                     }
                 }
             }
@@ -43,7 +44,7 @@ namespace GL::Voxel
 
         Chunk *GetChunk(glm::ivec2 pos)
         {
-            auto res = std::find_if(rendered.begin(), rendered.end(), [&](Chunk *ptr) { return ptr->GetPos() == pos; });
+            auto res = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *ptr) { return ptr->GetPos() == pos; });
             return res == rendered.end() ? nullptr : *res;
         }
 

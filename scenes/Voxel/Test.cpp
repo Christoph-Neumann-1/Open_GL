@@ -22,17 +22,6 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::TexConfig blocks;
     GL::Voxel::ChunkManager chunks;
 
-    // glm::ivec2 GetChunk(int x, int z)
-    // {
-    //     return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
-    // }
-
-    // uint &GetBlockAt(int x, int y, int z)
-    // {
-    //     auto chunk = GetChunk(x, z);
-    //     return chunks[(chunk.x + 8) * 16 + chunk.y + 8](x - 16 * chunk.x, y, z - 16 * chunk.y);
-    // }
-
     void RayCast()
     {
         auto ray_pos = camera.position;
@@ -43,13 +32,13 @@ class Voxel_t final : public GL::Scene
             int x = round(ray_pos.x);
             int y = round(ray_pos.y);
             int z = round(ray_pos.z);
-                auto chunk = chunks.GetChunkPos(x, z);
-                chunks.GetChunk(chunk)->GenFaces();
 
             uint &block = chunks.GetBlockAt(x, y, z);
             if (block != GL::Voxel::Chunk::BAir && block != GL::Voxel::Chunk::BWater)
             {
                 block = 0;
+                auto chunk = chunks.GetChunkPos(x, z);
+                chunks.GetChunk(chunk)->GenFaces();
                 return;
             }
         }
