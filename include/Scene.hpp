@@ -36,12 +36,18 @@ namespace GL
             return loader->GetCallback().GetList(cbt).Add(func, callback_id);
         }
 
+        template <typename F, typename... Args>
+        uint RegisterFunc(CallbackType cbt, F &&func, Args... args)
+        {
+            return loader->GetCallback().GetList(cbt).Add(func,callback_id,args...);
+        }
+
         void RemoveFunctions()
         {
             loader->GetCallback().RemoveAll(callback_id);
         }
 
-        std::atomic_int& GetFlag(const std::string &name)
+        std::atomic_int &GetFlag(const std::string &name)
         {
             return loader->GetFlag(name);
         };
@@ -50,8 +56,6 @@ namespace GL
         {
             loader->GetFlag(name) = val;
         }
-
-
 
     public:
         explicit Scene(SceneLoader *_loader) : loader(_loader)

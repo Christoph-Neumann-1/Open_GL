@@ -87,20 +87,20 @@ namespace GL
                 func();
             }
         }
-        
-        ///@brief Add a new Callback. Gets applied during the next Call()
-        uint Add(const std::function<void()> &function, uint caller_id = 0)
+
+        template <typename F, typename... Args>
+        uint Add(F &&function, uint caller_id = 0, Args... args)
         {
             std::lock_guard lock(mutex_queue);
-            add_queue.emplace_back(current_id, caller_id, function);
+            add_queue.emplace_back(current_id, caller_id, std::bind(std::move(function), args...));
             return current_id++;
         }
 
-        ///@overload
-        uint Add(std::function<void()> &&function, uint caller_id = 0)
+        template <typename F, typename... Args>
+        uint Add(const F &function, uint caller_id = 0, Args... args)
         {
             std::lock_guard lock(mutex_queue);
-            add_queue.emplace_back(current_id, caller_id, std::move(function));
+            add_queue.emplace_back(current_id, caller_id, std::bind(function, args...));
             return current_id++;
         }
 
