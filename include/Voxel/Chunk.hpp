@@ -7,7 +7,7 @@
 #include <array>
 #include <string.h>
 #include <Voxel/ConfigReader.hpp>
-
+#include <Callback.hpp>
 namespace GL::Voxel
 {
     class Chunk
@@ -15,13 +15,18 @@ namespace GL::Voxel
         bool isactive=false;
         const static int sealevel = 8;
         static int Seed;
+        uint renderid;
 
         uint &At(glm::ivec3 pos)
         {
             return blocks[pos.x][pos.y][pos.z];
         }
 
+        CallbackList &render_thread;
+        uint callback_id;
+
     public:
+        bool regen_mesh=false;
         static void NewSeed()
         {
             int nseed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -105,7 +110,7 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(const TexConfig &cfg);
+        Chunk(const TexConfig &cfg, CallbackList &cb,uint cbid);
         
         void Load();
 
@@ -137,7 +142,7 @@ namespace GL::Voxel
 
         uint &operator()(int x, int y, int z)
         {
-            return blocks[x][y][z];
+            return At({x,y,z});
         }
 
         glm::ivec2 GetPos()

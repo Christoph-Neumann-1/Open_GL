@@ -2,6 +2,7 @@
 #include <Voxel/Chunk.hpp>
 #include <vector>
 #include <glm/glm.hpp>
+#include <Threadpool.hpp>
 
 namespace GL::Voxel
 {
@@ -14,9 +15,15 @@ namespace GL::Voxel
         std::vector<Chunk *> rendered;
 
         TexConfig &config;
+        ThreadPool pool;
+        CallbackHandler &cbh;
+        uint cbid;
+        uint c_cbid = cbh.GenId();
 
         int renderdist = 4;
         int preload = 1;
+
+        std::atomic_uint count = 0;
 
     public:
         void LoadChunks(glm::ivec2 pos)
@@ -48,22 +55,37 @@ namespace GL::Voxel
             return res == rendered.end() ? nullptr : *res;
         }
 
-        ChunkManager(glm::ivec2 starting_pos, TexConfig &cfg) : config(cfg)
+        ChunkManager(glm::ivec2 starting_pos, TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb)
         {
             chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1));
+            auto &pre_render = cbh.GetList(CallbackType::PreRender);
             for (int i = 0; i < 2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1); i++)
             {
-                auto ptr = new Chunk(cfg);
+                auto ptr = new Chunk(cfg, pre_render, c_cbid);
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }
             LoadChunks(starting_pos);
+
+            cbid = cbh.GetList(CallbackType::PostRender).Add([&]() {
+                for (auto chunk : rendered)
+                {
+                    if (chunk->regen_mesh)
+                    {
+                        chunk->regen_mesh = false;
+                        pool.Add(&Chunk::GenFaces, chunk);
+                    }
+                }
+            });
         };
 
         ~ChunkManager()
         {
+            pool.Terminate();
             for (auto chunk : chunks)
                 delete chunk;
+            cbh.GetList(CallbackType::PostRender).Remove(cbid);
+            cbh.RemoveAll(c_cbid);
         }
 
         glm::ivec2 GetChunkPos(int x, int z)
@@ -92,10 +114,13 @@ namespace GL::Voxel
 
         void Regenerate()
         {
+            if (count > 0)
+                return;
+            Chunk::NewSeed();
+            count = rendered.size();
             for (auto chunk : rendered)
             {
-                chunk->Generate();
-                chunk->GenFaces();
+                pool.Add([&](Chunk *mchunk) {mchunk->Generate();mchunk->GenFaces(); count--;}, chunk);
             }
         }
     };

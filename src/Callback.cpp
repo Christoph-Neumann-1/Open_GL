@@ -4,7 +4,7 @@ namespace GL
 {
     void CallbackList::ProcessQueues()
     {
-        std::lock_guard lk(mutex_queue);
+        std::scoped_lock lk(mutex_queue);
 
         for (auto &func : add_queue)
         {
@@ -32,7 +32,7 @@ namespace GL
     {
         if (!id)
             return;
-        std::lock_guard lock(mutex_queue);
+        std::scoped_lock lock(mutex_queue);
         remove_queue.emplace_back(id, false);
     }
 
@@ -40,7 +40,7 @@ namespace GL
     {
         if (!caller_id)
             return;
-        std::lock_guard lock(mutex_queue);
+        std::scoped_lock lock(mutex_queue);
         remove_queue.emplace_back(caller_id, true);
     }
 

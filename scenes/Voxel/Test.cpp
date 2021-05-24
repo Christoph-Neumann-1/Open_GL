@@ -32,14 +32,14 @@ class Voxel_t final : public GL::Scene
             int x = round(ray_pos.x);
             int y = round(ray_pos.y);
             int z = round(ray_pos.z);
-            y = std::clamp(y, 63, 0);
+            y = std::clamp(y, 0, 63);
 
             uint *block = chunks.GetBlockAt(x, y, z);
             if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
             {
                 *block = 0;
                 auto chunk = chunks.GetChunkPos(x, z);
-                chunks.GetChunk(chunk)->GenFaces();
+                chunks.GetChunk(chunk)->regen_mesh=true;
                 return;
             }
         }
@@ -62,7 +62,6 @@ class Voxel_t final : public GL::Scene
             RayCast();
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
         {
-            GL::Voxel::Chunk::NewSeed();
             chunks.Regenerate();
         }
     }
@@ -71,9 +70,10 @@ class Voxel_t final : public GL::Scene
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"), chunks({0, 0}, blocks)
+                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
+                                         chunks({0, 0}, blocks,loader->GetCallback())
     {
-        RegisterFunc(std::bind(&Voxel_t::Render, this), GL::CallbackType::Render);
+        RegisterFunc(GL::CallbackType::Render,&Voxel_t::Render, this);
 
         cshader.Bind();
         cshader.SetUniform1i("u_Texture", 0);
