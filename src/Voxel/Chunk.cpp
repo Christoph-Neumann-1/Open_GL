@@ -98,7 +98,9 @@ namespace GL::Voxel
 
     void Chunk::Load()
     {
+        if(isactive) return;
         GenFaces();
+        isactive = true;
     }
 
     void Chunk::PreLoad(glm::ivec2 position)
@@ -112,8 +114,6 @@ namespace GL::Voxel
         {
             fread(&blocks, sizeof(blocks), 1, file);
         }
-
-        isactive = true;
     }
 
     void Chunk::UnLoad()

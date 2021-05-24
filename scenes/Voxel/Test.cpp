@@ -25,18 +25,19 @@ class Voxel_t final : public GL::Scene
     void RayCast()
     {
         auto ray_pos = camera.position;
-        auto stepvec = camera.Forward() / 16.0 * raydist;
-        for (int i = 0; i < 16; i++)
+        auto stepvec = camera.Forward() / 32.0 * raydist;
+        for (int i = 0; i < 32; i++)
         {
             ray_pos += stepvec;
             int x = round(ray_pos.x);
             int y = round(ray_pos.y);
             int z = round(ray_pos.z);
+            y = std::clamp(y, 63, 0);
 
-            uint &block = chunks.GetBlockAt(x, y, z);
-            if (block != GL::Voxel::Chunk::BAir && block != GL::Voxel::Chunk::BWater)
+            uint *block = chunks.GetBlockAt(x, y, z);
+            if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
             {
-                block = 0;
+                *block = 0;
                 auto chunk = chunks.GetChunkPos(x, z);
                 chunks.GetChunk(chunk)->GenFaces();
                 return;

@@ -71,10 +71,10 @@ namespace GL::Voxel
             return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
         }
 
-        uint &GetBlockAt(int x, int y, int z)
+        uint *GetBlockAt(int x, int y, int z)
         {
             auto chunk = GetChunk(GetChunkPos(x, z));
-            return (*chunk)(x - 16 * chunk->GetPos().x, y, z - 16 * chunk->GetPos().y);
+            return chunk ? &(*chunk)(x - 16 * chunk->GetPos().x, y, z - 16 * chunk->GetPos().y) : nullptr;
         }
 
         void DrawChunks()
