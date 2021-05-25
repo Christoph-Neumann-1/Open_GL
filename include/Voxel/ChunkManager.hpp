@@ -3,6 +3,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <Threadpool.hpp>
+#include <filesystem>
 
 namespace GL::Voxel
 {
@@ -25,7 +26,36 @@ namespace GL::Voxel
 
         std::atomic_uint count = 0;
 
+        Chunk *GetFree()
+        {
+            Chunk *ptr;
+            if (free.size() == 0)
+            {
+                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), c_cbid);
+                chunks.push_back(ptr);
+            }
+            else
+            {
+                ptr = free.back();
+                free.pop_back();
+            }
+            return ptr;
+        }
+
+        
+
     public:
+        bool IsRendered(glm::ivec2 chunk, glm::ivec2 pos)
+        {
+            return chunk.x >= pos.x - renderdist && chunk.x <= pos.x + renderdist && chunk.y >= pos.y - renderdist && chunk.y <= pos.y + renderdist;
+        }
+
+        bool IsLoaded(glm::ivec2 chunk, glm::ivec2 pos)
+        {
+            return chunk.x >= pos.x - renderdist - preload && chunk.x <= pos.x + renderdist + preload &&
+                   chunk.y >= pos.y - renderdist - preload && chunk.y <= pos.y + renderdist + preload;
+        }
+
         void LoadChunks(glm::ivec2 pos)
         {
             int xbegin = pos.x - (renderdist + preload);
@@ -36,14 +66,22 @@ namespace GL::Voxel
                 int zend = pos.y + (renderdist + preload);
                 for (int z = zbegin; z <= zend; z++)
                 {
-                    auto ptr = free.back();
-                    loaded.push_back(ptr);
-                    free.pop_back();
-                    ptr->PreLoad({x, z});
-                    if (x >= xbegin + preload && x <= xend - preload && z >= zbegin + preload && z <= zend - preload)
+                    if (std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk) { return chunk->GetPos() == glm::ivec2{x, z}; }) == loaded.end())
                     {
-                        rendered.push_back(ptr);
-                        ptr->Load();
+                        auto ptr = GetFree();
+                        loaded.push_back(ptr);
+                        ptr->PreLoad({x, z});
+                        if (IsRendered({x, z}, pos))
+                        {
+                            rendered.push_back(ptr);
+                            ptr->Load();
+                        }
+                    }
+                    else if (IsRendered({x, z}, pos) && std::find_if(rendered.begin(), rendered.end(), [&](Chunk *chunk) { return chunk->GetPos() == glm::ivec2{x, z}; }) == rendered.end())
+                    {
+                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk) { return chunk->GetPos() == glm::ivec2{x, z}; });
+                        rendered.push_back(*chunk);
+                        (*chunk)->Load();
                     }
                 }
             }
@@ -93,6 +131,11 @@ namespace GL::Voxel
             return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
         }
 
+        glm::ivec2 GetChunkPos(glm::ivec2 pos)
+        {
+            return {ceil((pos.x + 1) / 16.0f) - 1, ceil((pos.y + 1) / 16.0f) - 1};
+        }
+
         uint *GetBlockAt(int x, int y, int z)
         {
             auto chunk = GetChunk(GetChunkPos(x, z));
@@ -114,14 +157,50 @@ namespace GL::Voxel
 
         void Regenerate()
         {
+            for (auto &file : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
+                std::filesystem::remove(file);
             if (count > 0)
                 return;
             Chunk::NewSeed();
-            count = rendered.size();
-            for (auto chunk : rendered)
+            count = loaded.size();
+            for (auto chunk : loaded)
             {
-                pool.Add([&](Chunk *mchunk) {mchunk->Generate();mchunk->GenFaces(); count--;}, chunk);
+                pool.Add([&](Chunk *mchunk) {mchunk->Generate();mchunk->GenFaces(); count--; }, chunk);
             }
+        }
+
+        bool HasCrossedChunk(glm::ivec2 last, glm::ivec2 now)
+        {
+            return GetChunkPos(last) != GetChunkPos(now);
+        }
+
+        void UnLoadChunks(glm::ivec2 pos)
+        {
+            for (auto chunk = loaded.begin(); chunk != loaded.end(); chunk++)
+            {
+                if (!IsLoaded((*chunk)->GetPos(), pos))
+                {
+                    (*chunk)->UnLoad();
+                    if (auto chunk2 = std::find(rendered.begin(), rendered.end(), *chunk); !IsRendered((*chunk)->GetPos(), pos) && chunk2 != rendered.end())
+                    {
+                        rendered.erase(chunk2);
+                    }
+                    free.push_back(*chunk);
+                    chunk = loaded.erase(chunk);
+                    if (chunk == loaded.end())
+                        break;
+                }
+                // free.push_back(*chunk);
+                // (*chunk)->UnLoad();
+            }
+            // rendered.clear();
+            // loaded.clear();
+        }
+
+        void MoveChunk(glm::ivec2 position)
+        {
+            UnLoadChunks(GetChunkPos(position));
+            LoadChunks(GetChunkPos(position));
         }
     };
 }

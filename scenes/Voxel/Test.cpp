@@ -39,7 +39,7 @@ class Voxel_t final : public GL::Scene
             {
                 *block = 0;
                 auto chunk = chunks.GetChunkPos(x, z);
-                chunks.GetChunk(chunk)->regen_mesh=true;
+                chunks.GetChunk(chunk)->regen_mesh = true;
                 return;
             }
         }
@@ -47,6 +47,7 @@ class Voxel_t final : public GL::Scene
 
     void Render()
     {
+        glm::ivec2 lastpos = {round(camera.position.x), round(camera.position.z)};
         controller.Update(loader->GetTimeInfo().RenderDeltaTime());
 
         glActiveTexture(GL_TEXTURE0);
@@ -64,6 +65,8 @@ class Voxel_t final : public GL::Scene
         {
             chunks.Regenerate();
         }
+        if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
+            chunks.MoveChunk({round(camera.position.x), round(camera.position.z)});
     }
 
     void TexSetup();
@@ -71,9 +74,9 @@ class Voxel_t final : public GL::Scene
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
-                                         chunks({0, 0}, blocks,loader->GetCallback())
+                                        chunks({0, 0}, blocks, loader->GetCallback())
     {
-        RegisterFunc(GL::CallbackType::Render,&Voxel_t::Render, this);
+        RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
 
         cshader.Bind();
         cshader.SetUniform1i("u_Texture", 0);
