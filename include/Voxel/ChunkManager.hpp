@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <Threadpool.hpp>
 #include <filesystem>
+#include <Data.hpp>
 
 namespace GL::Voxel
 {
@@ -42,7 +43,28 @@ namespace GL::Voxel
             return ptr;
         }
 
-        
+        void SetSeed()
+        {
+            auto file = fopen((ROOT_Directory + "/res/world/SEED").c_str(), "r");
+            if (!file)
+            {
+                Chunk::NewSeed();
+                StoreSeed();
+            }
+            else
+            {
+                fread(&Chunk::Seed, sizeof(int), 1, file);
+                fclose(file);
+            }
+        }
+
+        void StoreSeed()
+        {
+
+            auto file = fopen((ROOT_Directory + "/res/world/SEED").c_str(), "w");
+            fwrite(&Chunk::Seed, sizeof(int), 1, file);
+            fclose(file);
+        }
 
     public:
         bool IsRendered(glm::ivec2 chunk, glm::ivec2 pos)
@@ -103,6 +125,9 @@ namespace GL::Voxel
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }
+
+            SetSeed();
+
             LoadChunks(starting_pos);
 
             cbid = cbh.GetList(CallbackType::PostRender).Add([&]() {
@@ -157,11 +182,14 @@ namespace GL::Voxel
 
         void Regenerate()
         {
+
             for (auto &file : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
                 std::filesystem::remove(file);
+            
             if (count > 0)
                 return;
             Chunk::NewSeed();
+            StoreSeed();
             count = loaded.size();
             for (auto chunk : loaded)
             {
@@ -190,11 +218,7 @@ namespace GL::Voxel
                     if (chunk == loaded.end())
                         break;
                 }
-                // free.push_back(*chunk);
-                // (*chunk)->UnLoad();
             }
-            // rendered.clear();
-            // loaded.clear();
         }
 
         void MoveChunk(glm::ivec2 position)

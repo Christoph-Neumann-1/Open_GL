@@ -14,7 +14,6 @@ namespace GL::Voxel
     {
         bool isactive=false;
         const static int sealevel = 8;
-        static int Seed;
         uint renderid;
 
         uint &At(glm::ivec3 pos)
@@ -26,6 +25,7 @@ namespace GL::Voxel
         uint callback_id;
 
     public:
+        static int Seed;
         bool regen_mesh=false;
         static void NewSeed()
         {

@@ -21,6 +21,7 @@ class Voxel_t final : public GL::Scene
     GL::Fplocked controller;
     GL::Voxel::TexConfig blocks;
     GL::Voxel::ChunkManager chunks;
+    bool r_pressed = false;
 
     void RayCast()
     {
@@ -63,7 +64,15 @@ class Voxel_t final : public GL::Scene
             RayCast();
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
         {
-            chunks.Regenerate();
+            if (!r_pressed)
+            {
+                chunks.Regenerate();
+                r_pressed = true;
+            }
+        }
+        else if(r_pressed)
+        {
+            r_pressed=false;
         }
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
             chunks.MoveChunk({round(camera.position.x), round(camera.position.z)});
