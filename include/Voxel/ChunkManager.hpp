@@ -216,7 +216,6 @@ namespace GL::Voxel
                     }
                     free.push_back(*chunk);
                     chunk = loaded.erase(chunk);
-
                 }
                 else
                     chunk++;

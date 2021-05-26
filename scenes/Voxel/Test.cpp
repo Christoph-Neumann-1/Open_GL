@@ -93,7 +93,6 @@ public:
         TexSetup();
         cshader.UnBind();
 
-        GL::Voxel::Chunk::NewSeed();
 
         loader->GetFlag("hide_menu") = 1;
     }
