@@ -22,7 +22,7 @@ namespace GL::Voxel
         uint cbid;
         uint c_cbid = cbh.GenId();
 
-        int renderdist = 4;
+        int renderdist = 11;
         int preload = 1;
 
         std::atomic_uint count = 0;

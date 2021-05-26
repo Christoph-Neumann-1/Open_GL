@@ -15,7 +15,7 @@ class Voxel_t final : public GL::Scene
 {
     uint texid;
     GL::Shader cshader;
-    glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 500.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
     GL::Camera3D camera;
     GL::Fplocked controller;
@@ -82,7 +82,7 @@ class Voxel_t final : public GL::Scene
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 16), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
+                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
                                         chunks({0, 0}, blocks, loader->GetCallback())
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
