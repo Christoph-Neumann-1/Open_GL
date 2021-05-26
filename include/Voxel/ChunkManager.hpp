@@ -204,12 +204,8 @@ namespace GL::Voxel
 
         void UnLoadChunks(glm::ivec2 pos)
         {
-            Logger log;
-            log << "UnLoad: ";
-            int c = 0;
             for (auto chunk = loaded.begin(); chunk != loaded.end();)
             {
-                c++;
                 if (!IsLoaded((*chunk)->GetPos(), pos))
                 {
 
@@ -220,39 +216,17 @@ namespace GL::Voxel
                     }
                     free.push_back(*chunk);
                     chunk = loaded.erase(chunk);
-                    if (chunk == loaded.end())
-                        break;
+
                 }
                 else
                     chunk++;
             }
-            log << c;
-            log.print();
-        }
-
-        int gcount(glm::ivec2 position)
-        {
-            int c = 0;
-            for (auto chunk : loaded)
-            {
-                if (IsLoaded(chunk->GetPos(), position))
-                    c++;
-            }
-            return c;
         }
 
         void MoveChunk(glm::ivec2 position)
         {
-            Logger log;
-            log << "Begin\n"
-                << loaded.size() << '\n'
-                << gcount(position) << '\n';
             UnLoadChunks(position);
             LoadChunks(position);
-            log << loaded.size() << '\n'
-                << gcount(position) << '\n'
-                << "End\n";
-            log.print();
         }
     };
 }
