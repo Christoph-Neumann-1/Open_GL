@@ -185,7 +185,7 @@ namespace GL::Voxel
 
             for (auto &file : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
                 std::filesystem::remove(file);
-            
+
             if (count > 0)
                 return;
             Chunk::NewSeed();
@@ -204,10 +204,15 @@ namespace GL::Voxel
 
         void UnLoadChunks(glm::ivec2 pos)
         {
-            for (auto chunk = loaded.begin(); chunk != loaded.end(); chunk++)
+            Logger log;
+            log << "UnLoad: ";
+            int c = 0;
+            for (auto chunk = loaded.begin(); chunk != loaded.end();)
             {
+                c++;
                 if (!IsLoaded((*chunk)->GetPos(), pos))
                 {
+
                     (*chunk)->UnLoad();
                     if (auto chunk2 = std::find(rendered.begin(), rendered.end(), *chunk); !IsRendered((*chunk)->GetPos(), pos) && chunk2 != rendered.end())
                     {
@@ -218,13 +223,36 @@ namespace GL::Voxel
                     if (chunk == loaded.end())
                         break;
                 }
+                else
+                    chunk++;
             }
+            log << c;
+            log.print();
+        }
+
+        int gcount(glm::ivec2 position)
+        {
+            int c = 0;
+            for (auto chunk : loaded)
+            {
+                if (IsLoaded(chunk->GetPos(), position))
+                    c++;
+            }
+            return c;
         }
 
         void MoveChunk(glm::ivec2 position)
         {
-            UnLoadChunks(GetChunkPos(position));
-            LoadChunks(GetChunkPos(position));
+            Logger log;
+            log << "Begin\n"
+                << loaded.size() << '\n'
+                << gcount(position) << '\n';
+            UnLoadChunks(position);
+            LoadChunks(position);
+            log << loaded.size() << '\n'
+                << gcount(position) << '\n'
+                << "End\n";
+            log.print();
         }
     };
 }

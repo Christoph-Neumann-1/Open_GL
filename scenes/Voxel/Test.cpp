@@ -70,12 +70,12 @@ class Voxel_t final : public GL::Scene
                 r_pressed = true;
             }
         }
-        else if(r_pressed)
+        else if (r_pressed)
         {
-            r_pressed=false;
+            r_pressed = false;
         }
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
-            chunks.MoveChunk({round(camera.position.x), round(camera.position.z)});
+            chunks.MoveChunk(chunks.GetChunkPos({round(camera.position.x), round(camera.position.z)}));
     }
 
     void TexSetup();
