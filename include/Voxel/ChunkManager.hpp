@@ -62,6 +62,11 @@ namespace GL::Voxel
         {
 
             auto file = fopen((ROOT_Directory + "/res/world/SEED").c_str(), "w");
+            if (!file)
+            {
+                perror("StoreSeed");
+                return;
+            }
             fwrite(&Chunk::Seed, sizeof(int), 1, file);
             fclose(file);
         }

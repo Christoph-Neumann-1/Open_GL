@@ -121,9 +121,14 @@ namespace GL::Voxel
     void Chunk::UnLoad()
     {
         auto file = fopen((ROOT_Directory + "/res/world/" + std::to_string(chunk_offset.x) + "__" + std::to_string(chunk_offset.y)).c_str(), "w");
-        fwrite(&blocks, sizeof(blocks), 1, file);
+        if (file)
+        {
+            fwrite(&blocks, sizeof(blocks), 1, file);
+            fclose(file);
+        }
+        else 
+        perror("Unload Chunk");
         isactive = false;
-        fclose(file);
     }
 
     void Chunk::GenFaces()
