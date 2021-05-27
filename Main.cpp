@@ -108,7 +108,8 @@ int main(int argc, char **argv)
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        GLFWwindow *_window = glfwCreateWindow(1920, 1080, "OpenGL", glfwGetPrimaryMonitor(), NULL);
+        auto vidmode=glfwGetVideoMode(glfwGetPrimaryMonitor());
+        GLFWwindow *_window = glfwCreateWindow(vidmode->width, vidmode->height, "OpenGL", glfwGetPrimaryMonitor(), NULL);
         if (!_window)
         {
             log << "Failed to create window";
@@ -116,7 +117,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        Window window(_window, cbh.GetList(cbt::OnWindowResize));
+        Window window(_window, cbh.GetList(cbt::OnWindowResize),vidmode->refreshRate);
 
         glfwMakeContextCurrent(window);
         glfwWindowHint(GLFW_REFRESH_RATE, 60);
