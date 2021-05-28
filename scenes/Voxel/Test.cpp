@@ -23,6 +23,31 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::ChunkManager chunks;
     bool r_pressed = false;
 
+    void StorePlayerData()
+    {
+        auto file = fopen((ROOT_Directory + "/res/world/PLAYER").c_str(), "w");
+        if (!file)
+        {
+            perror("Store Player Data");
+            return;
+        }
+        fwrite(&camera.position, sizeof(camera.position), 1, file);
+        fwrite(&controller.pitch, 2 * sizeof(double), 1, file);
+        fclose(file);
+    }
+
+    void LoadPlayerData()
+    {
+        auto file = fopen((ROOT_Directory + "/res/world/PLAYER").c_str(), "r");
+        if (file)
+        {
+            fread(&camera.position, sizeof(camera.position), 1, file);
+            fread(&controller.pitch, 2 * sizeof(double), 1, file);
+
+            fclose(file);
+        }
+    }
+
     void RayCast()
     {
         auto ray_pos = camera.position;
@@ -93,12 +118,15 @@ public:
         TexSetup();
         cshader.UnBind();
 
-
         loader->GetFlag("hide_menu") = 1;
+
+        LoadPlayerData();
     }
     ~Voxel_t()
     {
         RemoveFunctions();
+
+        StorePlayerData();
     }
 };
 
