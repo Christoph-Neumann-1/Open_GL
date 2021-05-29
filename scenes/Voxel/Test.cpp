@@ -10,7 +10,8 @@
 #include <Voxel/ConfigReader.hpp>
 #include <Voxel/ChunkManager.hpp>
 const double raydist = 8;
-
+const float bps = 4;
+const double raysteps = 32;
 class Voxel_t final : public GL::Scene
 {
     uint texid;
@@ -22,6 +23,8 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::TexConfig blocks;
     GL::Voxel::ChunkManager chunks;
     bool r_pressed = false;
+    float break_cooldown = 0;
+    float place_cooldown = 0;
 
     void StorePlayerData()
     {
@@ -48,25 +51,71 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-    void RayCast()
+    void Mine()
     {
-        auto ray_pos = camera.position;
-        auto stepvec = camera.Forward() / 32.0 * raydist;
-        for (int i = 0; i < 32; i++)
+        if (break_cooldown > 0)
         {
-            ray_pos += stepvec;
-            int x = round(ray_pos.x);
-            int y = round(ray_pos.y);
-            int z = round(ray_pos.z);
-            y = std::clamp(y, 0, 63);
-
-            uint *block = chunks.GetBlockAt(x, y, z);
-            if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
+            break_cooldown -= loader->GetTimeInfo().RenderDeltaTime();
+        }
+        else
+        {
+            auto ray_pos = camera.position;
+            auto stepvec = camera.Forward() / raysteps * raydist;
+            for (int i = 0; i < raysteps; i++)
             {
-                *block = 0;
-                auto chunk = chunks.GetChunkPos(x, z);
-                chunks.GetChunk(chunk)->regen_mesh = true;
-                return;
+                ray_pos += stepvec;
+                int x = round(ray_pos.x);
+                int y = round(ray_pos.y);
+                int z = round(ray_pos.z);
+                y = std::clamp(y, 0, 63);
+
+                uint *block = chunks.GetBlockAt(x, y, z);
+                if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
+                {
+                    *block = 0;
+                    auto chunk = chunks.GetChunkPos(x, z);
+                    chunks.GetChunk(chunk)->regen_mesh = true;
+                    break_cooldown = 1 / bps;
+                    return;
+                }
+            }
+        }
+    }
+
+    void Place()
+    {
+        if (place_cooldown > 0)
+        {
+            place_cooldown -= loader->GetTimeInfo().RenderDeltaTime();
+        }
+        else
+        {
+            auto ray_pos = camera.position;
+            auto stepvec = camera.Forward() / raysteps * raydist;
+            for (int i = 0; i < raysteps; i++)
+            {
+                ray_pos += stepvec;
+                int x = round(ray_pos.x);
+                int y = round(ray_pos.y);
+                int z = round(ray_pos.z);
+                y = std::clamp(y, 0, 63);
+
+                uint *block = chunks.GetBlockAt(x, y, z);
+                if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
+                {
+                    printf("Hit block %i %i %i\n",x,y,z);
+                    auto new_block = glm::vec3(x, y, z) - (glm::vec3)glm::normalize(stepvec);
+                    int nx = roundf(new_block.x);
+                    int ny = std::clamp((int)roundf(new_block.y),0,63);
+                    int nz = roundf(new_block.z);
+                    printf("Place block %i %i %i\n",nx,ny,nz);
+                    *chunks.GetBlockAt(nx, ny, nz) = GL::Voxel::Chunk::BStone;
+
+                    auto chunk = chunks.GetChunkPos(x, z);
+                    chunks.GetChunk(chunk)->regen_mesh = true;
+                    place_cooldown = 1 / bps;
+                    return;
+                }
             }
         }
     }
@@ -86,7 +135,9 @@ class Voxel_t final : public GL::Scene
         cshader.UnBind();
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-            RayCast();
+            Mine();
+       else if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+            Place();
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
         {
             if (!r_pressed)
