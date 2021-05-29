@@ -26,6 +26,10 @@ class Voxel_t final : public GL::Scene
     float break_cooldown = 0;
     float place_cooldown = 0;
 
+    float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
+    uint vbo, ibo, vao;
+    GL::Shader shader;
+
     void StorePlayerData()
     {
         auto file = fopen((ROOT_Directory + "/res/world/PLAYER").c_str(), "w");
@@ -103,12 +107,10 @@ class Voxel_t final : public GL::Scene
                 uint *block = chunks.GetBlockAt(x, y, z);
                 if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
                 {
-                    printf("Hit block %i %i %i\n",x,y,z);
                     auto new_block = glm::vec3(x, y, z) - (glm::vec3)glm::normalize(stepvec);
                     int nx = roundf(new_block.x);
-                    int ny = std::clamp((int)roundf(new_block.y),0,63);
+                    int ny = std::clamp((int)roundf(new_block.y), 0, 63);
                     int nz = roundf(new_block.z);
-                    printf("Place block %i %i %i\n",nx,ny,nz);
                     *chunks.GetBlockAt(nx, ny, nz) = GL::Voxel::Chunk::BStone;
 
                     auto chunk = chunks.GetChunkPos(x, z);
@@ -132,11 +134,20 @@ class Voxel_t final : public GL::Scene
         cshader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
 
         chunks.DrawChunks();
-        cshader.UnBind();
+
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+        shader.Bind();
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+        shader.UnBind();
+
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
             Mine();
-       else if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        else if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
             Place();
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
         {
@@ -159,7 +170,7 @@ class Voxel_t final : public GL::Scene
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
-                                        chunks({0, 0}, blocks, loader->GetCallback())
+                                        chunks({0, 0}, blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
 
@@ -172,11 +183,43 @@ public:
         loader->GetFlag("hide_menu") = 1;
 
         LoadPlayerData();
+
+        glGenBuffers(2, &vbo);
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glVertexAttribPointer(0, 2, GL_FLOAT, 0, 2 * sizeof(float), 0);
+        glEnableVertexAttribArray(0);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(crosshair), crosshair, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        uint indices[]{
+            0, 1, 2,
+            2, 3, 0};
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        shader.Bind();
+        glm::mat4 mat;
+        auto window = loader->GetWindow();
+        if (window.GetWidth() > window.GetHeigth())
+        {
+            mat = glm::ortho(-(float)window.GetWidth() / window.GetHeigth(), (float)window.GetWidth() / window.GetHeigth(), -1.0f, 1.0f);
+        }
+        else
+        {
+            mat = glm::ortho(-1.0f, 1.0f, -(float)window.GetHeigth() / window.GetWidth(), (float)window.GetHeigth() / window.GetWidth());
+        }
+        shader.SetUniformMat4f("u_MVP", mat);
+        shader.SetUniform4f("u_Color", 1, 1, 1, 1);
+        shader.UnBind();
     }
     ~Voxel_t()
     {
         RemoveFunctions();
-
+        glDeleteBuffers(2, &vbo);
+        glDeleteVertexArrays(1, &vao);
         StorePlayerData();
     }
 };
