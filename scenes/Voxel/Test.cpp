@@ -30,6 +30,15 @@ class Voxel_t final : public GL::Scene
     uint vbo, ibo, vao;
     GL::Shader shader;
 
+    glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
+    {
+        glm::vec3 diff = rayPoint - planePoint;
+        float prod1 = glm::dot(diff, planeNormal);
+        float prod2 = glm::dot(rayVector, planeNormal);
+        float prod3 = prod1 / prod2;
+        return rayPoint - rayVector * prod3;
+    }
+
     void StorePlayerData()
     {
         auto file = fopen((ROOT_Directory + "/res/world/PLAYER").c_str(), "w");
@@ -99,12 +108,42 @@ class Voxel_t final : public GL::Scene
                 uint *block = chunks.GetBlockAt(x, y, z);
                 if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
                 {
-                    auto new_block = glm::vec3(x, y, z) - (glm::vec3)glm::normalize(stepvec);
-                    int nx = roundf(new_block.x);
-                    int ny = std::clamp((int)roundf(new_block.y), 0, 63);
-                    int nz = roundf(new_block.z);
-                    *chunks.GetBlockAt(nx, ny, nz) = GL::Voxel::Chunk::BStone;
+                    glm::vec3 forward = camera.Forward();
+                    glm::vec3 intersect_face;
+                    for (int j = 0; j < 6; j++)
+                    {
+                        if (glm::dot(GL::Voxel::bnormals[j], forward) < 0)
+                        {
+                            glm::vec3 p = intersectPoint(forward, (glm::vec3)camera.position, GL::Voxel::bnormals[j], GL::Voxel::bvertices[j * 6].pos+glm::vec3(x,y,z));
+                            switch (j)
+                            {
+                            case 0:
+                            Front:
+                                if (p.x > x-0.5 && p.x < x+0.5 && p.y > y-0.5 && p.y < y+0.5)
+                                    intersect_face = GL::Voxel::bnormals[j];
+                                break;
+                            case 1:
+                                goto Front;
+                            case 2:
+                            Bottom:
+                                if (p.x > x-0.5 && p.x < x+0.5 && p.z > z-0.5 && p.z < z+0.5)
+                                    intersect_face = GL::Voxel::bnormals[j];
+                                break;
+                            case 3:
+                                goto Bottom;
+                            case 4:
+                            Right:
+                                if (p.y > y-0.5 && p.y < y+0.5 && p.z > z-0.5 && p.z < z+0.5)
+                                    intersect_face = GL::Voxel::bnormals[j];
+                                break;
+                            case 5:
+                                goto Right;
+                            }
 
+                        }
+                    }
+
+                    *chunks.GetBlockAt(x+intersect_face.x,y+intersect_face.y,z+intersect_face.z)=GL::Voxel::Chunk::BStone;
                     auto chunk = chunks.GetChunkPos(x, z);
                     chunks.GetChunk(chunk)->regen_mesh = true;
                     place_cooldown = 1 / bps;

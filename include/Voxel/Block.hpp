@@ -13,6 +13,15 @@ namespace GL::Voxel
         constexpr B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
     };
 
+    static const std::array<glm::vec3,6> bnormals{
+        glm::vec3{0,0,1},
+        glm::vec3{0,0,-1},
+        glm::vec3{0,-1,0},
+        glm::vec3{0,1,0},
+        glm::vec3{1,0,0},
+        glm::vec3{-1,0,0}
+    };
+
     static const std::array<B_Vertex, 36> bvertices{
         //Front
         B_Vertex({-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}),
