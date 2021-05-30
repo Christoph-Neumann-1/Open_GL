@@ -144,7 +144,7 @@ class Voxel_t final : public GL::Scene
                     }
 
                     *chunks.GetBlockAt(x+intersect_face.x,y+intersect_face.y,z+intersect_face.z)=GL::Voxel::Chunk::BStone;
-                    auto chunk = chunks.GetChunkPos(x, z);
+                    auto chunk = chunks.GetChunkPos(x+intersect_face.x, z+intersect_face.z);
                     chunks.GetChunk(chunk)->regen_mesh = true;
                     place_cooldown = 1 / bps;
                     return;
