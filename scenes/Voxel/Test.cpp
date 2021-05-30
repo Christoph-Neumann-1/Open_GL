@@ -57,11 +57,7 @@ class Voxel_t final : public GL::Scene
 
     void Mine()
     {
-        if (break_cooldown > 0)
-        {
-            break_cooldown -= loader->GetTimeInfo().RenderDeltaTime();
-        }
-        else
+        if (!(break_cooldown > 0))
         {
             auto ray_pos = camera.position;
             auto stepvec = camera.Forward() / raysteps * raydist;
@@ -88,11 +84,7 @@ class Voxel_t final : public GL::Scene
 
     void Place()
     {
-        if (place_cooldown > 0)
-        {
-            place_cooldown -= loader->GetTimeInfo().RenderDeltaTime();
-        }
-        else
+        if (!(place_cooldown > 0))
         {
             auto ray_pos = camera.position;
             auto stepvec = camera.Forward() / raysteps * raydist;
@@ -124,8 +116,9 @@ class Voxel_t final : public GL::Scene
 
     void Render()
     {
+        auto dt = loader->GetTimeInfo().RenderDeltaTime();
         glm::ivec2 lastpos = {round(camera.position.x), round(camera.position.z)};
-        controller.Update(loader->GetTimeInfo().RenderDeltaTime());
+        controller.Update(dt);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D_ARRAY, texid);
@@ -163,6 +156,9 @@ class Voxel_t final : public GL::Scene
         }
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
             chunks.MoveChunk(chunks.GetChunkPos({round(camera.position.x), round(camera.position.z)}));
+
+        break_cooldown = break_cooldown - dt * (break_cooldown > 0);
+        place_cooldown = place_cooldown - dt * (place_cooldown > 0);
     }
 
     void TexSetup();
