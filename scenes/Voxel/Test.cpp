@@ -114,39 +114,42 @@ class Voxel_t final : public GL::Scene
                     {
                         if (glm::dot(GL::Voxel::bnormals[j], forward) < 0)
                         {
-                            glm::vec3 p = intersectPoint(forward, (glm::vec3)camera.position, GL::Voxel::bnormals[j], GL::Voxel::bvertices[j * 6].pos+glm::vec3(x,y,z));
+                            glm::vec3 p = intersectPoint(forward, (glm::vec3)camera.position, GL::Voxel::bnormals[j], GL::Voxel::bvertices[j * 6].pos + glm::vec3(x, y, z));
                             switch (j)
                             {
                             case 0:
                             Front:
-                                if (p.x > x-0.5 && p.x < x+0.5 && p.y > y-0.5 && p.y < y+0.5)
+                                if (p.x > x - 0.5 && p.x < x + 0.5 && p.y > y - 0.5 && p.y < y + 0.5)
                                     intersect_face = GL::Voxel::bnormals[j];
                                 break;
                             case 1:
                                 goto Front;
                             case 2:
                             Bottom:
-                                if (p.x > x-0.5 && p.x < x+0.5 && p.z > z-0.5 && p.z < z+0.5)
+                                if (p.x > x - 0.5 && p.x < x + 0.5 && p.z > z - 0.5 && p.z < z + 0.5)
                                     intersect_face = GL::Voxel::bnormals[j];
                                 break;
                             case 3:
                                 goto Bottom;
                             case 4:
                             Right:
-                                if (p.y > y-0.5 && p.y < y+0.5 && p.z > z-0.5 && p.z < z+0.5)
+                                if (p.y > y - 0.5 && p.y < y + 0.5 && p.z > z - 0.5 && p.z < z + 0.5)
                                     intersect_face = GL::Voxel::bnormals[j];
                                 break;
                             case 5:
                                 goto Right;
                             }
-
                         }
                     }
 
-                    *chunks.GetBlockAt(x+intersect_face.x,y+intersect_face.y,z+intersect_face.z)=GL::Voxel::Chunk::BStone;
-                    auto chunk = chunks.GetChunkPos(x+intersect_face.x, z+intersect_face.z);
-                    chunks.GetChunk(chunk)->regen_mesh = true;
-                    place_cooldown = 1 / bps;
+                    auto block2 = chunks.GetBlockAt(x + intersect_face.x, y + intersect_face.y, z + intersect_face.z);
+                    if (*block2 == GL::Voxel::Chunk::BAir || *block2 == GL::Voxel::Chunk::BWater)
+                    {
+                        *block2 = GL::Voxel::Chunk::BStone;
+                        auto chunk = chunks.GetChunkPos(x + intersect_face.x, z + intersect_face.z);
+                        chunks.GetChunk(chunk)->regen_mesh = true;
+                        place_cooldown = 1 / bps;
+                    }
                     return;
                 }
             }
