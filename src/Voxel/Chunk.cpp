@@ -126,8 +126,8 @@ namespace GL::Voxel
             fwrite(&blocks, sizeof(blocks), 1, file);
             fclose(file);
         }
-        else 
-        perror("Unload Chunk");
+        else
+            perror("Unload Chunk");
         isactive = false;
     }
 
@@ -234,10 +234,8 @@ namespace GL::Voxel
                     {
                         if (blocks[x][y][z] == BWater)
                         {
-                            if (y == sealevel)
-                            {
+                            if (blocks[x][std::clamp(y + 1, 0, 63)][z] != BWater)
                                 faces_transparent.push_back(GenFace({x, y, z}, Top));
-                            }
                             continue;
                         }
                         faces_transparent.push_back(GenFace({x, y, z}, Left));
@@ -333,15 +331,16 @@ namespace GL::Voxel
             }
         }
 
-        renderid = render_thread.Add([&]() {
-            glBindBuffer(GL_ARRAY_BUFFER, buffer);
-            glBufferData(GL_ARRAY_BUFFER, faces.size() * sizeof(Face), &faces[0], GL_STATIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            glBindBuffer(GL_ARRAY_BUFFER, buffer_transparent);
-            glBufferData(GL_ARRAY_BUFFER, faces_transparent.size() * sizeof(Face), &faces_transparent[0], GL_STATIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-            render_thread.Remove(renderid);
-        },
+        renderid = render_thread.Add([&]()
+                                     {
+                                         glBindBuffer(GL_ARRAY_BUFFER, buffer);
+                                         glBufferData(GL_ARRAY_BUFFER, faces.size() * sizeof(Face), &faces[0], GL_STATIC_DRAW);
+                                         glBindBuffer(GL_ARRAY_BUFFER, 0);
+                                         glBindBuffer(GL_ARRAY_BUFFER, buffer_transparent);
+                                         glBufferData(GL_ARRAY_BUFFER, faces_transparent.size() * sizeof(Face), &faces_transparent[0], GL_STATIC_DRAW);
+                                         glBindBuffer(GL_ARRAY_BUFFER, 0);
+                                         render_thread.Remove(renderid);
+                                     },
                                      callback_id);
     }
 }
