@@ -12,8 +12,9 @@ namespace GL::Voxel
     class ChunkManager
     {
         std::vector<Chunk *> chunks;
-        std::vector<Chunk *> loaded;
         std::vector<Chunk *> free;
+        std::vector<Chunk *> loaded;
+        std::vector<Chunk *> pre_loaded;
         std::vector<Chunk *> rendered;
 
         TexConfig &config;
@@ -76,24 +77,29 @@ namespace GL::Voxel
         {
             return chunk.x >= pos.x - renderdist && chunk.x <= pos.x + renderdist && chunk.y >= pos.y - renderdist && chunk.y <= pos.y + renderdist;
         }
-
-        bool IsLoaded(glm::ivec2 chunk, glm::ivec2 pos)
+        bool IsPreLoaded(glm::ivec2 chunk, glm::ivec2 pos)
         {
             return chunk.x >= pos.x - renderdist - preload && chunk.x <= pos.x + renderdist + preload &&
                    chunk.y >= pos.y - renderdist - preload && chunk.y <= pos.y + renderdist + preload;
         }
+        bool IsLoaded(glm::ivec2 chunk, glm::ivec2 pos)
+        {
+            return chunk.x >= pos.x - renderdist - preload - 1 && chunk.x <= pos.x + renderdist + preload + 1 &&
+                   chunk.y >= pos.y - renderdist - preload - 1 && chunk.y <= pos.y + renderdist + preload + 1;
+        }
 
         void LoadChunks(glm::ivec2 pos)
         {
-            int xbegin = pos.x - (renderdist + preload);
-            int xend = pos.x + (renderdist + preload);
+            int xbegin = pos.x - (renderdist + preload + 1);
+            int xend = pos.x + (renderdist + preload + 1);
             for (int x = xbegin; x <= xend; x++)
             {
-                int zbegin = pos.y - (renderdist + preload);
-                int zend = pos.y + (renderdist + preload);
+                int zbegin = pos.y - (renderdist + preload + 1);
+                int zend = pos.y + (renderdist + preload + 1);
                 for (int z = zbegin; z <= zend; z++)
                 {
-                    if (std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk) { return chunk->GetPos() == glm::ivec2{x, z}; }) == loaded.end())
+                    if (std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk)
+                                     { return chunk->GetPos() == glm::ivec2{x, z}; }) == loaded.end())
                     {
                         auto ptr = GetFree();
                         loaded.push_back(ptr);
@@ -104,10 +110,20 @@ namespace GL::Voxel
                             ptr->Load();
                         }
                     }
-                    else if (IsRendered({x, z}, pos) && std::find_if(rendered.begin(), rendered.end(), [&](Chunk *chunk) { return chunk->GetPos() == glm::ivec2{x, z}; }) == rendered.end())
+                    else if (IsRendered({x, z}, pos) && std::find_if(rendered.begin(), rendered.end(), [&](Chunk *chunk)
+                                                                     { return chunk->GetPos() == glm::ivec2{x, z}; }) == rendered.end())
                     {
-                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk) { return chunk->GetPos() == glm::ivec2{x, z}; });
+                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk)
+                                                  { return chunk->GetPos() == glm::ivec2{x, z}; });
                         rendered.push_back(*chunk);
+                        (*chunk)->Load();
+                    }
+                    else if (IsPreLoaded({x, z}, pos) && std::find_if(pre_loaded.begin(), pre_loaded.end(), [&](Chunk *chunk)
+                                                                      { return chunk->GetPos() == glm::ivec2{x, z}; }) == pre_loaded.end())
+                    {
+                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk)
+                                                  { return chunk->GetPos() == glm::ivec2{x, z}; });
+                        pre_loaded.push_back(*chunk);
                         (*chunk)->Load();
                     }
                 }
@@ -116,7 +132,8 @@ namespace GL::Voxel
 
         Chunk *GetChunk(glm::ivec2 pos)
         {
-            auto res = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *ptr) { return ptr->GetPos() == pos; });
+            auto res = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *ptr)
+                                    { return ptr->GetPos() == pos; });
             return res == rendered.end() ? nullptr : *res;
         }
 
@@ -135,16 +152,17 @@ namespace GL::Voxel
 
             LoadChunks(starting_pos);
 
-            cbid = cbh.GetList(CallbackType::PostRender).Add([&]() {
-                for (auto chunk : rendered)
-                {
-                    if (chunk->regen_mesh)
-                    {
-                        chunk->regen_mesh = false;
-                        pool.Add(&Chunk::GenFaces, chunk);
-                    }
-                }
-            });
+            cbid = cbh.GetList(CallbackType::PostRender).Add([&]()
+                                                             {
+                                                                 for (auto chunk : rendered)
+                                                                 {
+                                                                     if (chunk->regen_mesh)
+                                                                     {
+                                                                         chunk->regen_mesh = false;
+                                                                         pool.Add(&Chunk::GenFaces, chunk);
+                                                                     }
+                                                                 }
+                                                             });
         };
 
         ~ChunkManager()
@@ -198,7 +216,13 @@ namespace GL::Voxel
             count = loaded.size();
             for (auto chunk : loaded)
             {
-                pool.Add([&](Chunk *mchunk) {mchunk->Generate();mchunk->GenFaces(); count--; }, chunk);
+                pool.Add([&](Chunk *mchunk)
+                         {
+                             mchunk->Generate();
+                             mchunk->GenFaces();
+                             count--;
+                         },
+                         chunk);
             }
         }
 
@@ -211,14 +235,23 @@ namespace GL::Voxel
         {
             for (auto chunk = loaded.begin(); chunk != loaded.end();)
             {
-                if (!IsLoaded((*chunk)->GetPos(), pos))
+                if (!IsRendered((*chunk)->GetPos(), pos))
                 {
-
-                    (*chunk)->UnLoad();
                     if (auto chunk2 = std::find(rendered.begin(), rendered.end(), *chunk); !IsRendered((*chunk)->GetPos(), pos) && chunk2 != rendered.end())
                     {
                         rendered.erase(chunk2);
                     }
+                }
+                if (!IsPreLoaded((*chunk)->GetPos(), pos))
+                {
+                    if (auto chunk2 = std::find(rendered.begin(), rendered.end(), *chunk); !IsRendered((*chunk)->GetPos(), pos) && chunk2 != rendered.end())
+                    {
+                        pre_loaded.erase(chunk2);
+                    }
+                }
+                if (!IsLoaded((*chunk)->GetPos(), pos))
+                {
+                    (*chunk)->UnLoad();
                     free.push_back(*chunk);
                     chunk = loaded.erase(chunk);
                 }
