@@ -208,7 +208,7 @@ class Voxel_t final : public GL::Scene
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
-                                        chunks({0, 0}, blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
+                                        chunks( blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
 
@@ -221,6 +221,8 @@ public:
         loader->GetFlag("hide_menu") = 1;
 
         LoadPlayerData();
+
+        chunks.LoadChunks(chunks.GetChunkPos(camera.position.x,camera.position.z));
 
         glGenBuffers(2, &vbo);
         glGenVertexArrays(1, &vao);

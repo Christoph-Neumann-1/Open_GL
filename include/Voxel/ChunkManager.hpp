@@ -137,7 +137,7 @@ namespace GL::Voxel
             return res == rendered.end() ? nullptr : *res;
         }
 
-        ChunkManager(glm::ivec2 starting_pos, TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb)
+        ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb)
         {
             chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1));
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
@@ -149,8 +149,6 @@ namespace GL::Voxel
             }
 
             SetSeed();
-
-            LoadChunks(starting_pos);
 
             cbid = cbh.GetList(CallbackType::PostRender).Add([&]()
                                                              {
