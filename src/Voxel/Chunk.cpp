@@ -1,6 +1,5 @@
 #include <Voxel/Chunk.hpp>
 #include <Data.hpp>
-#include <Voxel/ChunkManager.hpp>
 
 #define SET_TEX_INDEX(x) lookup(B##x) = config.FindByName(#x)
 namespace GL::Voxel
@@ -69,8 +68,7 @@ namespace GL::Voxel
         SET_TEX_INDEX(Wood);
     };
 
-    Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, uint cbid,ChunkManager &_mgr) : render_thread(cb), callback_id(cbid), config(cfg),
-    mgr(_mgr)
+    Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, uint cbid) : render_thread(cb), callback_id(cbid), config(cfg)
     {
 
         UpdateCache();

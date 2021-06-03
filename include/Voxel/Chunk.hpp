@@ -11,7 +11,6 @@
 
 namespace GL::Voxel
 {
-class ChunkManager;
     class Chunk
     {
         bool isactive=false;
@@ -95,7 +94,6 @@ class ChunkManager;
 
         Face GenFace(glm::ivec3 pos, FaceIndices type);
 
-        ChunkManager &mgr;
 
     public:
         void Generate();
@@ -113,7 +111,7 @@ class ChunkManager;
             }
         }
 
-        Chunk(const TexConfig &cfg, CallbackList &cb,uint cbid,ChunkManager &_mgr);
+        Chunk(const TexConfig &cfg, CallbackList &cb,uint cbid);
         
         void Load();
 
