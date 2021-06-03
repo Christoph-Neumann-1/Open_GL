@@ -33,7 +33,7 @@ namespace GL::Voxel
             Chunk *ptr;
             if (free.size() == 0)
             {
-                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), c_cbid);
+                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), c_cbid, *this);
                 chunks.push_back(ptr);
             }
             else
@@ -143,7 +143,7 @@ namespace GL::Voxel
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
             for (int i = 0; i < 2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1); i++)
             {
-                auto ptr = new Chunk(cfg, pre_render, c_cbid);
+                auto ptr = new Chunk(cfg, pre_render, c_cbid, *this);
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }

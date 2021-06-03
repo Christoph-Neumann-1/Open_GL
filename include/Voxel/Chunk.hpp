@@ -8,8 +8,10 @@
 #include <string.h>
 #include <Voxel/ConfigReader.hpp>
 #include <Callback.hpp>
+
 namespace GL::Voxel
 {
+class ChunkManager;
     class Chunk
     {
         bool isactive=false;
@@ -93,6 +95,7 @@ namespace GL::Voxel
 
         Face GenFace(glm::ivec3 pos, FaceIndices type);
 
+        ChunkManager &mgr;
 
     public:
         void Generate();
@@ -110,7 +113,7 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(const TexConfig &cfg, CallbackList &cb,uint cbid);
+        Chunk(const TexConfig &cfg, CallbackList &cb,uint cbid,ChunkManager &_mgr);
         
         void Load();
 
