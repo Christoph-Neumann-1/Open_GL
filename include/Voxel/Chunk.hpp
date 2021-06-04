@@ -34,16 +34,7 @@ namespace GL::Voxel
             seed48((u_short *)&nseed);
             Seed = rand();
         }
-        enum BlockTypes
-        {
-            BAir,
-            BGrass,
-            BDirt,
-            BStone,
-            BWater,
-            BSand,
-            BWood,
-        };
+
 
     private:
         std::array<uint, 7> lookup_cache;
@@ -98,7 +89,6 @@ namespace GL::Voxel
     public:
         void Generate();
 
-        void UpdateCache();
 
         void GenFaces();
 

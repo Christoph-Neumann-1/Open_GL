@@ -1,7 +1,6 @@
 #include <Voxel/Chunk.hpp>
 #include <Data.hpp>
 
-#define SET_TEX_INDEX(x) lookup(B##x) = config.FindByName(#x)
 namespace GL::Voxel
 {
     int Chunk::Seed;
@@ -58,20 +57,10 @@ namespace GL::Voxel
         }
     }
 
-    void Chunk::UpdateCache()
-    {
-        SET_TEX_INDEX(Grass);
-        SET_TEX_INDEX(Dirt);
-        SET_TEX_INDEX(Stone);
-        SET_TEX_INDEX(Water);
-        SET_TEX_INDEX(Sand);
-        SET_TEX_INDEX(Wood);
-    };
-
     Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, uint cbid) : render_thread(cb), callback_id(cbid), config(cfg)
     {
 
-        UpdateCache();
+        lookup_cache = MakeBlockCache(config);
 
         glGenVertexArrays(2, &va);
         glGenBuffers(2, &buffer);

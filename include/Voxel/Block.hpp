@@ -2,6 +2,9 @@
 
 #include <glm/glm.hpp>
 #include <array>
+#include <Voxel/ConfigReader.hpp>
+
+#define SET_TEX_INDEX(x) cache[B##x] = cfg.FindByName(#x)
 
 namespace GL::Voxel
 {
@@ -13,14 +16,36 @@ namespace GL::Voxel
         constexpr B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
     };
 
-    static const std::array<glm::vec3,6> bnormals{
-        glm::vec3{0,0,1},
-        glm::vec3{0,0,-1},
-        glm::vec3{0,-1,0},
-        glm::vec3{0,1,0},
-        glm::vec3{1,0,0},
-        glm::vec3{-1,0,0}
+    enum BlockTypes
+    {
+        BAir,
+        BGrass,
+        BDirt,
+        BStone,
+        BWater,
+        BSand,
+        BWood,
     };
+
+    std::array<uint, 7> MakeBlockCache(const TexConfig &cfg)
+    {
+        std::array<uint, 7> cache;
+        SET_TEX_INDEX(Grass);
+        SET_TEX_INDEX(Dirt);
+        SET_TEX_INDEX(Stone);
+        SET_TEX_INDEX(Water);
+        SET_TEX_INDEX(Sand);
+        SET_TEX_INDEX(Wood);
+        return cache;
+    }
+
+    static const std::array<glm::vec3, 6> bnormals{
+        glm::vec3{0, 0, 1},
+        glm::vec3{0, 0, -1},
+        glm::vec3{0, -1, 0},
+        glm::vec3{0, 1, 0},
+        glm::vec3{1, 0, 0},
+        glm::vec3{-1, 0, 0}};
 
     static const std::array<B_Vertex, 36> bvertices{
         //Front

@@ -9,6 +9,8 @@
 #include <Voxel/Chunk.hpp>
 #include <Voxel/ConfigReader.hpp>
 #include <Voxel/ChunkManager.hpp>
+#include <Voxel/Inventory.hpp>
+
 const double raydist = 8;
 const float bps = 4;
 const double raysteps = 32;
@@ -79,7 +81,7 @@ class Voxel_t final : public GL::Scene
                 y = std::clamp(y, 0, 63);
 
                 uint *block = chunks.GetBlockAt(x, y, z);
-                if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
+                if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
                 {
                     *block = 0;
                     auto chunk = chunks.GetChunkPos(x, z);
@@ -106,7 +108,7 @@ class Voxel_t final : public GL::Scene
                 y = std::clamp(y, 0, 63);
 
                 uint *block = chunks.GetBlockAt(x, y, z);
-                if (*block != GL::Voxel::Chunk::BAir && *block != GL::Voxel::Chunk::BWater)
+                if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
                 {
                     glm::vec3 forward = camera.Forward();
                     glm::vec3 intersect_face;
@@ -143,9 +145,9 @@ class Voxel_t final : public GL::Scene
                     }
 
                     auto block2 = chunks.GetBlockAt(x + intersect_face.x, y + intersect_face.y, z + intersect_face.z);
-                    if (*block2 == GL::Voxel::Chunk::BAir || *block2 == GL::Voxel::Chunk::BWater)
+                    if (*block2 == GL::Voxel::BAir || *block2 == GL::Voxel::BWater)
                     {
-                        *block2 = GL::Voxel::Chunk::BStone;
+                        *block2 = GL::Voxel::BStone;
                         auto chunk = chunks.GetChunkPos(x + intersect_face.x, z + intersect_face.z);
                         chunks.GetChunk(chunk)->regen_mesh = true;
                         place_cooldown = 1 / bps;
