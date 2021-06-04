@@ -30,6 +30,7 @@ namespace GL::Voxel
     std::array<uint, 7> MakeBlockCache(const TexConfig &cfg)
     {
         std::array<uint, 7> cache;
+        cache[BAir] = 0;
         SET_TEX_INDEX(Grass);
         SET_TEX_INDEX(Dirt);
         SET_TEX_INDEX(Stone);

@@ -39,10 +39,6 @@ namespace GL::Voxel
     private:
         std::array<uint, 7> lookup_cache;
 
-        uint &lookup(BlockTypes index)
-        {
-            return lookup_cache[index - 1];
-        };
         struct Face
         {
             struct Vertex

@@ -11,7 +11,7 @@ namespace GL::Voxel
         for (int i = 0; i < 6; i++)
         {
             auto vert = bvertices[i + type];
-            face.vertices[i].tex = {(vert.tex.x + 0.5) / 64.0, (vert.tex.y + 0.5) / 64.0, config[lookup((BlockTypes)At(pos))].faces[type / 6]};
+            face.vertices[i].tex = {(vert.tex.x + 0.5) / 64.0, (vert.tex.y + 0.5) / 64.0, config[lookup_cache[(BlockTypes)At(pos)]].faces[type / 6]};
             face.vertices[i].pos = {vert.pos.x + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z + 16 * chunk_offset.y + pos.z};
         };
         return face;
