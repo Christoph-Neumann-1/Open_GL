@@ -4,7 +4,7 @@ rm -rf pkg
 
 mkdir -p pkg/scenes/bin pkg/modules/bin pkg/res
 
-cp build/Opengl shader Lib README.md run.sh pkg -r
+cp build/Opengl additional shader Lib README.md run.sh pkg -r
 
 rsync -r res/ pkg/res/ --exclude={'res/world','*.kra','*~'} 
 
