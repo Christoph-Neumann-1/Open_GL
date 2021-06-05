@@ -6,12 +6,17 @@ namespace GL::Voxel
 {
     class Inventory
     {
-        std::array<int, 6> blocks;
-        uint block;
+        std::array<int, NBLOCKS> blocks;
+        BlockTypes block = BDirt;
 
+    public:
         void Add()
         {
             blocks[block]++;
+        }
+        void AddTo(uint index)
+        {
+            blocks[index]++;
         }
         bool Remove()
         {
@@ -23,12 +28,15 @@ namespace GL::Voxel
         }
         void Select(BlockTypes type)
         {
-            block = type - 1;
+            if (IsStorable(type))
+                block = type;
         }
         uint GetCount()
         {
             return blocks[block];
         }
-        BlockTypes GetSelected() { return (BlockTypes)(block + 1); }
+        BlockTypes GetSelected() { return (BlockTypes)(block); }
+
+        Inventory() { blocks.fill(0); }
     };
 }

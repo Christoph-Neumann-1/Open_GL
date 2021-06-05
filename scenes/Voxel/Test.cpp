@@ -31,6 +31,7 @@ class Voxel_t final : public GL::Scene
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     uint vbo, ibo, vao;
     GL::Shader shader;
+    GL::Voxel::Inventory inventory;
 
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
     {
@@ -83,6 +84,10 @@ class Voxel_t final : public GL::Scene
                 uint *block = chunks.GetBlockAt(x, y, z);
                 if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
                 {
+                    if (GL::Voxel::IsStorable((GL::Voxel::BlockTypes)*block))
+                    {
+                        inventory.AddTo(*block);
+                    }
                     *block = 0;
                     auto chunk = chunks.GetChunkPos(x, z);
                     chunks.GetChunk(chunk)->regen_mesh = true;
@@ -90,6 +95,23 @@ class Voxel_t final : public GL::Scene
                     return;
                 }
             }
+        }
+    }
+
+    void Pick()
+    {
+        auto ray_pos = camera.position;
+        auto stepvec = camera.Forward() / raysteps * raydist;
+        for (int i = 0; i < raysteps; i++)
+        {
+            ray_pos += stepvec;
+            int x = round(ray_pos.x);
+            int y = round(ray_pos.y);
+            int z = round(ray_pos.z);
+            y = std::clamp(y, 0, 63);
+
+            uint *block = chunks.GetBlockAt(x, y, z);
+            inventory.Select((GL::Voxel::BlockTypes)*block);
         }
     }
 
@@ -145,12 +167,13 @@ class Voxel_t final : public GL::Scene
                     }
 
                     auto block2 = chunks.GetBlockAt(x + intersect_face.x, y + intersect_face.y, z + intersect_face.z);
-                    if (*block2 == GL::Voxel::BAir || *block2 == GL::Voxel::BWater)
+                    if ((*block2 == GL::Voxel::BAir || *block2 == GL::Voxel::BWater) && inventory.GetCount() > 0)
                     {
-                        *block2 = GL::Voxel::BStone;
+                        *block2 = inventory.GetSelected();
                         auto chunk = chunks.GetChunkPos(x + intersect_face.x, z + intersect_face.z);
                         chunks.GetChunk(chunk)->regen_mesh = true;
                         place_cooldown = 1 / bps;
+                        inventory.Remove();
                     }
                     return;
                 }
@@ -210,7 +233,7 @@ class Voxel_t final : public GL::Scene
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
-                                        chunks( blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
+                                        chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
 
@@ -224,7 +247,7 @@ public:
 
         LoadPlayerData();
 
-        chunks.LoadChunks(chunks.GetChunkPos(camera.position.x,camera.position.z));
+        chunks.LoadChunks(chunks.GetChunkPos(camera.position.x, camera.position.z));
 
         glGenBuffers(2, &vbo);
         glGenVertexArrays(1, &vao);

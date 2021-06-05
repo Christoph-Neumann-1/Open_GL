@@ -59,18 +59,6 @@ namespace GL::Voxel
             Left = 30
         };
 
-        bool IsTransparent(int x, int y, int z)
-        {
-            switch (blocks[x][y][z])
-            {
-            case BAir:
-                return true;
-            case BWater:
-                return true;
-            default:
-                return false;
-            }
-        }
 
         glm::ivec2 chunk_offset;
         std::vector<Face> faces;

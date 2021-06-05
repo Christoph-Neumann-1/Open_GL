@@ -6,6 +6,8 @@
 
 #define SET_TEX_INDEX(x) cache[B##x] = cfg.FindByName(#x)
 
+#define NBLOCKS 7
+
 namespace GL::Voxel
 {
     struct B_Vertex
@@ -26,6 +28,31 @@ namespace GL::Voxel
         BSand,
         BWood,
     };
+    bool IsTransparent(BlockTypes t)
+    {
+        switch (t)
+        {
+        case BAir:
+            return true;
+        case BWater:
+            return true;
+        default:
+            return false;
+        }
+    }
+    bool IsStorable(BlockTypes t)
+    {
+        switch (t)
+        {
+        case BWater:
+            return false;
+        case BAir:
+            return false;
+
+        default:
+            return true;
+        }
+    }
 
     std::array<uint, 7> MakeBlockCache(const TexConfig &cfg)
     {

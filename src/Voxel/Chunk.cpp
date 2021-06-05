@@ -122,6 +122,7 @@ namespace GL::Voxel
 
     void Chunk::GenFaces()
     {
+        auto is_tp=[&](int x, int y, int z)->bool{return IsTransparent((BlockTypes)blocks[x][y][z]);};
 
         faces.clear();
         faces_transparent.clear();
@@ -135,7 +136,7 @@ namespace GL::Voxel
                         continue;
                     bool special = false;
 
-                    if (!IsTransparent(x, y, z))
+                    if (!is_tp(x, y, z))
                     {
                         if (z == 15)
                         {
@@ -174,48 +175,48 @@ namespace GL::Voxel
                         {
                             if (x != 0)
                             {
-                                if (IsTransparent(x - 1, y, z))
+                                if (is_tp(x - 1, y, z))
                                     faces.push_back(GenFace({x, y, z}, Left));
                             }
                             if (x != 15)
                             {
-                                if (IsTransparent(x + 1, y, z))
+                                if (is_tp(x + 1, y, z))
                                     faces.push_back(GenFace({x, y, z}, Right));
                             }
                             if (y != 0)
                             {
-                                if (IsTransparent(x, y - 1, z))
+                                if (is_tp(x, y - 1, z))
                                     faces.push_back(GenFace({x, y, z}, Bottom));
                             }
                             if (y != 63)
                             {
-                                if (IsTransparent(x, y + 1, z))
+                                if (is_tp(x, y + 1, z))
                                     faces.push_back(GenFace({x, y, z}, Top));
                             }
                             if (z != 0)
                             {
-                                if (IsTransparent(x, y, z - 1))
+                                if (is_tp(x, y, z - 1))
                                     faces.push_back(GenFace({x, y, z}, Back));
                             }
                             if (z != 15)
                             {
-                                if (IsTransparent(x, y, z + 1))
+                                if (is_tp(x, y, z + 1))
                                     faces.push_back(GenFace({x, y, z}, Front));
                             }
                         }
                         else
                         {
-                            if (IsTransparent(x - 1, y, z))
+                            if (is_tp(x - 1, y, z))
                                 faces.push_back(GenFace({x, y, z}, Left));
-                            if (IsTransparent(x + 1, y, z))
+                            if (is_tp(x + 1, y, z))
                                 faces.push_back(GenFace({x, y, z}, Right));
-                            if (IsTransparent(x, y - 1, z))
+                            if (is_tp(x, y - 1, z))
                                 faces.push_back(GenFace({x, y, z}, Bottom));
-                            if (IsTransparent(x, y + 1, z))
+                            if (is_tp(x, y + 1, z))
                                 faces.push_back(GenFace({x, y, z}, Top));
-                            if (IsTransparent(x, y, z - 1))
+                            if (is_tp(x, y, z - 1))
                                 faces.push_back(GenFace({x, y, z}, Back));
-                            if (IsTransparent(x, y, z + 1))
+                            if (is_tp(x, y, z + 1))
                                 faces.push_back(GenFace({x, y, z}, Front));
                         }
                     }
