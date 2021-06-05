@@ -1,3 +1,8 @@
+/**
+ * @file ModuleLoader.hpp
+ * @deprecated Please dont use this. I don't know what I was thinking. Just amek a library and link it.
+ */
+
 #pragma once
 
 #include <dlfcn.h>

@@ -1,3 +1,8 @@
+/**
+ * @file
+ * Contains the callback system.
+ */
+
 #pragma once
 
 #include <unordered_map>
@@ -17,7 +22,7 @@ namespace GL
         PreRender,      ///<Before Render
         Render,         ///<While doing draw calls
         PostRender,     ///<After Render
-        ImGuiRender,    ///<For rendering debug interfaces
+        ImGuiRender,    ///<For rendering interfaces
         OnWindowResize, ///<Called when window size changes
     };
 
@@ -36,6 +41,9 @@ namespace GL
 
             void operator()() { function(); } //For convinience
 
+            /**
+             * @brief Move assignment operator
+             */
             Callback &operator=(Callback &&cb)
             {
                 id = cb.id;
@@ -44,6 +52,9 @@ namespace GL
                 return *this;
             }
 
+            /**
+             * @brief Copy assignment operator
+             */
             Callback &operator=(const Callback &cb)
             {
                 id = cb.id;
@@ -51,10 +62,13 @@ namespace GL
                 function = cb.function;
                 return *this;
             }
-
+            ///@brief Makes a copy of function
             Callback(uint _id, uint _obj_id, const std::function<void()> &func) : id(_id), obj_id(_obj_id), function(func) {}
+
+            ///@brief Moves function
             Callback(uint _id, uint _obj_id, std::function<void()> &&func) : id(_id), obj_id(_obj_id), function(std::move(func)) {}
 
+            ///@brief Move constructor
             Callback(Callback &&old) : id(old.id), obj_id(old.obj_id), function(std::move(old.function)) {}
         };
 
@@ -62,6 +76,7 @@ namespace GL
         std::vector<Callback> functions;
         uint current_id = 1; //Keeps track of the function ids, that have been assigned.
 
+        ///@brief Stores information used to remove a callback during the next Call()
         struct RemoveCallback
         {
             uint id;        //Either a function id or an id from CallbackHandler.
@@ -71,9 +86,12 @@ namespace GL
         };
 
         std::mutex mutex_queue; //Locked when adding or removing callbacks and when those modifications get applied.
-        std::vector<RemoveCallback> remove_queue;
-        std::vector<Callback> add_queue;
+        std::vector<RemoveCallback> remove_queue;//List of callbacks that should be removed.
+        std::vector<Callback> add_queue;//List of callbacks to add.
 
+        /**
+         * @brief First add then remove the callbacks in the queues
+         */
         void ProcessQueues();
 
     public:
@@ -88,6 +106,18 @@ namespace GL
             }
         }
 
+        /**
+         * @brief Add a new function to the list.
+         * 
+         * The function will be added during the next Call()
+         * 
+         * @tparam F any function
+         * @tparam Args arguments to be bound to the function. For example this
+         * @param function any function
+         * @param caller_id default 0
+         * @param args arguments to be bound to the function. For example this
+         * @return uint a new id
+         */
         template <typename F, typename... Args>
         uint Add(F &&function, uint caller_id = 0, Args... args)
         {
@@ -96,6 +126,10 @@ namespace GL
             return current_id++;
         }
 
+        /**
+         * @brief Without move of function
+         * @overload
+         */
         template <typename F, typename... Args>
         uint Add(const F &function, uint caller_id = 0, Args... args)
         {
@@ -107,7 +141,9 @@ namespace GL
         ///@brief Removes a callback by its id. Gets applied during the next Call()
         void Remove(uint id);
 
-        ///@brief Removes a callback by the id from CallbackHandler. Gets applied during the next Call()
+        ///@brief Removes a callback by the id from CallbackHandler.
+        ///
+        /// All matching functions get removed. Gets applied during the next Call()
         void RemoveAll(uint caller_id);
 
         ///@see Call()
@@ -135,9 +171,12 @@ namespace GL
         std::unordered_map<CallbackType, CallbackList> lists;
         std::atomic_uint current_id = 1; //Keeps track of which ids have been assigned.
         std::mutex list_m;
-        std::function<void(const std::function<void()> &)> SyncFunc;
+
+        ///Should allow for certain functions to be executed without worrying about thread safety.
+        std::function<void(const std::function<void()> &)> SyncFunc; 
 
     public:
+    ///@param sync Should allow for certain functions to be executed without worrying about thread safety.
         CallbackHandler(const std::function<void(const std::function<void()> &)> &sync) : SyncFunc(sync) {}
 
         ///@brief Returns the CallbackList associated with type.
@@ -150,7 +189,7 @@ namespace GL
         ///@brief Get a unique id.
         uint GenId() { return current_id++; }
 
-        ///@brief Calls RemoveAll on every CallbackList
+        ///@brief Calls RemoveAll() on every CallbackList
         void RemoveAll(uint callerid);
 
         ///Same as CallbackList.
@@ -172,7 +211,7 @@ namespace GL
         }
 
         /**
-         * @brief Callfunction without worrying about threads.
+         * @brief Call function without worrying about threads.
          * 
          * Calls the function provided when creating object.
          */

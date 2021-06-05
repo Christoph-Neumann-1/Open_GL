@@ -46,5 +46,5 @@ extern "C" std::map<std::string, void *> *_LOAD_()
  * @brief Include in all modules.
  * 
  * Contains macros and functions that make up all modules.
- * 
+ * @deprecated Please dont use this. I don't know what I was thinking. Just amek a library and link it.
  */

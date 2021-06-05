@@ -3,7 +3,11 @@
 #include <Camera/CameraControler.hpp>
 namespace GL
 {
-
+/**
+ * @brief Please dont use
+ * 
+ * @deprecated 
+ */
     class FpCam : public CameraControler
     {
         double movement;

@@ -3,6 +3,10 @@
 #include <Camera/CameraControler.hpp>
 namespace GL
 {
+    /**
+     * @brief Can rotate in all directions.
+     * 
+     */
     class Flycam : public CameraControler
     {
 

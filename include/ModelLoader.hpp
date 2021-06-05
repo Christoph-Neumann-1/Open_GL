@@ -1,3 +1,10 @@
+/**
+ * @file
+ * 
+ * Dont ask why it is in one file or why it is a header.
+ * No, I won't document this file.
+ */
+
 #pragma once
 
 #include <Logger.hpp>
@@ -14,6 +21,9 @@
 namespace GL
 {
 
+    /**
+     * @brief When using instancing this defines how the buffer is structured
+     */
     struct InstanceBufferLayout
     {
         struct Attribute

@@ -24,6 +24,7 @@ namespace GL
         glm::dvec3 Forward() const { return glm::dvec3(glm::vec4{0, 0, -1, 0} * glm::toMat4(rotation)); }
         glm::dvec3 Right() const { return glm::cross(Forward(), Up()); }
 
+        ///Generate the view matrix
         glm::mat4 ComputeMatrix() const
         {
             return glm::lookAt(

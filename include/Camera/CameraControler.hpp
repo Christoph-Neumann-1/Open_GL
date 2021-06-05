@@ -4,6 +4,11 @@
 
 namespace GL
 {
+    /**
+     * @brief Base for cameras.
+     * 
+     * Camera3D stores the values. Derive from this class if you want to add logic.
+     */
     class CameraControler
     {
     protected:
