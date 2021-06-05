@@ -111,7 +111,12 @@ class Voxel_t final : public GL::Scene
             y = std::clamp(y, 0, 63);
 
             uint *block = chunks.GetBlockAt(x, y, z);
-            inventory.Select((GL::Voxel::BlockTypes)*block);
+            if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
+            {
+                printf("Hit block %i at %i %i %i\n", *block, x, y, z);
+                inventory.Select((GL::Voxel::BlockTypes)*block);
+                return;
+            }
         }
     }
 
@@ -205,10 +210,12 @@ class Voxel_t final : public GL::Scene
         glBindVertexArray(0);
         shader.UnBind();
 
-        if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+        if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT))
             Mine();
-        else if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        else if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT))
             Place();
+        if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_MIDDLE))
+            Pick();
         if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
         {
             if (!r_pressed)
