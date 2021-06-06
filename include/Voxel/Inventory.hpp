@@ -1,6 +1,7 @@
 #pragma once
 #include <Voxel/Block.hpp>
 #include <array>
+#include <Voxel/Commonfs.hpp>
 
 namespace GL::Voxel
 {
@@ -8,33 +9,26 @@ namespace GL::Voxel
     {
         std::array<uint, NBLOCKS> blocks;
         BlockTypes block = BDirt;
+        FileLayout file;
+        uint nBlocks;
 
     public:
+        Inventory() : file(ROOT_Directory + "/res/world/Inventory")
+        {
+            file.AddElement<uint>(&nBlocks, 1);
+            file.AddElement<BlockTypes>(&block, 1);
+            file.AddElement<uint>(&blocks[0],&nBlocks);
+        }
+
         void Load()
         {
-            auto file = fopen((ROOT_Directory + "/res/world/Inventory").c_str(), "r");
             blocks.fill(0);
-            if (file)
-            {
-                uint n;
-                fread(&n, sizeof(uint), 1, file);
-                fread(&block,sizeof(BlockTypes),1,file);
-                fread(&blocks,  sizeof(uint), n, file);
-                fclose(file);
-            }
+            file.Load();
         }
         void Store()
         {
-            auto file = fopen((ROOT_Directory + "/res/world/Inventory").c_str(), "w");
-            if (file)
-            {
-                uint n = NBLOCKS;
-                fwrite(&n,  sizeof(uint), 1, file);
-                fwrite(&block,sizeof(BlockTypes),1,file);
-                fwrite(&blocks,  sizeof(uint), n, file);
-                fclose(file);
-            }
-            else
+            nBlocks=NBLOCKS;
+            if(!file.Store())
             {
                 Logger()("Failed to write inventory.");
             }
@@ -66,6 +60,5 @@ namespace GL::Voxel
             return blocks[block];
         }
         BlockTypes GetSelected() { return (BlockTypes)(block); }
-
     };
 }
