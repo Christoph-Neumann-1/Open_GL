@@ -15,8 +15,8 @@ namespace GL::Voxel
     public:
         Inventory() : file(ROOT_Directory + "/res/world/Inventory")
         {
-            file.AddElement<uint>(&nBlocks, 1);
-            file.AddElement<BlockTypes>(&block, 1);
+            file.AddElement<uint>(&nBlocks);
+            file.AddElement<BlockTypes>(&block);
             file.AddElement<uint>(&blocks[0],&nBlocks);
         }
 

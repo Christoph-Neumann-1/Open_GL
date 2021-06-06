@@ -82,7 +82,7 @@ namespace GL::Voxel
             return 1;
         }
         template <typename T>
-        void AddElement(T *data, unsigned int nn)
+        void AddElement(T *data, unsigned int nn=1)
         {
             elements.emplace_back(new Element<T>(data, nn));
         }

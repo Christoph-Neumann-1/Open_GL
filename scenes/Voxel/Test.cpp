@@ -32,6 +32,7 @@ class Voxel_t final : public GL::Scene
     uint vbo, ibo, vao;
     GL::Shader shader;
     GL::Voxel::Inventory inventory;
+    GL::Voxel::FileLayout file;
 
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
     {
@@ -40,31 +41,6 @@ class Voxel_t final : public GL::Scene
         float prod2 = glm::dot(rayVector, planeNormal);
         float prod3 = prod1 / prod2;
         return rayPoint - rayVector * prod3;
-    }
-
-    void StorePlayerData()
-    {
-        auto file = fopen((ROOT_Directory + "/res/world/PLAYER").c_str(), "w");
-        if (!file)
-        {
-            perror("Store Player Data");
-            return;
-        }
-        fwrite(&camera.position, sizeof(camera.position), 1, file);
-        fwrite(&controller.pitch, 2 * sizeof(double), 1, file);
-        fclose(file);
-    }
-
-    void LoadPlayerData()
-    {
-        auto file = fopen((ROOT_Directory + "/res/world/PLAYER").c_str(), "r");
-        if (file)
-        {
-            fread(&camera.position, sizeof(camera.position), 1, file);
-            fread(&controller.pitch, 2 * sizeof(double), 1, file);
-
-            fclose(file);
-        }
     }
 
     void Mine()
@@ -219,13 +195,16 @@ class Voxel_t final : public GL::Scene
         {
             if (!r_pressed)
             {
-                chunks.Regenerate();
-                inventory.Load();
+                camera.position=glm::dvec3();
+                controller.pitch=0;
+                controller.yaw=0;
                 r_pressed = true;
             }
         }
         else if (r_pressed)
         {
+            chunks.Regenerate();
+            inventory.Load();
             r_pressed = false;
         }
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
@@ -240,7 +219,8 @@ class Voxel_t final : public GL::Scene
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
-                                        chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
+                                        chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"),
+                                        file(ROOT_Directory + "/res/world/PLAYER")
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
 
@@ -252,7 +232,11 @@ public:
 
         loader->GetFlag("hide_menu") = 1;
 
-        LoadPlayerData();
+        file.AddElement<glm::dvec3>(&camera.position);
+        file.AddElement<double>(&controller.pitch);
+        file.AddElement<double>(&controller.yaw);
+
+        file.Load();
 
         chunks.LoadChunks(chunks.GetChunkPos(camera.position.x, camera.position.z));
 
@@ -293,7 +277,7 @@ public:
         RemoveFunctions();
         glDeleteBuffers(2, &vbo);
         glDeleteVertexArrays(1, &vao);
-        StorePlayerData();
+        file.Store();
         inventory.Store();
     }
 };

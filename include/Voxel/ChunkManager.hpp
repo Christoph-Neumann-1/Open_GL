@@ -134,7 +134,7 @@ namespace GL::Voxel
                 free.push_back(ptr);
             }
 
-            file.AddElement<int>(&Chunk::Seed,1);
+            file.AddElement<int>(&Chunk::Seed);
 
             SetSeed();
 
