@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <GLFW/glfw3.h>
 
 namespace GL
 {
@@ -14,6 +15,7 @@ namespace GL
     public:
         glm::dquat rotation;
         glm::dvec3 position;
+        static bool allow_mouse_lock;
 
         Camera3D(glm::dvec3 pos = glm::dvec3(0.0f, 0.0f, 0.0f), glm::dquat rot = glm::dquat(1, 0, 0, 0)) : rotation(rot), position(pos) {}
 
@@ -31,6 +33,17 @@ namespace GL
                 position,
                 position + Forward(),
                 Up());
+        }
+        static void LockMouse(GLFWwindow *window)
+        {
+            if (!allow_mouse_lock)
+                return;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        }
+        static void UnlockMouse(GLFWwindow *window)
+        {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
     };
 }

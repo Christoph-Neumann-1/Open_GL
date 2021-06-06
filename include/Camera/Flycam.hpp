@@ -18,15 +18,14 @@ namespace GL
         double m_y;
 
     public:
-        Flycam(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 80, double mouse = 0.11) : CameraControler(_cam,_window), movement(move), rotation(rot), mouseSpeed(mouse)
+        Flycam(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 80, double mouse = 0.11) : CameraControler(_cam, _window), movement(move), rotation(rot), mouseSpeed(mouse)
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+            Camera3D::LockMouse(window);
             glfwGetCursorPos(window, &m_x, &m_y);
         }
         ~Flycam()
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            Camera3D::UnlockMouse(window);
         }
 
         void Update(double deltatime) override
@@ -53,7 +52,7 @@ namespace GL
 
             cam->rotation = glm::rotate(cam->rotation, glm::radians(mouseSpeed * mousedeltay), right);
             cam->rotation = glm::rotate(cam->rotation, glm::radians(mouseSpeed * mousedeltax), up_cam);
-            cam->rotation = glm::rotate(cam->rotation, glm::radians(rotation*deltatime * (double)(glfwGetKey(window, GLFW_KEY_Q) - glfwGetKey(window, GLFW_KEY_E))), forward);
+            cam->rotation = glm::rotate(cam->rotation, glm::radians(rotation * deltatime * (double)(glfwGetKey(window, GLFW_KEY_Q) - glfwGetKey(window, GLFW_KEY_E))), forward);
         }
     };
 }

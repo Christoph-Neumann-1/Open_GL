@@ -26,13 +26,12 @@ namespace GL
         double pitch = 0, yaw = 0; 
         Fplocked(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 0.12) : CameraControler(_cam, _window), movement(move), rotation(rot)
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+            Camera3D::LockMouse(window);
             glfwGetCursorPos(window, &m_x, &m_y);
         }
         ~Fplocked()
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            Camera3D::UnlockMouse(window);
         }
 
         void Update(double deltatime) override

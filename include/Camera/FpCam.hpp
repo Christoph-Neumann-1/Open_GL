@@ -3,7 +3,7 @@
 #include <Camera/CameraControler.hpp>
 namespace GL
 {
-/**
+    /**
  * @brief Please dont use
  * 
  * @deprecated 
@@ -19,15 +19,14 @@ namespace GL
         double m_y;
 
     public:
-        FpCam(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 0.15) : CameraControler(_cam,_window), movement(move), rotation(rot)
+        FpCam(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 0.15) : CameraControler(_cam, _window), movement(move), rotation(rot)
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+            Camera3D::LockMouse(window);
             glfwGetCursorPos(window, &m_x, &m_y);
         }
         ~FpCam()
         {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            Camera3D::UnlockMouse(window);
         }
 
         void Update(double deltatime) override
