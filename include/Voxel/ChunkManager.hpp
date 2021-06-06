@@ -5,6 +5,7 @@
 #include <Threadpool.hpp>
 #include <filesystem>
 #include <Data.hpp>
+#include <Voxel/Commonfs.hpp>
 
 namespace GL::Voxel
 {
@@ -28,6 +29,8 @@ namespace GL::Voxel
 
         std::atomic_uint count = 0;
 
+        FileLayout file;
+
         Chunk *GetFree()
         {
             Chunk *ptr;
@@ -46,30 +49,12 @@ namespace GL::Voxel
 
         void SetSeed()
         {
-            auto file = fopen((ROOT_Directory + "/res/world/SEED").c_str(), "r");
-            if (!file)
+
+            if (!file.Load())
             {
                 Chunk::NewSeed();
-                StoreSeed();
+                file.Store();
             }
-            else
-            {
-                fread(&Chunk::Seed, sizeof(int), 1, file);
-                fclose(file);
-            }
-        }
-
-        void StoreSeed()
-        {
-
-            auto file = fopen((ROOT_Directory + "/res/world/SEED").c_str(), "w");
-            if (!file)
-            {
-                perror("StoreSeed");
-                return;
-            }
-            fwrite(&Chunk::Seed, sizeof(int), 1, file);
-            fclose(file);
         }
 
     public:
@@ -137,7 +122,8 @@ namespace GL::Voxel
             return res == rendered.end() ? nullptr : *res;
         }
 
-        ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb)
+        ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb),
+                                                            file(ROOT_Directory + "/res/world/SEED")
         {
             chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1));
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
@@ -147,6 +133,8 @@ namespace GL::Voxel
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }
+
+            file.AddElement<int>(&Chunk::Seed,1);
 
             SetSeed();
 
@@ -204,13 +192,13 @@ namespace GL::Voxel
         void Regenerate()
         {
 
-            for (auto &file : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
-                std::filesystem::remove(file);
+            for (auto &file_ : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
+                std::filesystem::remove(file_);
 
             if (count > 0)
                 return;
             Chunk::NewSeed();
-            StoreSeed();
+            file.Store();
             count = loaded.size();
             for (auto chunk : loaded)
             {
