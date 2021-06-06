@@ -6,10 +6,38 @@ namespace GL::Voxel
 {
     class Inventory
     {
-        std::array<int, NBLOCKS> blocks;
+        std::array<uint, NBLOCKS> blocks;
         BlockTypes block = BDirt;
 
     public:
+        void Load()
+        {
+            auto file = fopen((ROOT_Directory + "/res/world/Inventory").c_str(), "r");
+            blocks.fill(0);
+            if (file)
+            {
+                uint n;
+                fread(&n, 4, 1, file);
+                fread(&blocks, 4, n, file);
+                fclose(file);
+            }
+        }
+        void Store()
+        {
+            auto file = fopen((ROOT_Directory + "/res/world/Inventory").c_str(), "w");
+            if (file)
+            {
+                uint n = NBLOCKS;
+                fwrite(&n, 4, 1, file);
+                fwrite(&blocks, 4, n, file);
+                fclose(file);
+            }
+            else
+            {
+                Logger()("Failed to write inventory.");
+            }
+        }
+
         void Add()
         {
             blocks[block]++;
@@ -37,6 +65,5 @@ namespace GL::Voxel
         }
         BlockTypes GetSelected() { return (BlockTypes)(block); }
 
-        Inventory() { blocks.fill(0); }
     };
 }

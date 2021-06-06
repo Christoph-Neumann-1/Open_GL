@@ -113,7 +113,6 @@ class Voxel_t final : public GL::Scene
             uint *block = chunks.GetBlockAt(x, y, z);
             if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
             {
-                printf("Hit block %i at %i %i %i\n", *block, x, y, z);
                 inventory.Select((GL::Voxel::BlockTypes)*block);
                 return;
             }
@@ -221,6 +220,7 @@ class Voxel_t final : public GL::Scene
             if (!r_pressed)
             {
                 chunks.Regenerate();
+                inventory.Load();
                 r_pressed = true;
             }
         }
@@ -286,6 +286,7 @@ public:
         shader.SetUniformMat4f("u_MVP", mat);
         shader.SetUniform4f("u_Color", 1, 1, 1, 1);
         shader.UnBind();
+        inventory.Load();
     }
     ~Voxel_t()
     {
@@ -293,6 +294,7 @@ public:
         glDeleteBuffers(2, &vbo);
         glDeleteVertexArrays(1, &vao);
         StorePlayerData();
+        inventory.Store();
     }
 };
 
