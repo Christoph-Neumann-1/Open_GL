@@ -17,8 +17,9 @@ namespace GL::Voxel
             if (file)
             {
                 uint n;
-                fread(&n, 4, 1, file);
-                fread(&blocks, 4, n, file);
+                fread(&n, sizeof(uint), 1, file);
+                fread(&block,sizeof(BlockTypes),1,file);
+                fread(&blocks,  sizeof(uint), n, file);
                 fclose(file);
             }
         }
@@ -28,8 +29,9 @@ namespace GL::Voxel
             if (file)
             {
                 uint n = NBLOCKS;
-                fwrite(&n, 4, 1, file);
-                fwrite(&blocks, 4, n, file);
+                fwrite(&n,  sizeof(uint), 1, file);
+                fwrite(&block,sizeof(BlockTypes),1,file);
+                fwrite(&blocks,  sizeof(uint), n, file);
                 fclose(file);
             }
             else
