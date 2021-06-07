@@ -1,7 +1,7 @@
 #!/bin/bash
 
 rm -rf pkg
-rm pkg.tar.xz pkg.tar.xz.sig
+rm -rf pkg.tar.xz pkg.tar.xz.sig
 
 mkdir -p pkg/scenes/bin pkg/modules/bin pkg/res
 
