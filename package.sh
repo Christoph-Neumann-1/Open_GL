@@ -7,7 +7,7 @@ mkdir -p pkg/scenes/bin pkg/modules/bin pkg/res
 
 cp build/Opengl additional shader Lib README.md run.sh pkg -r
 
-rsync -r res/ pkg/res/ --exclude={'res/world','*.kra','*~'} 
+rsync -r res/ pkg/res/ --exclude={'world','*.kra','*~'} 
 
 cp scenes/bin/* pkg/scenes/bin -r
 
