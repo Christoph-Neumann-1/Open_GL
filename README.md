@@ -13,6 +13,8 @@ This program uses the following libraries:
     [imgui](https://github.com/ocornut/imgui) [LICENSE](./additional/imgui_license)<br>
     [fastnoiselite](https://github.com/Auburn/FastNoiseLite) [LICENSE](./additional/noise_license)<br>
 
+The textures are from [this project](https://github.com/Hopson97/MineCraft-One-Week-Challenge) which is available under this [license](./additional/hopson97_license)
+
 This program is licensed under the MIT License:
 
 **Copyright 2021 Christoph Neumann**

@@ -218,7 +218,7 @@ class Voxel_t final : public GL::Scene
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/Newblock.cfg"),
+                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/block.cfg"),
                                         chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"),
                                         file(ROOT_Directory + "/res/world/PLAYER")
     {
@@ -286,7 +286,7 @@ void Voxel_t::TexSetup()
 {
     stbi_set_flip_vertically_on_load(1);
     int w, h, bpp;
-    auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/Newblock.png").c_str(), &w, &h, &bpp, 4);
+    auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/block.png").c_str(), &w, &h, &bpp, 4);
 
     glGenTextures(1, &texid);
     glBindTexture(GL_TEXTURE_2D_ARRAY, texid);
