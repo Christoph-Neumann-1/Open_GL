@@ -12,17 +12,18 @@
 #include <thread>
 #include <condition_variable>
 #include <Data.hpp>
+#include <Input.hpp>
 
 using namespace GL;
 using cbt = CallbackType;
 
-void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syncs, const std::function<void()> &func)
+static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syncs, const std::function<void()> &func)
 {
     std::scoped_lock lk(mutex);
     syncs.push_back(func);
 }
 
-void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv, float frequency,
+static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv, float frequency,
                 std::atomic_bool &should_sync, std::atomic_bool &is_synced)
 {
     Logger log;
