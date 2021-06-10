@@ -6,9 +6,12 @@
 
 namespace GL
 {
+    class InputHandler;
+
     ///@brief Simple wrapper. Manages window size.
     ///
     ///@attention Not thread safe. Should only be used in render thread anyways.
+    ///@attention Only create one instance
     class Window
     {
         int size_x;
@@ -27,6 +30,7 @@ namespace GL
         }
 
     public:
+        InputHandler *inputptr;
         Window(GLFWwindow *window, CallbackList &callback, int refresh = 0);
 
         ~Window();

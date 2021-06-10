@@ -4,12 +4,14 @@
 #include <Window.hpp>
 #include <unordered_map>
 #include <Callback.hpp>
+#include <Window.hpp>
 
 namespace GL
 {
+    ///@attention Only create one instance
     class InputHandler
     {
-        Window &window;
+        GL::Window &window;
         std::unordered_map<int, CallbackList *> callbacks;
         std::function<void(GLFWwindow *, int, int code, int action, int)> cbf;
 
@@ -24,8 +26,9 @@ namespace GL
         InputHandler(Window &w) : window(w)
         {
 
-            glfwSetKeyCallback(w, [](GLFWwindow * window, int, int code, int action, int)
-                               { ((InputHandler*)glfwGetWindowUserPointer(window))->CallbackFunc(code, action); });
+            glfwSetKeyCallback(w, [](GLFWwindow * ww, int, int code, int action, int)
+                               { ((Window*)glfwGetWindowUserPointer(ww))->inputptr->CallbackFunc(code, action); });
+                               window.inputptr=this;
         }
         ~InputHandler()
         {
