@@ -195,7 +195,7 @@ class Voxel_t final : public GL::Scene
         {
             if (!r_pressed)
             {
-                camera.position=glm::dvec3();
+                camera.position=glm::dvec3(0,40,0);
                 controller.pitch=0;
                 controller.yaw=0;
                 r_pressed = true;
