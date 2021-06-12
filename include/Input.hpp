@@ -10,25 +10,48 @@ namespace GL
     ///@attention Only create one instance
     class InputHandler
     {
+    public:
+        enum class Action
+        {
+            Release,
+            Press,
+            Repeat,
+            ReleasePress,
+            PressRepeat,
+            All
+        };
+
+    private:
         struct KeyCallbacks
         {
             struct Element
             {
-                std::function<void()> func;
+                std::function<void(int)> func;
                 uint id;
+                Action type;
                 bool operator==(uint idd)
                 {
                     return idd == id;
                 }
 
-                Element(const std::function<void()> &f, uint idd) : func(f), id(idd) {}
-                Element(std::function<void()> &&f, uint idd) : func(std::move(f)), id(idd) {}
+                Element(const std::function<void(int)> &f, uint idd, Action type_ = Action::Press) : func(f), id(idd), type(type_) {}
+                Element(std::function<void(int)> &&f, uint idd, Action type_ = Action::Press) : func(std::move(f)), id(idd), type(type_) {}
             };
             std::vector<Element> funcs;
-            void Call()
+            void Call(int action)
             {
                 for (auto &f : funcs)
-                    f.func();
+                {
+                    if (f.type != Action::All &&
+                    !(action==GLFW_RELEASE && (f.type==Action::ReleasePress ||f.type==Action::Release))&&
+                    !(action==GLFW_PRESS && (f.type==Action::ReleasePress||f.type==Action::Press||f.type==Action::PressRepeat))&&
+                    !(action==GLFW_REPEAT && (f.type==Action::PressRepeat||f.type==Action::Repeat))
+                    )
+                    {
+                        continue;
+                    }
+                    f.func(action);
+                }
             }
         };
 
@@ -37,12 +60,12 @@ namespace GL
         std::mutex mutex;
         uint current_id = 1;
 
-        void CallbackFunc(int code, int action)
+        void KeyCallbackFunc(int code, int action)
         {
             std::scoped_lock lk(mutex);
             if (callbacks.contains(code))
             {
-                callbacks[code].Call();
+                callbacks[code].Call(action);
             }
         }
 
@@ -56,39 +79,43 @@ namespace GL
         public:
             template <typename F, typename... Args>
 
-            KeyCallback(InputHandler &handler, int code, F &&func, Args... args) : handle(handler), scancode(code)
+            KeyCallback(InputHandler &handler, int code, Action type, F &&func, Args... args) : handle(handler), scancode(code)
             {
-                id = handle.AddCallback(scancode, std::move(func), args...);
+                id = handle.AddKeyCallback(scancode, type, std::move(func), args...);
             }
             template <typename F, typename... Args>
 
-            KeyCallback(InputHandler &handler, int code, const F &func, Args... args) : handle(handler), scancode(code)
+            KeyCallback(InputHandler &handler, int code, Action type, const F &func, Args... args) : handle(handler), scancode(code)
             {
-                id = handle.AddCallback(scancode, func, args...);
+                id = handle.AddKeyCallback(scancode, type, func, args...);
             }
             ~KeyCallback()
             {
-                handle.RemoveCallback(scancode, id);
+                handle.RemoveKeyCallback(scancode, id);
             }
         };
 
+        class KeyState
+        {
+        };
+
         template <typename F, typename... Args>
-        uint AddCallback(int code, const F &func, Args... args)
+        uint AddKeyCallback(int code, Action type, const F &func, Args... args)
         {
             std::scoped_lock mmutex(mutex);
-            callbacks[code].funcs.emplace_back(std::bind(func, args...), current_id);
+            callbacks[code].funcs.emplace_back(std::bind(func, std::placeholders::_1, args...), current_id, type);
             return current_id++;
         }
 
         template <typename F, typename... Args>
-        uint AddCallback(int code, F &&func, Args... args)
+        uint AddKeyCallback(int code, Action type, F &&func, Args... args)
         {
             std::scoped_lock mmutex(mutex);
-            callbacks[code].funcs.emplace_back(std::bind(std::move(func), args...), current_id);
+            callbacks[code].funcs.emplace_back(std::bind(std::move(func), std::placeholders::_1, args...), current_id, type);
             return current_id++;
         }
 
-        void RemoveCallback(int code, uint id)
+        void RemoveKeyCallback(int code, uint id)
         {
             std::scoped_lock mmutex(mutex);
             auto &cbl = callbacks[code];
@@ -100,7 +127,8 @@ namespace GL
 
             glfwSetKeyCallback(w, [](GLFWwindow *ww, int, int code, int action, int)
                                { ((Window *)glfwGetWindowUserPointer(ww))
-                                     ->inputptr->CallbackFunc(code, action); });
+                                     ->inputptr->KeyCallbackFunc(code, action); });
+            // TODO add mouse buttons
             window.inputptr = this;
         }
         ~InputHandler()

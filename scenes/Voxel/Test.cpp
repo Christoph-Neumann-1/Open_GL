@@ -21,7 +21,6 @@ class Voxel_t final : public GL::Scene
     GL::Shader cshader;
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
-    GL::InputHandler::KeyCallback keytest;
     GL::Camera3D camera;
     GL::Fplocked controller;
     GL::Voxel::TexConfig blocks;
@@ -220,14 +219,12 @@ class Voxel_t final : public GL::Scene
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        keytest(*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_G), []()
-                                                { printf("Key\n"); }),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/block.cfg"),
                                         chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"),
                                         file(ROOT_Directory + "/res/world/PLAYER")
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
-
+        camera.UnlockMouse(loader->GetWindow());
         cshader.Bind();
         cshader.SetUniform1i("u_Texture", 0);
 
