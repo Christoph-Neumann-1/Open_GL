@@ -8,7 +8,7 @@ namespace GL::Voxel
     class Inventory
     {
         std::array<uint, NBLOCKS> blocks;
-        BlockTypes block = BDirt;
+        BlockTypes block = BAir;
         FileLayout file;
         uint nBlocks;
 
@@ -59,6 +59,6 @@ namespace GL::Voxel
         {
             return blocks[block];
         }
-        BlockTypes GetSelected() { return (BlockTypes)(block); }
+        BlockTypes GetSelected() { return block; }
     };
 }

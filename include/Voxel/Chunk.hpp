@@ -37,7 +37,7 @@ namespace GL::Voxel
 
 
     private:
-        std::array<uint, 7> lookup_cache;
+        std::array<uint, NBLOCKS> lookup_cache;
 
         struct Face
         {
