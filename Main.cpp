@@ -119,6 +119,8 @@ int main(int argc, char **argv)
         }
 
         Window window(_window, cbh.GetList(cbt::OnWindowResize),vidmode->refreshRate);
+        InputHandler handler(window);
+        window.inputptr=&handler;
 
         glfwMakeContextCurrent(window);
         glfwWindowHint(GLFW_REFRESH_RATE, 60);

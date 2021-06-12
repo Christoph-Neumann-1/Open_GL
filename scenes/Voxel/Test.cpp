@@ -10,6 +10,7 @@
 #include <Voxel/ConfigReader.hpp>
 #include <Voxel/ChunkManager.hpp>
 #include <Voxel/Inventory.hpp>
+#include <Input.hpp>
 
 const double raydist = 8;
 const float bps = 4;
@@ -20,6 +21,7 @@ class Voxel_t final : public GL::Scene
     GL::Shader cshader;
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
+    GL::InputHandler::KeyCallback keytest;
     GL::Camera3D camera;
     GL::Fplocked controller;
     GL::Voxel::TexConfig blocks;
@@ -195,9 +197,9 @@ class Voxel_t final : public GL::Scene
         {
             if (!r_pressed)
             {
-                camera.position=glm::dvec3(0,40,0);
-                controller.pitch=0;
-                controller.yaw=0;
+                camera.position = glm::dvec3(0, 40, 0);
+                controller.pitch = 0;
+                controller.yaw = 0;
                 r_pressed = true;
             }
         }
@@ -218,6 +220,8 @@ class Voxel_t final : public GL::Scene
 
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
+                                        keytest(*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_G), []()
+                                                { printf("Key\n"); }),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/block.cfg"),
                                         chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"),
                                         file(ROOT_Directory + "/res/world/PLAYER")
@@ -258,7 +262,7 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         shader.Bind();
         glm::mat4 mat;
-        auto window = loader->GetWindow();
+        auto &window = loader->GetWindow();
         if (window.GetWidth() > window.GetHeigth())
         {
             mat = glm::ortho(-(float)window.GetWidth() / window.GetHeigth(), (float)window.GetWidth() / window.GetHeigth(), -1.0f, 1.0f);

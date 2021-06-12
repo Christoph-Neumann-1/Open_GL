@@ -17,8 +17,8 @@ namespace GL
                 std::function<void()> func;
                 uint id;
                 bool operator==(uint idd)
-                {   
-                    return idd==id;
+                {
+                    return idd == id;
                 }
 
                 Element(const std::function<void()> &f, uint idd) : func(f), id(idd) {}
@@ -47,17 +47,21 @@ namespace GL
         }
 
     public:
-        template <typename F, typename... Args>
         class KeyCallback
         {
             uint id;
             InputHandler &handle;
             int scancode;
 
+        public:
+            template <typename F, typename... Args>
+
             KeyCallback(InputHandler &handler, int code, F &&func, Args... args) : handle(handler), scancode(code)
             {
                 id = handle.AddCallback(scancode, std::move(func), args...);
             }
+            template <typename F, typename... Args>
+
             KeyCallback(InputHandler &handler, int code, const F &func, Args... args) : handle(handler), scancode(code)
             {
                 id = handle.AddCallback(scancode, func, args...);
@@ -95,7 +99,8 @@ namespace GL
         {
 
             glfwSetKeyCallback(w, [](GLFWwindow *ww, int, int code, int action, int)
-                               { ((Window *)glfwGetWindowUserPointer(ww))->inputptr->CallbackFunc(code, action); });
+                               { ((Window *)glfwGetWindowUserPointer(ww))
+                                     ->inputptr->CallbackFunc(code, action); });
             window.inputptr = this;
         }
         ~InputHandler()
