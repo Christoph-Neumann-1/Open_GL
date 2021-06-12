@@ -33,14 +33,16 @@ namespace GL
         };
 
         GL::Window &window;
-        std::unordered_map<int, KeyCallbacks *> callbacks;
+        std::unordered_map<int, KeyCallbacks> callbacks;
         std::mutex mutex;
         uint current_id = 1;
 
         void CallbackFunc(int code, int action)
         {
+            std::scoped_lock lk(mutex);
             if (callbacks.contains(code))
             {
+                callbacks[code].Call();
             }
         }
 
@@ -70,7 +72,7 @@ namespace GL
         uint AddCallback(int code, const F &func, Args... args)
         {
             std::scoped_lock mmutex(mutex);
-            callbacks[code]->funcs.emplace_back(std::bind(func, args...), current_id);
+            callbacks[code].funcs.emplace_back(std::bind(func, args...), current_id);
             return current_id++;
         }
 
@@ -78,7 +80,7 @@ namespace GL
         uint AddCallback(int code, F &&func, Args... args)
         {
             std::scoped_lock mmutex(mutex);
-            callbacks[code]->funcs.emplace_back(std::bind(std::move(func), args...), current_id);
+            callbacks[code].funcs.emplace_back(std::bind(std::move(func), args...), current_id);
             return current_id++;
         }
 
@@ -86,7 +88,7 @@ namespace GL
         {
             std::scoped_lock mmutex(mutex);
             auto &cbl = callbacks[code];
-            cbl->funcs.erase(std::find(cbl->funcs.begin(), cbl->funcs.end(), id));
+            cbl.funcs.erase(std::find(cbl.funcs.begin(), cbl.funcs.end(), id));
         }
 
         InputHandler(Window &w) : window(w)
