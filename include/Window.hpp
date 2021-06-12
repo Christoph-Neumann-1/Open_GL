@@ -28,6 +28,8 @@ namespace GL
             glViewport(0, 0, x, y);
             _this->ResizeCallback();
         }
+    Window(const Window&)=delete;
+    Window& operator=(const Window&)=delete;
 
     public:
         InputHandler *inputptr;
