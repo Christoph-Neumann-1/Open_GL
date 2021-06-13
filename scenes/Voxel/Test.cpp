@@ -13,7 +13,6 @@
 #include <Input.hpp>
 
 const double raydist = 8;
-const float bps = 4;
 const double raysteps = 32;
 class Voxel_t final : public GL::Scene
 {
@@ -25,8 +24,6 @@ class Voxel_t final : public GL::Scene
     GL::Fplocked controller;
     GL::Voxel::TexConfig blocks;
     GL::Voxel::ChunkManager chunks;
-    float break_cooldown = 0;
-    float place_cooldown = 0;
 
     uint rid,mid,lid;
 
@@ -49,8 +46,6 @@ class Voxel_t final : public GL::Scene
 
     void Mine(int)
     {
-        if (!(break_cooldown > 0))
-        {
             auto ray_pos = camera.position;
             auto stepvec = camera.Forward() / raysteps * raydist;
             for (int i = 0; i < raysteps; i++)
@@ -71,11 +66,9 @@ class Voxel_t final : public GL::Scene
                     *block = 0;
                     auto chunk = chunks.GetChunkPos(x, z);
                     chunks.GetChunk(chunk)->regen_mesh = true;
-                    break_cooldown = 1 / bps;
                     return;
                 }
             }
-        }
     }
 
     void Pick(int)
@@ -101,8 +94,6 @@ class Voxel_t final : public GL::Scene
 
     void Place(int)
     {
-        if (!(place_cooldown > 0))
-        {
             auto ray_pos = camera.position;
             auto stepvec = camera.Forward() / raysteps * raydist;
             for (int i = 0; i < raysteps; i++)
@@ -156,14 +147,12 @@ class Voxel_t final : public GL::Scene
                         *block2 = inventory.GetSelected();
                         auto chunk = chunks.GetChunkPos(x + intersect_face.x, z + intersect_face.z);
                         chunks.GetChunk(chunk)->regen_mesh = true;
-                        place_cooldown = 1 / bps;
                         inventory.Remove();
                     }
                     return;
                 }
             }
-        }
-    }
+    } 
 
     void Render()
     {
@@ -192,8 +181,6 @@ class Voxel_t final : public GL::Scene
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
             chunks.MoveChunk(chunks.GetChunkPos({round(camera.position.x), round(camera.position.z)}));
 
-        break_cooldown = break_cooldown - dt * (break_cooldown > 0);
-        place_cooldown = place_cooldown - dt * (place_cooldown > 0);
     }
 
     void TexSetup();
