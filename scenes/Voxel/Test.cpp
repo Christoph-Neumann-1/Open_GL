@@ -28,6 +28,8 @@ class Voxel_t final : public GL::Scene
     float break_cooldown = 0;
     float place_cooldown = 0;
 
+    uint rid,mid,lid;
+
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     uint vbo, ibo, vao;
     GL::Shader shader;
@@ -45,7 +47,7 @@ class Voxel_t final : public GL::Scene
         return rayPoint - rayVector * prod3;
     }
 
-    void Mine()
+    void Mine(int)
     {
         if (!(break_cooldown > 0))
         {
@@ -76,7 +78,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-    void Pick()
+    void Pick(int)
     {
         auto ray_pos = camera.position;
         auto stepvec = camera.Forward() / raysteps * raydist;
@@ -97,7 +99,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-    void Place()
+    void Place(int)
     {
         if (!(place_cooldown > 0))
         {
@@ -187,12 +189,6 @@ class Voxel_t final : public GL::Scene
         glBindVertexArray(0);
         shader.UnBind();
 
-        if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_LEFT))
-            Mine();
-        else if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_RIGHT))
-            Place();
-        if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_MIDDLE))
-            Pick();
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
             chunks.MoveChunk(chunks.GetChunkPos({round(camera.position.x), round(camera.position.z)}));
 
@@ -209,9 +205,12 @@ public:
                                         file(ROOT_Directory + "/res/world/PLAYER"), r_key(*loader->GetWindow().inputptr)
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
-        camera.UnlockMouse(loader->GetWindow());
         cshader.Bind();
         cshader.SetUniform1i("u_Texture", 0);
+
+        lid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_LEFT,GL::InputHandler::Action::Press,&Voxel_t::Mine,this);
+        rid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_RIGHT,GL::InputHandler::Action::Press,&Voxel_t::Place,this);
+        mid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_MIDDLE,GL::InputHandler::Action::Press,&Voxel_t::Pick,this);
 
         TexSetup();
         cshader.UnBind();
@@ -275,6 +274,9 @@ public:
         glDeleteVertexArrays(1, &vao);
         file.Store();
         inventory.Store();
+        loader->GetWindow().inputptr->RemoveMouseCallback(GLFW_MOUSE_BUTTON_LEFT,lid);
+        loader->GetWindow().inputptr->RemoveMouseCallback(GLFW_MOUSE_BUTTON_MIDDLE,mid);
+        loader->GetWindow().inputptr->RemoveMouseCallback(GLFW_MOUSE_BUTTON_RIGHT,rid);
     }
 };
 
