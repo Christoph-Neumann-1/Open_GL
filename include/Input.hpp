@@ -43,10 +43,9 @@ namespace GL
                 for (auto &f : funcs)
                 {
                     if (f.type != Action::All &&
-                    !(action==GLFW_RELEASE && (f.type==Action::ReleasePress ||f.type==Action::Release))&&
-                    !(action==GLFW_PRESS && (f.type==Action::ReleasePress||f.type==Action::Press||f.type==Action::PressRepeat))&&
-                    !(action==GLFW_REPEAT && (f.type==Action::PressRepeat||f.type==Action::Repeat))
-                    )
+                        !(action == GLFW_RELEASE && (f.type == Action::ReleasePress || f.type == Action::Release)) &&
+                        !(action == GLFW_PRESS && (f.type == Action::ReleasePress || f.type == Action::Press || f.type == Action::PressRepeat)) &&
+                        !(action == GLFW_REPEAT && (f.type == Action::PressRepeat || f.type == Action::Repeat)))
                     {
                         continue;
                     }
@@ -62,6 +61,7 @@ namespace GL
 
         void KeyCallbackFunc(int code, int action)
         {
+            //TODO  allow removing while called
             std::scoped_lock lk(mutex);
             if (callbacks.contains(code))
             {
@@ -72,31 +72,71 @@ namespace GL
     public:
         class KeyCallback
         {
-            uint id;
+            uint id = 0;
             InputHandler &handle;
             int scancode;
 
         public:
             template <typename F, typename... Args>
-
-            KeyCallback(InputHandler &handler, int code, Action type, F &&func, Args... args) : handle(handler), scancode(code)
+            void Bind(int code, Action type, F &&func, Args... args)
             {
+                UnBind();
+                scancode = code;
                 id = handle.AddKeyCallback(scancode, type, std::move(func), args...);
             }
-            template <typename F, typename... Args>
 
-            KeyCallback(InputHandler &handler, int code, Action type, const F &func, Args... args) : handle(handler), scancode(code)
+            template <typename F, typename... Args>
+            void Bind(int code, Action type, const F &func, Args... args)
             {
+                UnBind();
+                scancode = code;
                 id = handle.AddKeyCallback(scancode, type, func, args...);
+            }
+
+            void UnBind()
+            {
+                if (id == 0)
+                    return;
+                handle.RemoveKeyCallback(scancode, id);
+            }
+            KeyCallback(InputHandler &handler) : handle(handler) {}
+
+            template <typename F, typename... Args>
+            KeyCallback(InputHandler &handler, int code, Action type, F &&func, Args... args) : handle(handler)
+            {
+                Bind(code, type, std::move(func), args...);
+            }
+
+            template <typename F, typename... Args>
+            KeyCallback(InputHandler &handler, int code, Action type, const F &func, Args... args) : handle(handler)
+            {
+                Bind(code, type, func, args...);
             }
             ~KeyCallback()
             {
-                handle.RemoveKeyCallback(scancode, id);
+                UnBind();
             }
         };
 
         class KeyState
         {
+            uint id;
+            InputHandler &handle;
+            int scancode;
+
+            int value = 0;
+
+        public:
+            KeyState(InputHandler &handler, int code) : handle(handler), scancode(code)
+            {
+                id = handle.AddKeyCallback(scancode, Action::ReleasePress, [&](int action)
+                                           { value = action; });
+            }
+            ~KeyState()
+            {
+                handle.RemoveKeyCallback(scancode, id);
+            }
+            const int &GetValue() { return value; }
         };
 
         template <typename F, typename... Args>
@@ -117,6 +157,8 @@ namespace GL
 
         void RemoveKeyCallback(int code, uint id)
         {
+            if (id == 0)
+                return;
             std::scoped_lock mmutex(mutex);
             auto &cbl = callbacks[code];
             cbl.funcs.erase(std::find(cbl.funcs.begin(), cbl.funcs.end(), id));

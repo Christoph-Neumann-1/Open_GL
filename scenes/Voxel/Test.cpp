@@ -25,7 +25,6 @@ class Voxel_t final : public GL::Scene
     GL::Fplocked controller;
     GL::Voxel::TexConfig blocks;
     GL::Voxel::ChunkManager chunks;
-    bool r_pressed = false;
     float break_cooldown = 0;
     float place_cooldown = 0;
 
@@ -34,6 +33,8 @@ class Voxel_t final : public GL::Scene
     GL::Shader shader;
     GL::Voxel::Inventory inventory;
     GL::Voxel::FileLayout file;
+
+    GL::InputHandler::KeyCallback r_key;
 
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
     {
@@ -192,22 +193,6 @@ class Voxel_t final : public GL::Scene
             Place();
         if (glfwGetMouseButton(loader->GetWindow(), GLFW_MOUSE_BUTTON_MIDDLE))
             Pick();
-        if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
-        {
-            if (!r_pressed)
-            {
-                camera.position = glm::dvec3(0, 40, 0);
-                controller.pitch = 0;
-                controller.yaw = 0;
-                r_pressed = true;
-            }
-        }
-        else if (r_pressed)
-        {
-            chunks.Regenerate();
-            inventory.Load();
-            r_pressed = false;
-        }
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
             chunks.MoveChunk(chunks.GetChunkPos({round(camera.position.x), round(camera.position.z)}));
 
@@ -221,7 +206,7 @@ public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
                                         camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/block.cfg"),
                                         chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"),
-                                        file(ROOT_Directory + "/res/world/PLAYER")
+                                        file(ROOT_Directory + "/res/world/PLAYER"), r_key(*loader->GetWindow().inputptr)
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
         camera.UnlockMouse(loader->GetWindow());
@@ -272,6 +257,16 @@ public:
         shader.SetUniform4f("u_Color", 1, 1, 1, 1);
         shader.UnBind();
         inventory.Load();
+
+        r_key.Bind(
+            glfwGetKeyScancode(GLFW_KEY_R), GL::InputHandler::Action::Press, [&](int)
+            {
+                camera.position = glm::dvec3(0, 40, 0);
+                controller.pitch = 0;
+                controller.yaw = 0;
+                chunks.Regenerate();
+                inventory.Load();
+            });
     }
     ~Voxel_t()
     {
