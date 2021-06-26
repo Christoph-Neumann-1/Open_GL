@@ -4,12 +4,14 @@
 #include <Logger.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <Camera/Flycam.hpp>
+#include <random>
 
 using namespace GL;
 
 const uint NSTARS = 20;
 const float spawnradius = 15;
 const float velocity = 2;
+const float G = 3;
 
 struct Star
 {
@@ -33,8 +35,14 @@ class Stars : public Scene
 
     std::vector<Star> stars;
 
+    void ComputePositions()
+    {
+    }
+
     void Render()
     {
+        //TODO use update
+        ComputePositions();
 
         shader.Bind();
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
@@ -45,6 +53,18 @@ class Stars : public Scene
         model.Draw(shader, stars.size());
 
         shader.UnBind();
+    }
+
+    void SetupStars()
+    {
+        //TODO   SEED
+        for (int i = 0; i < NSTARS; i++)
+        {
+            stars.emplace_back(
+                glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius, (float)rand() / (float)RAND_MAX * spawnradius, (float)rand() / (float)RAND_MAX * spawnradius},
+                (float)rand() / (float)RAND_MAX + 0.5f,
+                glm::vec3{(float)rand() / (float)RAND_MAX * velocity, (float)rand() / (float)RAND_MAX * velocity, (float)rand() / (float)RAND_MAX * velocity});
+        }
     }
 
 public:
@@ -61,12 +81,13 @@ public:
         InstanceBufferLayout layout;
         layout.stride = 7 * sizeof(float);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
-        layout.attributes.push_back({GL_FLOAT, 1, (void*)sizeof(glm::vec3)});
+        layout.attributes.push_back({GL_FLOAT, 1, (void *)sizeof(glm::vec3)});
         model.AddInstanceBuffer(layout, instance_info);
 
         SetFlag("hide_menu", true);
 
-        stars.emplace_back(glm::vec3{0, 0, -10}, 1.0f, glm::vec3{0, 0, 0});
+
+        SetupStars();
     }
 
     ~Stars()
