@@ -36,16 +36,12 @@ class Stars : public Scene
     void Render()
     {
 
-        log.print();
         shader.Bind();
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
         shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix());
 
         glBindBuffer(GL_ARRAY_BUFFER, instance_info);
         glBufferSubData(GL_ARRAY_BUFFER, 0, stars.size() * sizeof(Star), &stars[0]);
-        glm::vec3 tmp;
-        glGetBufferSubData(GL_ARRAY_BUFFER, 0, 3 * sizeof(float), &tmp);
-        log<<tmp;
         model.Draw(shader, stars.size());
 
         shader.UnBind();

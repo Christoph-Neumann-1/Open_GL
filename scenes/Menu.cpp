@@ -3,6 +3,7 @@
 #include <Data.hpp>
 #include <vector>
 #include <string>
+#include <Input.hpp>
 
 using namespace GL;
 
@@ -21,12 +22,21 @@ class SceneMenu final : public Scene
         {"Model Test", "Model"},
         {"Stars", "Stars"}};
 
+    InputHandler::KeyCallback escape;
+
 public:
     explicit SceneMenu(SceneLoader *_loader);
     ~SceneMenu();
 };
 
-SceneMenu::SceneMenu(SceneLoader *_loader) : Scene(_loader), scene(_loader->GetWindow(), _loader->GetCallback(), _loader->GetTimeInfo())
+SceneMenu::SceneMenu(SceneLoader *_loader) : Scene(_loader), scene(_loader->GetWindow(), _loader->GetCallback(), _loader->GetTimeInfo()),
+                                             escape(*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)
+                                                    {
+                                                        if (scene.HasScene())
+                                                            scene.UnLoad();
+                                                        else
+                                                            glfwSetWindowShouldClose(loader->GetWindow(), 2);
+                                                    })
 {
     RegisterFunc(cbt::ImGuiRender, &SceneMenu::ImGui, this);
     scene.SetUnloadCb([&](SceneLoader *)
@@ -63,13 +73,12 @@ void SceneMenu::ImGui()
                 scene.Load(path);
             }
         }
-        if (ImGui::Button("Close") || glfwGetKey(loader->GetWindow(), GLFW_KEY_ESCAPE))
+        if (ImGui::Button("Close"))
         {
-            scene.UnLoad();
-        }
-        if (ImGui::Button("Exit"))
-        {
-            glfwSetWindowShouldClose(loader->GetWindow(), 2);
+            if (scene.HasScene())
+                scene.UnLoad();
+            else
+                glfwSetWindowShouldClose(loader->GetWindow(), 2);
         }
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
