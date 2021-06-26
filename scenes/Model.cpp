@@ -39,7 +39,7 @@ public:
                                  shader(ROOT_Directory + "/shader/Star.vs", ROOT_Directory + "/shader/Star.fs"),
                                  model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow())
     {
-        RegisterFunc(std::bind(&Star::Render, this), CallbackType::Render);
+        RegisterFunc(CallbackType::Render, &Star::Render, this);
         glGenBuffers(1, &buff);
         float offsets[9]{
             2, 2, -2,
@@ -51,7 +51,7 @@ public:
         layout.stride = 3 * sizeof(float);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         model.AddInstanceBuffer(layout, buff);
-        SetFlag("hide_menu",true);
+        SetFlag("hide_menu", true);
     }
 
     ~Star()

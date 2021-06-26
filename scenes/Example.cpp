@@ -56,7 +56,7 @@ public:
         shader.SetUniformMat4f("u_MVP", glm::mat4(1.0f)); //We are already using normalized device coordinates, so an identity matrix is fine
 
         //Add the Render function to the callback list.
-        RegisterFunc(std::bind(&Example::Render, this), CallbackType::Render);
+        RegisterFunc(CallbackType::Render,&Example::Render, this);
 
         //Unbind opengl stuff
         glBindVertexArray(0);

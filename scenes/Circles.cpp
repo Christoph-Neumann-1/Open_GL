@@ -24,7 +24,7 @@ public:
         float color[4]{1, 0.5, 0.8, 1};
         circle_mod.RETRIEVE(void, SetColor, void *, float *)(circle, color);
         Draw = circle_mod.RETRIEVE(void, Draw, void *, glm::mat4);
-        RegisterFunc(std::bind(&CircleScene::Render, this), CallbackType::Render);
+        RegisterFunc(CallbackType::Render,&CircleScene::Render, this);
     }
     ~CircleScene()
     {

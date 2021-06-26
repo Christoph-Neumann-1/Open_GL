@@ -27,12 +27,20 @@ public:
 
 SceneMenu::SceneMenu(SceneLoader *_loader) : Scene(_loader), scene(_loader->GetWindow(), _loader->GetCallback(), _loader->GetTimeInfo())
 {
-    RegisterFunc(std::bind(&SceneMenu::ImGui, this), cbt::ImGuiRender);
-    scene.SetUnloadCb([&](SceneLoader *) { if (scene.GetFlag("Close Window")){
-         RegisterFunc([&](){scene.UnLoad();},cbt::PreRender);
-         RegisterFunc([&](){loader->UnLoad();},cbt::PreRender);
-         }
-          return true; });
+    RegisterFunc(cbt::ImGuiRender, &SceneMenu::ImGui, this);
+    scene.SetUnloadCb([&](SceneLoader *)
+                      {
+                          if (scene.GetFlag("Close Window"))
+                          {
+                              RegisterFunc([&]()
+                                           { scene.UnLoad(); },
+                                           cbt::PreRender);
+                              RegisterFunc([&]()
+                                           { loader->UnLoad(); },
+                                           cbt::PreRender);
+                          }
+                          return true;
+                      });
 }
 
 SceneMenu::~SceneMenu()

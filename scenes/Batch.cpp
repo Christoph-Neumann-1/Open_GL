@@ -40,7 +40,7 @@ public:
         mod.RETRIEVE(void, FillData, void *)(handle);
         DrawFunc = mod.RETRIEVE(void, Draw, void *, glm::mat4);
 
-        RegisterFunc(std::bind(&Batch::Render, this), GL::CallbackType::Render);
+        RegisterFunc(GL::CallbackType::Render, &Batch::Render, this);
     }
     ~Batch()
     {

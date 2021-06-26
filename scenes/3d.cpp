@@ -57,7 +57,7 @@ public:
         float color[]{1, 1, 0, 1};
         shader.Bind();
         shader.SetUniform4f("u_Color", color);
-        RegisterFunc(std::bind(&S3D::Render, this), CallbackType::Render);
+        RegisterFunc(CallbackType::Render,&S3D::Render, this);
     }
     ~S3D()
     {
