@@ -18,7 +18,8 @@ class SceneMenu final : public Scene
         {"Example", "Example"},
         {"Batch", "Batch"},
         {"Voxel Test", "Voxel/Test"},
-        {"Model Test", "Model"}};
+        {"Model Test", "Model"},
+        {"Stars", "Stars"}};
 
 public:
     explicit SceneMenu(SceneLoader *_loader);
