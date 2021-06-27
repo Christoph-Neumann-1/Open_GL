@@ -24,7 +24,7 @@ static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syn
 }
 
 static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv, float frequency,
-                std::atomic_bool &should_sync, std::atomic_bool &is_synced)
+                       std::atomic_bool &should_sync, std::atomic_bool &is_synced)
 {
     Logger log;
     auto &updatecb = cbh.GetList(cbt::Update);
@@ -34,16 +34,35 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
     ti.SetUpdateInterval(1 / frequency);
 
     std::chrono::nanoseconds Interval((int)(powf(10, 9) / frequency));
-    std::chrono::nanoseconds behind(0);
 
 #ifdef DEBUG_LOG
     log << "Update thread ready starting callbacks.";
     log.print();
 #endif
 
+#ifdef UPDATE_COUNT
+    int second = 0;
+    int count = 0;
+    auto fs = std::chrono::high_resolution_clock::now();
+#endif
+
     while (!close)
     {
         auto begin = std::chrono::high_resolution_clock::now();
+        
+#ifdef UPDATE_COUNT
+
+        if (floor((begin - fs).count() / powf(10, 9)) == second)
+        {
+            count++;
+        }
+        else
+        {
+            log(count);
+            second = floor((begin - fs).count() / powf(10, 9));
+            count = 0;
+        }
+#endif
 
         preupdatecb();
         updatecb();
@@ -58,12 +77,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 
         auto end = std::chrono::high_resolution_clock::now();
         auto time = Interval - (end - begin);
-        if (time < std::chrono::nanoseconds(0))
-            behind = time;
-        else
-        {
-            PreciseSleep(time + behind);
-        }
+        PreciseSleep(time);
     }
 #ifdef DEBUG_LOG
     log << "Update thread starting cleanup.";
@@ -109,7 +123,7 @@ int main(int argc, char **argv)
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        auto vidmode=glfwGetVideoMode(glfwGetPrimaryMonitor());
+        auto vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         GLFWwindow *_window = glfwCreateWindow(vidmode->width, vidmode->height, "OpenGL", glfwGetPrimaryMonitor(), NULL);
         if (!_window)
         {
@@ -118,9 +132,9 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        Window window(_window, cbh.GetList(cbt::OnWindowResize),vidmode->refreshRate);
+        Window window(_window, cbh.GetList(cbt::OnWindowResize), vidmode->refreshRate);
         InputHandler handler(window);
-        window.inputptr=&handler;
+        window.inputptr = &handler;
 
         glfwMakeContextCurrent(window);
         glfwWindowHint(GLFW_REFRESH_RATE, 60);
@@ -164,7 +178,11 @@ int main(int argc, char **argv)
 #pragma endregion
 
         SceneLoader loader(window, cbh, timeinfo);
-        loader.SetUnloadCb([&](SceneLoader *) { glfwSetWindowShouldClose(window, 2); return true;});
+        loader.SetUnloadCb([&](SceneLoader *)
+                           {
+                               glfwSetWindowShouldClose(window, 2);
+                               return true;
+                           });
         loader.Load(ROOT_Directory + "/scenes/bin/Menu.scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
@@ -183,7 +201,7 @@ int main(int argc, char **argv)
 
         while (!glfwWindowShouldClose(window))
         {
-            glClearColor(21/255.0,132/255.0, 201/255.0, 1);
+            glClearColor(21 / 255.0, 132 / 255.0, 201 / 255.0, 1);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             prerendercb();
@@ -220,7 +238,8 @@ int main(int argc, char **argv)
 
         should_close = true;
         std::unique_lock lk(mutex);
-        if (cv.wait_for(lk, std::chrono::milliseconds(100), [&]() { return !should_close; }))
+        if (cv.wait_for(lk, std::chrono::milliseconds(100), [&]()
+                        { return !should_close; }))
             UpdateThread.join();
         else
         {
@@ -234,10 +253,10 @@ int main(int argc, char **argv)
         switch (glfwWindowShouldClose(window))
         {
         case 1:
-            log<<" (Window closed normally)";
+            log << " (Window closed normally)";
             break;
         case 2:
-            log<<" (Window closed by exit button)";
+            log << " (Window closed by exit button)";
             break;
         }
         log.print();
