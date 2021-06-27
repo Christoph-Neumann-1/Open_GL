@@ -31,7 +31,7 @@ namespace GL::Voxel
         static void NewSeed()
         {
             int nseed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-            seed48((u_short *)&nseed);
+            srand(nseed);
             Seed = rand();
         }
 
