@@ -8,18 +8,18 @@
 
 using namespace GL;
 
-const uint NSTARS = 20;
-const float spawnradius = 15;
-const float velocity = 2;
-const float G = 3;
+const uint NSTARS = 3;
+const float spawnradius = 10;
+const float velocity = 1;
+const float G = 5;
 
 struct Star
 {
     glm::vec3 position;
-    float radius;
+    float diameter;
     glm::vec3 velocity;
 
-    Star(glm::vec3 p, float r, glm::vec3 v) : position(p), radius(r), velocity(v) {}
+    Star(glm::vec3 p, float d, glm::vec3 v) : position(p), diameter(d), velocity(v) {}
 };
 
 class Stars : public Scene
@@ -37,13 +37,27 @@ class Stars : public Scene
 
     void ComputePositions()
     {
+        float dt = loader->GetTimeInfo().UpdateInterval();
+        int nstars = stars.size();
+        for (int i = 0; i < nstars; i++)
+        {
+            for (int j = i + 1; j < nstars; j++)
+            {
+                glm::vec3 ij = stars[j].position - stars[i].position;
+                auto ij_normalized = glm::normalize(ij);
+                float massi = 4.0f / 3.0f * glm::pi<float>() * powf(stars[i].diameter / 2.0f, 3.0f);
+                float massj = 4.0f / 3.0f * glm::pi<float>() * powf(stars[j].diameter / 2.0f, 3.0f);
+                auto force_ij = massi * massj / glm::length2(ij) * G * ij_normalized * dt;
+                stars[i].velocity += force_ij / massi;
+                stars[j].velocity -= force_ij / massj;
+            }
+            stars[i].position += stars[i].velocity * dt;
+        }
     }
 
     void Render()
     {
-        //TODO use update
-        ComputePositions();
-
+        // ComputePositions();
         shader.Bind();
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
         shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix());
@@ -57,13 +71,16 @@ class Stars : public Scene
 
     void SetupStars()
     {
-        //TODO   SEED
+        uint seed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+        srand(seed);
+
         for (int i = 0; i < NSTARS; i++)
         {
             stars.emplace_back(
-                glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius, (float)rand() / (float)RAND_MAX * spawnradius, (float)rand() / (float)RAND_MAX * spawnradius},
+                glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius-spawnradius/2, (float)rand() / (float)RAND_MAX * spawnradius-spawnradius/2, (float)rand() / (float)RAND_MAX * spawnradius-spawnradius/2},
                 (float)rand() / (float)RAND_MAX + 0.5f,
-                glm::vec3{(float)rand() / (float)RAND_MAX * velocity, (float)rand() / (float)RAND_MAX * velocity, (float)rand() / (float)RAND_MAX * velocity});
+                glm::vec3{(float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2});
+
         }
     }
 
@@ -72,6 +89,7 @@ public:
                                   model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow())
     {
         RegisterFunc(CallbackType::Render, &Stars::Render, this);
+        RegisterFunc(CallbackType::Update, &Stars::ComputePositions, this);
 
         glGenBuffers(1, &instance_info);
         glBindBuffer(GL_ARRAY_BUFFER, instance_info);
@@ -86,8 +104,8 @@ public:
 
         SetFlag("hide_menu", true);
 
-
         SetupStars();
+
     }
 
     ~Stars()
