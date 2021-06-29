@@ -16,9 +16,9 @@ namespace GL
     {
         int size_x;
         int size_y;
+
         GLFWwindow *window;
         CallbackList &ResizeCallback;
-        int refreshrate;
 
         static void Resize(GLFWwindow *window, int x, int y)
         {
@@ -28,19 +28,45 @@ namespace GL
             glViewport(0, 0, x, y);
             _this->ResizeCallback();
         }
-    Window(const Window&)=delete;
-    Window& operator=(const Window&)=delete;
+        Window(const Window &) = delete;
+        Window &operator=(const Window &) = delete;
 
     public:
         InputHandler *inputptr;
-        Window(GLFWwindow *window, CallbackList &callback, int refresh = 0);
+        Window(GLFWwindow *window, CallbackList &callback);
 
         ~Window();
 
         uint GetWidth() const { return size_x; }
         uint GetHeigth() const { return size_y; }
-        int GetRefreshRate() const { return refreshrate; }
 
         operator GLFWwindow *() const { return window; }
+
+        /**
+         * @brief Switch between fullscreen and windowed.
+         * 
+         * The window will have the size of the primary monitor.
+         * 
+         * @param fs 
+         */
+        void SetFullscreen(bool fs)
+        {
+            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+            if (fs)
+            {
+                glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            }
+            else
+            {
+                ///-1 Prevents weird issue where it stays full screen.
+                glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height-1, 0);
+            }
+        }
+        ///Check if the window is in fullscreen mode.
+        bool IsFullscreen()
+        {
+            return glfwGetWindowMonitor(window)!=nullptr;
+        }
     };
 }

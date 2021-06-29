@@ -132,7 +132,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        Window window(_window, cbh.GetList(cbt::OnWindowResize), vidmode->refreshRate);
+        Window window(_window, cbh.GetList(cbt::OnWindowResize));
         InputHandler handler(window);
         window.inputptr = &handler;
 
