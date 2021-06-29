@@ -1,3 +1,5 @@
+//Please use fast math and o3
+
 #include <Scene.hpp>
 #include <ModelLoader.hpp>
 #include <Data.hpp>
@@ -8,16 +10,16 @@
 
 using namespace GL;
 
-const uint NSTARS = 300;
-const float spawnradius = 300;
+const uint NSTARS = 400;
+const float spawnradius = 310;
 const float minsize=0.5,maxsize=2.3f;
 const float velocity = 10;
 const float G = 5;
 const float FOV=65;
 const float clipping_distance=2000;
-const float dt_factor=4;
+const float dt_factor=2;
 
-const glm::vec3 offset(290,0,0);
+const glm::vec3 offset(300,0,0);
 const glm::vec3 speeddiff(0,6,0);
 
 struct Star
