@@ -8,10 +8,13 @@
 
 using namespace GL;
 
-const uint NSTARS = 3;
-const float spawnradius = 10;
-const float velocity = 1;
-const float G = 5;
+const uint NSTARS = 35;
+const float spawnradius = 125;
+const float minsize=0.5,maxsize=2.4f;
+const float velocity = 4.3;
+const float G = 4.7;
+const float FOV=65;
+const float clipping_distance=2000;
 
 struct Star
 {
@@ -29,7 +32,7 @@ class Stars : public Scene
     uint instance_info;
     Logger log;
 
-    glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, clipping_distance);
     Camera3D cam;
     Flycam fc;
 
@@ -51,7 +54,7 @@ class Stars : public Scene
                 auto force_ij = massi * massj / glm::length2(ij) * G * ij_normalized * dt;
                 stars[i].velocity += force_ij / massi;
                 stars[j].velocity -= force_ij / massj;
-                if (glm::length2(ij) < stars[i].radius + stars[j].radius)
+                if (glm::length(ij) < stars[i].radius + stars[j].radius)
                 {
                     stars[j].position=(stars[i].position*massi+stars[j].position*massj)/(massi+massj);
                     stars[j].velocity=(stars[i].velocity*massi+stars[j].velocity*massj)/(massi+massj);
@@ -86,14 +89,14 @@ class Stars : public Scene
         {
             stars.emplace_back(
                 glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2},
-                (float)rand() / (float)RAND_MAX + 0.5f,
+                (float)rand() / (float)RAND_MAX *(maxsize-minsize)+minsize,
                 glm::vec3{(float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2});
         }
     }
 
 public:
     Stars(SceneLoader *loaderr) : Scene(loaderr), shader(ROOT_Directory + "/shader/Stars.vs", ROOT_Directory + "/shader/Star.fs"),
-                                  model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow())
+                                  model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow(),10)
     {
         RegisterFunc(CallbackType::Render, &Stars::Render, this);
         RegisterFunc(CallbackType::Update, &Stars::ComputePositions, this);
