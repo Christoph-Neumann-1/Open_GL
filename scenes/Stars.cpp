@@ -16,10 +16,10 @@ const float G = 5;
 struct Star
 {
     glm::vec3 position;
-    float diameter;
+    float radius;
     glm::vec3 velocity;
 
-    Star(glm::vec3 p, float d, glm::vec3 v) : position(p), diameter(d), velocity(v) {}
+    Star(glm::vec3 p, float d, glm::vec3 v) : position(p), radius(d), velocity(v) {}
 };
 
 class Stars : public Scene
@@ -39,17 +39,26 @@ class Stars : public Scene
     {
         float dt = loader->GetTimeInfo().UpdateInterval();
         int nstars = stars.size();
-        for (int i = 0; i < nstars; i++)
+
+        for (int i = nstars-1; i >=0; i--)
         {
-            for (int j = i + 1; j < nstars; j++)
+            for (int j = i-1; j >=0; j--)
             {
                 glm::vec3 ij = stars[j].position - stars[i].position;
                 auto ij_normalized = glm::normalize(ij);
-                float massi = 4.0f / 3.0f * glm::pi<float>() * powf(stars[i].diameter / 2.0f, 3.0f);
-                float massj = 4.0f / 3.0f * glm::pi<float>() * powf(stars[j].diameter / 2.0f, 3.0f);
+                float massi = 4.0f / 3.0f * glm::pi<float>() * powf(stars[i].radius, 3.0f);
+                float massj = 4.0f / 3.0f * glm::pi<float>() * powf(stars[j].radius, 3.0f);
                 auto force_ij = massi * massj / glm::length2(ij) * G * ij_normalized * dt;
                 stars[i].velocity += force_ij / massi;
                 stars[j].velocity -= force_ij / massj;
+                if (glm::length2(ij) < stars[i].radius + stars[j].radius)
+                {
+                    stars[j].position=(stars[i].position*massi+stars[j].position*massj)/(massi+massj);
+                    stars[j].velocity=(stars[i].velocity*massi+stars[j].velocity*massj)/(massi+massj);
+                    stars[j].radius=powf(3*(massi+massj)/(4.0f*glm::pi<float>()),1.0f/3.0f);
+                    stars.erase(stars.begin()+i);
+                    break;
+                }
             }
             stars[i].position += stars[i].velocity * dt;
         }
@@ -57,7 +66,6 @@ class Stars : public Scene
 
     void Render()
     {
-        // ComputePositions();
         shader.Bind();
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
         shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix());
@@ -77,10 +85,9 @@ class Stars : public Scene
         for (int i = 0; i < NSTARS; i++)
         {
             stars.emplace_back(
-                glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius-spawnradius/2, (float)rand() / (float)RAND_MAX * spawnradius-spawnradius/2, (float)rand() / (float)RAND_MAX * spawnradius-spawnradius/2},
+                glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2},
                 (float)rand() / (float)RAND_MAX + 0.5f,
                 glm::vec3{(float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2});
-
         }
     }
 
@@ -105,7 +112,6 @@ public:
         SetFlag("hide_menu", true);
 
         SetupStars();
-
     }
 
     ~Stars()
