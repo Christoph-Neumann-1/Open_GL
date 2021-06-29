@@ -8,13 +8,17 @@
 
 using namespace GL;
 
-const uint NSTARS = 35;
-const float spawnradius = 125;
-const float minsize=0.5,maxsize=2.4f;
-const float velocity = 4.3;
-const float G = 4.7;
+const uint NSTARS = 300;
+const float spawnradius = 300;
+const float minsize=0.5,maxsize=2.3f;
+const float velocity = 10;
+const float G = 5;
 const float FOV=65;
 const float clipping_distance=2000;
+const float dt_factor=4;
+
+const glm::vec3 offset(290,0,0);
+const glm::vec3 speeddiff(0,6,0);
 
 struct Star
 {
@@ -40,7 +44,7 @@ class Stars : public Scene
 
     void ComputePositions()
     {
-        float dt = loader->GetTimeInfo().UpdateInterval();
+        float dt = loader->GetTimeInfo().UpdateInterval()*dt_factor;
         int nstars = stars.size();
 
         for (int i = nstars-1; i >=0; i--)
@@ -90,21 +94,29 @@ class Stars : public Scene
             stars.emplace_back(
                 glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2},
                 (float)rand() / (float)RAND_MAX *(maxsize-minsize)+minsize,
-                glm::vec3{(float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2});
+                glm::vec3{(float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2}-speeddiff);
+        }
+
+         for (int i = 0; i < NSTARS; i++)
+        {
+            stars.emplace_back(
+                glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2}+offset,
+                (float)rand() / (float)RAND_MAX *(maxsize-minsize)+minsize,
+                glm::vec3{(float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2}+speeddiff);
         }
     }
 
 public:
     Stars(SceneLoader *loaderr) : Scene(loaderr), shader(ROOT_Directory + "/shader/Stars.vs", ROOT_Directory + "/shader/Star.fs"),
-                                  model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow(),10)
+                                  model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow(),100)
     {
         RegisterFunc(CallbackType::Render, &Stars::Render, this);
         RegisterFunc(CallbackType::Update, &Stars::ComputePositions, this);
 
         glGenBuffers(1, &instance_info);
         glBindBuffer(GL_ARRAY_BUFFER, instance_info);
-        stars.reserve(NSTARS);
-        glBufferData(GL_ARRAY_BUFFER, NSTARS * sizeof(Star), nullptr, GL_DYNAMIC_DRAW);
+        stars.reserve(2*NSTARS);
+        glBufferData(GL_ARRAY_BUFFER, 2*NSTARS * sizeof(Star), nullptr, GL_DYNAMIC_DRAW);
 
         InstanceBufferLayout layout;
         layout.stride = 7 * sizeof(float);
@@ -115,12 +127,15 @@ public:
         SetFlag("hide_menu", true);
 
         SetupStars();
+
+        loader->GetTimeInfo().SetUpdateInterval(1/500.0f);
     }
 
     ~Stars()
     {
         RemoveFunctions();
         glDeleteBuffers(1, &instance_info);
+        loader->GetTimeInfo().SetUpdateInterval();
     }
 };
 

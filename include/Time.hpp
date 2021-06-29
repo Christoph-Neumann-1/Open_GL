@@ -41,6 +41,9 @@ namespace GL
         };
 
     public:
+        
+        static constexpr float default_interval=1/100.0f;
+
         explicit TimeInfo(CallbackHandler &_cbh) : cbh(_cbh), deltatime_render(0.0f), objid(cbh.GenId())
         {
             cbh.GetList(CallbackType::PreRender).Add(PreRender, objid);
@@ -48,9 +51,8 @@ namespace GL
 
         ~TimeInfo() { cbh.RemoveAll(objid); }
 
-        ///@attention Should only be called from physics thread
-        void SetUpdateInterval(float interval) { deltatime_update = interval; }
-        float UpdateInterval() const { return deltatime_update; }
+        void SetUpdateInterval(float interval=default_interval) { deltatime_update = interval; }
+        const float &UpdateInterval() const { return deltatime_update; }
         double RenderDeltaTime() const { return deltatime_render; }
     };
 }

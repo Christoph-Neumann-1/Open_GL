@@ -23,23 +23,21 @@ static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syn
     syncs.push_back(func);
 }
 
-static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv, float frequency,
+static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv,
                        std::atomic_bool &should_sync, std::atomic_bool &is_synced)
 {
     Logger log;
     auto &updatecb = cbh.GetList(cbt::Update);
     auto &preupdatecb = cbh.GetList(cbt::PreUpdate);
     auto &postupdatecb = cbh.GetList(cbt::PostUpdate);
-
-    ti.SetUpdateInterval(1 / frequency);
-
-    std::chrono::nanoseconds Interval((int)(powf(10, 9) / frequency));
+    const float &interval = ti.UpdateInterval();
 
 #ifdef DEBUG_LOG
     log << "Update thread ready starting callbacks.";
     log.print();
 #endif
 
+#define UPDATE_COUNT
 #ifdef UPDATE_COUNT
     int second = 0;
     int count = 0;
@@ -48,8 +46,9 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 
     while (!close)
     {
+        std::chrono::nanoseconds Interval((int)(powf(10, 9) * interval));
         auto begin = std::chrono::high_resolution_clock::now();
-        
+
 #ifdef UPDATE_COUNT
 
         if (floor((begin - fs).count() / powf(10, 9)) == second)
@@ -196,8 +195,10 @@ int main(int argc, char **argv)
         std::atomic_bool should_sync = false;
         std::atomic_bool is_synced = false;
 
+        timeinfo.SetUpdateInterval();
+
         std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),
-                                 std::ref(cv), 100.0f, std::ref(should_sync), std::ref(is_synced));
+                                 std::ref(cv), std::ref(should_sync), std::ref(is_synced));
 
         while (!glfwWindowShouldClose(window))
         {
