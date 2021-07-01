@@ -1,3 +1,5 @@
+///@deprecated Do not use, please
+
 #pragma once
 
 #include <string>

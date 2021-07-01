@@ -51,7 +51,7 @@ namespace GL
         std::string path;
     };
 
-    unsigned int TextureFromFile(const char *path, const std::string &directory)
+    unsigned int LoadTextureFromFile(const char *path, const std::string &directory)
     {
         auto filename = directory + '/' + path;
 
@@ -94,10 +94,12 @@ namespace GL
         return textureID;
     }
 
+    /**
+ * @brief A bunch of vertices + textures
+ */
     class Mesh
     {
-        uint va;
-        uint vb, ib;
+        uint va, vb, ib;
 
     public:
         std::vector<Vertex> vertices;
@@ -131,6 +133,13 @@ namespace GL
             glBindVertexArray(0);
         }
 
+
+/**
+ * @brief Add a new buffer with instance data.
+ * 
+ * Used in the star scene, for example.
+ * 
+ */
         void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
         {
             glBindVertexArray(va);
@@ -159,23 +168,24 @@ namespace GL
             unsigned int heightNr = 1;
             for (unsigned int i = 0; i < textures.size(); i++)
             {
-                glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-                // retrieve texture number (the N in diffuse_textureN)
-                std::string number;
-                std::string name = textures[i].type;
-                if (name == "texture_diffuse")
-                    number = std::to_string(diffuseNr++);
-                else if (name == "texture_specular")
-                    number = std::to_string(specularNr++); // transfer unsigned int to stream
-                else if (name == "texture_normal")
-                    number = std::to_string(normalNr++); // transfer unsigned int to stream
-                else if (name == "texture_height")
-                    number = std::to_string(heightNr++); // transfer unsigned int to stream
+                glActiveTexture(GL_TEXTURE0 + i);
 
-                // now set the sampler to the correct texture unit
-                shader.SetUniform1i(name + number, i);
+                //Figures out the name of the texture uniform
+                std::string index;
+                std::string textype = textures[i].type;
+                if (textype == "texture_diffuse")
+                    index = std::to_string(diffuseNr++);
+                else if (textype == "texture_specular")
+                    index = std::to_string(specularNr++); // transfer unsigned int to stream
+                else if (textype == "texture_normal")
+                    index = std::to_string(normalNr++); // transfer unsigned int to stream
+                else if (textype == "texture_height")
+                    index = std::to_string(heightNr++); // transfer unsigned int to stream
+
+                shader.SetUniform1i(textype + index, i);
                 glBindTexture(GL_TEXTURE_2D, textures[i].id);
             }
+
             if (count)
                 glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0, count);
             else
@@ -220,7 +230,7 @@ namespace GL
                 if (!skip)
                 { // if texture hasn't been loaded already, load it
                     s_Texture texture;
-                    texture.id = TextureFromFile(str.C_Str(), this->directory);
+                    texture.id = LoadTextureFromFile(str.C_Str(), this->directory);
                     texture.type = typeName;
                     texture.path = str.C_Str();
                     textures.push_back(texture);
