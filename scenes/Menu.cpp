@@ -17,6 +17,7 @@ class SceneMenu final : public Scene
     std::string path;
     std::vector<std::pair<std::string, std::string>> scenes{
         {"Example", "Example"},
+        {"Solar", "Solar"},
         {"Batch", "Batch"},
         {"Voxel Test", "Voxel/Test"},
         {"Model Test", "Model"},

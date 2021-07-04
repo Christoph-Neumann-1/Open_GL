@@ -18,17 +18,15 @@ const double simulations_per_second = 1000;
 const double speed = 1000;
 const double scale_factor = 1.0 / 52000.0;
 
-uint nplanets;
-
 struct SpaceObject
 {
     glm::dvec3 position;
-    double radius;
+    glm::vec3 color;
+    float radius;
     glm::dvec3 velocity;
     double mass;
-    Model model;
 
-    SpaceObject(glm::dvec3 p, float d, glm::dvec3 v, float m, const std::string &mpath) : position(p), radius(d), velocity(v), mass(m), model(mpath) {}
+    SpaceObject(glm::dvec3 p, float r, glm::dvec3 v, float m, glm::vec3 c) : position(p), color(c), radius(r), velocity(v), mass(m) {}
 };
 
 class SolarSim : public Scene
@@ -39,14 +37,18 @@ class SolarSim : public Scene
     glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, clipping_distance);
     Camera3D cam;
     Flycam fc;
+    uint instance_info;
+    Model model;
 
-    std::vector<SpaceObject> planets;
+    std::array<SpaceObject, 1> planets{
+        SpaceObject(glm::dvec3(0, 0, 0), 100000.0, glm::dvec3(0, 0, 0), 1.0, glm::vec3(1, 0, 0)),
+    };
 
     void ComputePositions()
     {
         double dt = loader->GetTimeInfo().UpdateInterval() * speed;
 
-        for (int i = nplanets - 1; i >= 0; i--)
+        for (int i = planets.size() - 1; i >= 0; i--)
         {
             for (int j = i - 1; j >= 0; j--)
             {
@@ -60,18 +62,32 @@ class SolarSim : public Scene
         }
     }
 
+    void UpdateBuffer()
+    {
+        float tmpbuffer[7 * sizeof(float) * planets.size()];
+        for (int i = 0; i < planets.size(); i++)
+        {
+            auto &planet = planets[i];
+            *((glm::vec3 *)&tmpbuffer[i * 7]) = planet.position * scale_factor;
+            *((glm::vec3 *)&tmpbuffer[i * 7 + 3]) = planet.color;
+            *((float *)&tmpbuffer[i * 7 + 6]) = planet.radius * scale_factor;
+            log(planet.radius / scale_factor);
+        }
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 7 * planets.size(), tmpbuffer);
+    }
+
     void Render()
     {
         shader.Bind();
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
+        shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix());
 
-        for (auto &planet : planets)
-        {
-            shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix() *
-                                                glm::scale(glm::translate(glm::mat4(), (glm::vec3)(planet.position * scale_factor)), (float)(scale_factor * planet.radius) * glm::vec3(1.0f)));
-            planet.model.Draw(shader);
-        }
+        glBindBuffer(GL_ARRAY_BUFFER, instance_info);
+        UpdateBuffer();
 
+        model.Draw(shader, planets.size());
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         shader.UnBind();
     }
 
@@ -80,22 +96,35 @@ class SolarSim : public Scene
     }
 
 public:
-    SolarSim(SceneLoader *loaderr) : Scene(loaderr), shader(ROOT_Directory + "/shader/Stars.vs", ROOT_Directory + "/shader/Star.fs"),
-                                     fc(&cam, loader->GetWindow(), 100)
+    SolarSim(SceneLoader *loaderr) : Scene(loaderr), shader(ROOT_Directory + "/shader/Solar.vs", ROOT_Directory + "/shader/Batch.fs"),
+                                     cam({0, 0, 10}), fc(&cam, loader->GetWindow(), 100), model(ROOT_Directory + "/res/Models/sphere.obj")
     {
         RegisterFunc(CallbackType::Render, &SolarSim::Render, this);
         RegisterFunc(CallbackType::Update, &SolarSim::ComputePositions, this);
 
-        planets.reserve(nplanets);
-
         SetFlag("hide_menu", true);
 
         loader->GetTimeInfo().SetUpdateInterval(1 / simulations_per_second);
+
+        glGenBuffers(1, &instance_info);
+        glBindBuffer(GL_ARRAY_BUFFER, instance_info);
+
+        glBufferData(GL_ARRAY_BUFFER, 7 * sizeof(float) * planets.size(), nullptr, GL_DYNAMIC_DRAW);
+
+        InstanceBufferLayout layout;
+        layout.stride = 7 * sizeof(float);
+        layout.attributes.push_back({GL_FLOAT, 3, 0});
+        layout.attributes.push_back({GL_FLOAT, 3, (void *)sizeof(glm::vec3)});
+        layout.attributes.push_back({GL_FLOAT, 1, (void *)(2 * sizeof(glm::vec3))});
+        model.AddInstanceBuffer(layout, instance_info);
+
+        cam.UnlockMouse(loader->GetWindow());
     }
 
     ~SolarSim()
     {
         RemoveFunctions();
+        glDeleteBuffers(1, &instance_info);
         loader->GetTimeInfo().SetUpdateInterval();
     }
 };
