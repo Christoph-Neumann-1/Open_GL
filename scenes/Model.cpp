@@ -1,3 +1,8 @@
+/**
+ * @file Model.cpp
+ * @brief A demonstration of the model loader class.
+ */
+
 #include <Scene.hpp>
 #include <Data.hpp>
 #include <Logger.hpp>
@@ -5,59 +10,72 @@
 #include <Camera/Flycam.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+//The namespace I used for this project
 using namespace GL;
 
+//All scense must have one class derived from Scene
 class Star final : public Scene
 {
 
     Shader shader;
     Model model;
-    uint buff;
+    uint buff; //A buffer holding offsets for multiple instances of the model
 
+    //Standard projection matrix
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
     Camera3D cam;
-    Flycam fc;
+    Flycam fc; // A camera controller that allows free movement and rotation
 
+    //This will be called once per frame
     void Render()
     {
         shader.Bind();
+        //First move the camera
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
+        //Compute a new mvp matrix, the model part is left out since I will store that info in the buffer
         shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix());
 
+        //Draw free instances using the offsets in the buffer
         model.Draw(shader, 3);
 
         shader.UnBind();
-
-        if (glfwGetKey(loader->GetWindow(), GLFW_KEY_R))
-        {
-            loader->UnLoad();
-        }
     }
 
 public:
+    //All the setup is done here. During loading the update thread waits so you don't have to worry about thread safety here.
     Star(SceneLoader *_loader) : Scene(_loader),
                                  shader(ROOT_Directory + "/shader/Star.vs", ROOT_Directory + "/shader/Star.fs"),
                                  model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow())
     {
-        RegisterFunc(CallbackType::Render, &Star::Render, this);
+        RegisterFunc(CallbackType::Render, &Star::Render, this); //Register the method to be called each frame. This will be bound to the method automatically.
         glGenBuffers(1, &buff);
+
+        //The location of the model instances
         float offsets[9]{
             2, 2, -2,
             -2, -2, -4,
             8, 8, -6};
+
         glBindBuffer(GL_ARRAY_BUFFER, buff);
+        //Since nothing changes later on Static draw is used
         glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), offsets, GL_STATIC_DRAW);
+
+        //This tells the model, how the instance buffer looks.
+        //In this case attribure 3 will be 3 floats aka a vec3 and there are no other atrributes, so we can use that as the stride
         InstanceBufferLayout layout;
         layout.stride = 3 * sizeof(float);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         model.AddInstanceBuffer(layout, buff);
+
+        //Sets a value in the loader, the menu checks this value to decide if it needs to be visible.
         SetFlag("hide_menu", true);
     }
 
+    //The threads will be synchronized here as well
     ~Star()
     {
+        RemoveFunctions();//Remove all callbacks created by this class
         glDeleteBuffers(1, &buff);
-        loader->GetCallback().RemoveAll(callback_id);
     }
 };
 

@@ -7,7 +7,8 @@
 
 namespace GL
 {
-    ///@attention Only create one instance
+    //TODO: allow for text input
+    ///@attention Only create one instance 
     class InputHandler
     {
     public:

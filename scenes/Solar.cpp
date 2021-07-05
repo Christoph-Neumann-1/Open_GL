@@ -1,4 +1,6 @@
-//Please use fast math and o3
+//This is an attempt to make a solar system simulation.
+// The main problem right now is that the distances between the planets and the sun makes the planets to small to see.
+// I do not have a good solution for this yet.
 
 #include <Scene.hpp>
 #include <ModelLoader.hpp>
@@ -6,25 +8,26 @@
 #include <Logger.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <Camera/Flycam.hpp>
-#include <random>
-#include <stdio.h>
 
 using namespace GL;
 
 const double G = 6.67e-11;
 const float FOV = 65;
-const float clipping_distance = 10000;
-const double simulations_per_second = 1000;
-const double speed = 100000;
-const double scale_factor = 1.0 / 5200.0;
+const float clipping_distance = 10000;// How far you can see in after scaling down.
+const double simulations_per_second = 1000;//The resulution of the simulation. The higher the number the more accurate the simulation will be. 
+const double speed = 100000;//How fast the simulation runs.
+const double scale_factor = 1.0 / 5200.0;//How much smaller to draw everything.
 
+//The information relevant for renderering is position, radius and color.
+//The rest is to simulate gravity.
+//The doubles are used to ensure accuracy for the outer planets, as well as allow the camera to get closer once I implement more interesting planets.
 struct SpaceObject
 {
-    glm::dvec3 position;
-    glm::vec3 color;
-    float radius;
-    glm::dvec3 velocity;
-    double mass;
+    glm::dvec3 position;//km
+    glm::vec3 color;//RGB
+    float radius;//km
+    glm::dvec3 velocity;//kilometes per second
+    double mass;//kg
 
     SpaceObject(glm::dvec3 p, float r, glm::dvec3 v, float m, glm::vec3 c) : position(p), color(c), radius(r), velocity(v), mass(m) {}
 };
@@ -36,15 +39,17 @@ class SolarSim : public Scene
 
     glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, clipping_distance);
     Camera3D cam;
-    Flycam fc;
-    uint instance_info;
-    Model model;
+    Flycam fc;//This type of camera allows for you to move and rotate freely, ideal for a space simulation.
+    uint instance_info;//The buffer storing the information about every object. Position, color and radius are stored in this buffer.
+    Model model;//A model of a sphere with no textures.
 
+    //All the planets and the sun are defined here. There is no need for this container to be a vector, as I do not intend to add or remove objects at runtime.
     std::array<SpaceObject, 2> planets{
-        SpaceObject(glm::dvec3(0, 510000000, 0), 696340.0, glm::dvec3(0, 0, 0), 1.989e30, glm::vec3(1, 0, 0)),
-        SpaceObject(glm::dvec3(0, 0, 0), 6371.0, glm::dvec3(0, 0, 0), 5.97e24, glm::vec3(0, 1, 0)),
+        SpaceObject(glm::dvec3(0, 0, 0), 696340.0, glm::dvec3(0, 0, 0), 1.989e30, glm::vec3(1, 0, 0)),//Sun
+        SpaceObject(glm::dvec3(0, 510000000, 0), 6371.0, glm::dvec3(0, 0, 0), 5.97e24, glm::vec3(0, 1, 0)),//Earth
     };
 
+    //Compute forces between objects and update positions accoringly.
     void ComputePositions()
     {
         double dt = loader->GetTimeInfo().UpdateInterval() * speed;
@@ -63,6 +68,9 @@ class SolarSim : public Scene
         }
     }
 
+    //Fill the buffer with data from the array of planets.
+    //The postion and radius are scaled down acoording to the scale_factor.
+    //The position is also cast to a vector of floats afterwards.
     void UpdateBuffer()
     {
         float tmpbuffer[7 * sizeof(float) * planets.size()];
@@ -77,6 +85,7 @@ class SolarSim : public Scene
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * 7 * planets.size(), tmpbuffer);
     }
 
+    //This function is called every frame and draws the planets. All Opengl operations are done here.
     void Render()
     {
         shader.Bind();
@@ -92,20 +101,16 @@ class SolarSim : public Scene
         shader.UnBind();
     }
 
-    void Setup()
-    {
-    }
-
 public:
     SolarSim(SceneLoader *loaderr) : Scene(loaderr), shader(ROOT_Directory + "/shader/Solar.vs", ROOT_Directory + "/shader/Batch.fs"),
                                      cam({0, 0, 10}), fc(&cam, loader->GetWindow(), 100), model(ROOT_Directory + "/res/Models/sphere.obj")
     {
         RegisterFunc(CallbackType::Render, &SolarSim::Render, this);
-        RegisterFunc(CallbackType::Update, &SolarSim::ComputePositions, this);
+        RegisterFunc(CallbackType::Update, &SolarSim::ComputePositions, this);//This run on a sepearate thread. 
 
         SetFlag("hide_menu", true);
 
-        loader->GetTimeInfo().SetUpdateInterval(1 / simulations_per_second);
+        loader->GetTimeInfo().SetUpdateInterval(1 / simulations_per_second);//Tells the Update thread how often to run.
 
         glGenBuffers(1, &instance_info);
         glBindBuffer(GL_ARRAY_BUFFER, instance_info);
@@ -114,12 +119,12 @@ public:
 
         InstanceBufferLayout layout;
         layout.stride = 7 * sizeof(float);
-        layout.attributes.push_back({GL_FLOAT, 3, 0});
-        layout.attributes.push_back({GL_FLOAT, 3, (void *)sizeof(glm::vec3)});
-        layout.attributes.push_back({GL_FLOAT, 1, (void *)(2 * sizeof(glm::vec3))});
+        layout.attributes.push_back({GL_FLOAT, 3, 0});//position
+        layout.attributes.push_back({GL_FLOAT, 3, (void *)sizeof(glm::vec3)});//color
+        layout.attributes.push_back({GL_FLOAT, 1, (void *)(2 * sizeof(glm::vec3))});//radius
         model.AddInstanceBuffer(layout, instance_info);
 
-        // cam.UnlockMouse(loader->GetWindow());
+        // cam.UnlockMouse(loader->GetWindow()); //In case I want to debug the program, I need to be able to move the mouse.
     }
 
     ~SolarSim()
@@ -130,4 +135,7 @@ public:
     }
 };
 
+//The load function simply creates a new instance of the scene and returns a pointer to it.
+//The scene will be deleted by the loader.
+//This function can be created manually, but it looks the same for almost all scenes, so I created a macro for it.
 SCENE_LOAD_FUNC(SolarSim);

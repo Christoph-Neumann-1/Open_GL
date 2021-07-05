@@ -8,6 +8,11 @@
 namespace GL
 {
 
+    /**
+     * @brief Sleeps until just before the end and the does busy waiting to ensure accuracy.
+     * 
+     * @param time nanoseconds to sleep.
+     */
     void PreciseSleep(std::chrono::nanoseconds time)
     {
         auto exittime = std::chrono::high_resolution_clock::now() + time;
