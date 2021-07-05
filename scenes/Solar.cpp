@@ -11,12 +11,12 @@
 
 using namespace GL;
 
-const double G = 5;
+const double G = 6.67e-11;
 const float FOV = 65;
-const float clipping_distance = 2000;
+const float clipping_distance = 10000;
 const double simulations_per_second = 1000;
-const double speed = 1000;
-const double scale_factor = 1.0 / 52000.0;
+const double speed = 100000;
+const double scale_factor = 1.0 / 5200.0;
 
 struct SpaceObject
 {
@@ -40,8 +40,9 @@ class SolarSim : public Scene
     uint instance_info;
     Model model;
 
-    std::array<SpaceObject, 1> planets{
-        SpaceObject(glm::dvec3(0, 0, 0), 100000.0, glm::dvec3(0, 0, 0), 1.0, glm::vec3(1, 0, 0)),
+    std::array<SpaceObject, 2> planets{
+        SpaceObject(glm::dvec3(0, 510000000, 0), 696340.0, glm::dvec3(0, 0, 0), 1.989e30, glm::vec3(1, 0, 0)),
+        SpaceObject(glm::dvec3(0, 0, 0), 6371.0, glm::dvec3(0, 0, 0), 5.97e24, glm::vec3(0, 1, 0)),
     };
 
     void ComputePositions()
@@ -118,7 +119,7 @@ public:
         layout.attributes.push_back({GL_FLOAT, 1, (void *)(2 * sizeof(glm::vec3))});
         model.AddInstanceBuffer(layout, instance_info);
 
-        cam.UnlockMouse(loader->GetWindow());
+        // cam.UnlockMouse(loader->GetWindow());
     }
 
     ~SolarSim()
