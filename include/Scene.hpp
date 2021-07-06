@@ -3,6 +3,11 @@
 #include <Callback.hpp>
 #include <SceneLoader.hpp>
 
+/**
+ * @brief This macro creates a function as described at the end of the file. The function will be called when the scene is loaded
+ * and creates a new instance of the scene class.
+ * 
+ */
 #define SCENE_LOAD_FUNC(name) \
     extern "C" GL::Scene *_LOAD_(GL::SceneLoader *loader) { return new name(loader); }
 namespace GL
@@ -10,6 +15,7 @@ namespace GL
 
     /**
      * @brief Base for all scenes.
+     * 
      * Look at Scene.hpp for info about Loading and Unloading.
     */
     class Scene
@@ -35,27 +41,25 @@ namespace GL
         {
             return loader->GetCallback().GetList(cbt).Add(func, callback_id);
         }
-
+    
+        ///@overload
         template <typename F, typename... Args>
         uint RegisterFunc(CallbackType cbt, F &&func, Args... args)
         {
             return loader->GetCallback().GetList(cbt).Add(func,callback_id,args...);
         }
 
+        ///@brief Remove all callback register to this class.
         void RemoveFunctions()
         {
             loader->GetCallback().RemoveAll(callback_id);
         }
 
+        ///@brief Also just for convenience.
         std::atomic_int &GetFlag(const std::string &name)
         {
             return loader->GetFlag(name);
         };
-
-        void SetFlag(const std::string &name, int val)
-        {
-            loader->GetFlag(name) = val;
-        }
 
     public:
         explicit Scene(SceneLoader *_loader) : loader(_loader)
@@ -77,4 +81,6 @@ namespace GL
  * //return a pointer to a new Scene instance.
  * extern "C" Scene *_LOAD_(SceneLoader *loader);
  * @endcode
+ * 
+ * I recommend just using the macro at the beginning of the file as the function will look the same for every file.
  */

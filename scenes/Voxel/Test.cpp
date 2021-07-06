@@ -202,7 +202,7 @@ public:
         TexSetup();
         cshader.UnBind();
 
-        loader->GetFlag("hide_menu") = 1;
+        GetFlag("hide_menu") = 1;
 
         file.AddElement<glm::dvec3>(&camera.position);
         file.AddElement<double>(&controller.pitch);
