@@ -4,6 +4,10 @@
 #include <glm/glm.hpp>
 namespace GL
 {
+
+    /**
+     * @brief This class stores a single shader program and allows you to modify uniforms .
+     */
     class Shader
     {
         uint id;
@@ -17,11 +21,23 @@ namespace GL
         uint CompileShader(const std::string &src, uint type);
 
     public:
+        /**
+         * @brief Compile and link the shader. 
+         * 
+         * @param vsrc vertex shader
+         * @param fsrc fragment shader
+         */
         Shader(const std::string &vsrc, const std::string &fsrc);
         ~Shader();
 
+        ///@brief activate the shader
         void Bind() const;
+        ///@brief bind shader 0
         void UnBind() const;
+
+
+        //The following functions allow for setting uniform values. There are multiple ways to set some uniforms, for example the 
+        //4f uniforms can be set using individual values or an array. The array make sense if you store colors in a vec4 for example.
 
         void SetUniform1i(const std::string &name, int value);   ///<Set an integer uniform
         void SetUniform1f(const std::string &name, float value); ///<Set a float uniform
