@@ -1,3 +1,5 @@
+//I used this file for trying out a few new ideas. It will be deleted soon.
+
 #include <Scene.hpp>
 #include <ModuleLoader.hpp>
 #include <glm/glm.hpp>

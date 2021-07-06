@@ -108,7 +108,7 @@ public:
         RegisterFunc(CallbackType::Render, &SolarSim::Render, this);
         RegisterFunc(CallbackType::Update, &SolarSim::ComputePositions, this);//This run on a sepearate thread. 
 
-        SetFlag("hide_menu", true);
+        GetFlag("hide_menu")= true;
 
         loader->GetTimeInfo().SetUpdateInterval(1 / simulations_per_second);//Tells the Update thread how often to run.
 

@@ -68,7 +68,7 @@ public:
         model.AddInstanceBuffer(layout, buff);
 
         //Sets a value in the loader, the menu checks this value to decide if it needs to be visible.
-        SetFlag("hide_menu", true);
+        GetFlag("hide_menu")= true;
     }
 
     //The threads will be synchronized here as well
