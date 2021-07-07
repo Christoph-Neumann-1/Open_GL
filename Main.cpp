@@ -233,7 +233,7 @@ int main(int argc, char **argv)
         while (!glfwWindowShouldClose(window))
         {
             //Blue background.
-            glClearColor(21 / 255.0, 132 / 255.0, 201 / 255.0, 1);
+            glClearColor(window.bgcolor.r, window.bgcolor.g, window.bgcolor.b, window.bgcolor.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             //Draw normal stuff.

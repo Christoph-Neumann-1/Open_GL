@@ -131,6 +131,8 @@ public:
         SetupStars();
 
         loader->GetTimeInfo().SetUpdateInterval(1 / 500.0f);
+
+        loader->GetWindow().bgcolor=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     ~Stars()
@@ -138,6 +140,7 @@ public:
         RemoveFunctions();
         glDeleteBuffers(1, &instance_info);
         loader->GetTimeInfo().SetUpdateInterval();
+        loader->GetWindow().bgcolor=Window::defaultbg;
     }
 };
 

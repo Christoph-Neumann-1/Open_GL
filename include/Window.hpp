@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Callback.hpp>
+#include <glm/glm.hpp>
 
 namespace GL
 {
@@ -33,6 +34,8 @@ namespace GL
 
     public:
         InputHandler *inputptr;
+        constexpr static glm::vec4 defaultbg{21 / 255.0, 132 / 255.0, 201 / 255.0, 1};
+        glm::vec4 bgcolor{21 / 255.0, 132 / 255.0, 201 / 255.0, 1};
         Window(GLFWwindow *window, CallbackList &callback);
 
         ~Window();
@@ -60,13 +63,13 @@ namespace GL
             else
             {
                 ///-1 Prevents weird issue where it stays full screen.
-                glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height-1, 0);
+                glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height - 1, 0);
             }
         }
         ///Check if the window is in fullscreen mode.
         bool IsFullscreen()
         {
-            return glfwGetWindowMonitor(window)!=nullptr;
+            return glfwGetWindowMonitor(window) != nullptr;
         }
     };
 }

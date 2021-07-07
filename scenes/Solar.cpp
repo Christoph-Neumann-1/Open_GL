@@ -124,6 +124,7 @@ public:
         layout.attributes.push_back({GL_FLOAT, 1, (void *)(2 * sizeof(glm::vec3))});//radius
         model.AddInstanceBuffer(layout, instance_info);
 
+        loader->GetWindow().bgcolor=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
         // cam.UnlockMouse(loader->GetWindow()); //In case I want to debug the program, I need to be able to move the mouse.
     }
 
@@ -132,6 +133,7 @@ public:
         RemoveFunctions();
         glDeleteBuffers(1, &instance_info);
         loader->GetTimeInfo().SetUpdateInterval();
+        loader->GetWindow().bgcolor=Window::defaultbg;
     }
 };
 
