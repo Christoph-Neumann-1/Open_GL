@@ -17,14 +17,14 @@ using namespace GL;
 class Star final : public Scene
 {
 
-    Shader shader;
-    Model model;
+    Shader shader{ROOT_Directory + "/shader/Star.vs", ROOT_Directory + "/shader/Star.fs"};
+    Model model{ROOT_Directory + "/res/Models/star.obj"};
     uint buff; //A buffer holding offsets for multiple instances of the model
 
     //Standard projection matrix
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
     Camera3D cam;
-    Flycam fc; // A camera controller that allows free movement and rotation
+    Flycam fc{&cam, loader->GetWindow()}; // A camera controller that allows free movement and rotation
 
     //This will be called once per frame
     void Render()
@@ -43,9 +43,7 @@ class Star final : public Scene
 
 public:
     //All the setup is done here. During loading the update thread waits so you don't have to worry about thread safety here.
-    Star(SceneLoader *_loader) : Scene(_loader),
-                                 shader(ROOT_Directory + "/shader/Star.vs", ROOT_Directory + "/shader/Star.fs"),
-                                 model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow())
+    Star(SceneLoader *_loader) : Scene(_loader)
     {
         RegisterFunc(CallbackType::Render, &Star::Render, this); //Register the method to be called each frame. This will be bound to the method automatically.
         glGenBuffers(1, &buff);

@@ -10,7 +10,7 @@ using namespace GL;
 class SceneMenu final : public Scene
 {
     using cbt = CallbackType;
-    SceneLoader scene;
+    SceneLoader scene{loader->GetWindow(), loader->GetCallback(), loader->GetTimeInfo()};
 
     void ImGui();
 
@@ -23,21 +23,20 @@ class SceneMenu final : public Scene
         {"Model Test", "Model"},
         {"Stars", "Stars"}};
 
-    InputHandler::KeyCallback escape;
+    InputHandler::KeyCallback escape{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)
+                                                    {
+                                                        if (scene.HasScene())
+                                                            scene.UnLoad();
+                                                        else
+                                                            glfwSetWindowShouldClose(loader->GetWindow(), 2);
+                                                    }};
 
 public:
     explicit SceneMenu(SceneLoader *_loader);
     ~SceneMenu();
 };
 
-SceneMenu::SceneMenu(SceneLoader *_loader) : Scene(_loader), scene(_loader->GetWindow(), _loader->GetCallback(), _loader->GetTimeInfo()),
-                                             escape(*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)
-                                                    {
-                                                        if (scene.HasScene())
-                                                            scene.UnLoad();
-                                                        else
-                                                            glfwSetWindowShouldClose(loader->GetWindow(), 2);
-                                                    })
+SceneMenu::SceneMenu(SceneLoader *_loader) : Scene(_loader)
 {
     RegisterFunc(cbt::ImGuiRender, &SceneMenu::ImGui, this);
     scene.SetUnloadCb([&](SceneLoader *)
@@ -88,10 +87,6 @@ void SceneMenu::ImGui()
         }
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
-    }
-    else if (glfwGetKey(loader->GetWindow(), GLFW_KEY_ESCAPE))
-    {
-        scene.UnLoad();
     }
 }
 

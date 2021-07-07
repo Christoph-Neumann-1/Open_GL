@@ -34,14 +34,14 @@ struct SpaceObject
 
 class SolarSim : public Scene
 {
-    Shader shader;
+    Shader shader{ROOT_Directory + "/shader/Solar.vs", ROOT_Directory + "/shader/Batch.fs"};
     Logger log;
 
     glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, clipping_distance);
-    Camera3D cam;
-    Flycam fc;//This type of camera allows for you to move and rotate freely, ideal for a space simulation.
+    Camera3D cam{{0, 0, 10}};
+    Flycam fc{&cam, loader->GetWindow(), 100};//This type of camera allows for you to move and rotate freely, ideal for a space simulation.
     uint instance_info;//The buffer storing the information about every object. Position, color and radius are stored in this buffer.
-    Model model;//A model of a sphere with no textures.
+    Model model{ROOT_Directory + "/res/Models/sphere.obj"};//A model of a sphere with no textures.
 
     //All the planets and the sun are defined here. There is no need for this container to be a vector, as I do not intend to add or remove objects at runtime.
     std::array<SpaceObject, 2> planets{
@@ -102,8 +102,7 @@ class SolarSim : public Scene
     }
 
 public:
-    SolarSim(SceneLoader *loaderr) : Scene(loaderr), shader(ROOT_Directory + "/shader/Solar.vs", ROOT_Directory + "/shader/Batch.fs"),
-                                     cam({0, 0, 10}), fc(&cam, loader->GetWindow(), 100), model(ROOT_Directory + "/res/Models/sphere.obj")
+    SolarSim(SceneLoader *loaderr) : Scene(loaderr)
     {
         RegisterFunc(CallbackType::Render, &SolarSim::Render, this);
         RegisterFunc(CallbackType::Update, &SolarSim::ComputePositions, this);//This run on a sepearate thread. 

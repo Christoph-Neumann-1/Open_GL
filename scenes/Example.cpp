@@ -17,7 +17,7 @@ class Example final : public Scene
 {
     uint VBO;
     uint VAO;
-    Shader shader;
+    Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
 
     //A triangle
     float vertices[6] = {-0.5, -0.5,
@@ -40,8 +40,7 @@ class Example final : public Scene
 
 public:
     //All the setup is done here. During loading the update thread waits so you don't have to worry about thread safety here.
-    Example(SceneLoader *_loader) : Scene(_loader),
-                                    shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs")
+    Example(SceneLoader *_loader) : Scene(_loader)
     {
         //Generate and set up Buffer
         glGenVertexArrays(1, &VAO);

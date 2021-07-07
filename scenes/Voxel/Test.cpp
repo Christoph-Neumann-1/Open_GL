@@ -17,23 +17,23 @@ const double raysteps = 32;
 class Voxel_t final : public GL::Scene
 {
     uint texid;
-    GL::Shader cshader;
+    GL::Shader cshader{ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"};
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
-    GL::Camera3D camera;
-    GL::Fplocked controller;
-    GL::Voxel::TexConfig blocks;
-    GL::Voxel::ChunkManager chunks;
+    GL::Camera3D camera{{0, 30, 0}};
+    GL::Fplocked controller{&camera, loader->GetWindow(), 22};
+    GL::Voxel::TexConfig blocks{ROOT_Directory + "/res/Textures/block.cfg"};
+    GL::Voxel::ChunkManager chunks{blocks, loader->GetCallback()};
 
     uint rid,mid,lid;
 
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     uint vbo, ibo, vao;
-    GL::Shader shader;
+    GL::Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
     GL::Voxel::Inventory inventory;
-    GL::Voxel::FileLayout file;
+    GL::Voxel::FileLayout file{ROOT_Directory + "/res/world/PLAYER"};
 
-    GL::InputHandler::KeyCallback r_key;
+    GL::InputHandler::KeyCallback r_key{*loader->GetWindow().inputptr};
 
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
     {
@@ -186,10 +186,7 @@ class Voxel_t final : public GL::Scene
     void TexSetup();
 
 public:
-    Voxel_t(GL::SceneLoader *_loader) : Scene(_loader), cshader(ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"),
-                                        camera({0, 30, 0}), controller(&camera, loader->GetWindow(), 22), blocks(ROOT_Directory + "/res/Textures/block.cfg"),
-                                        chunks(blocks, loader->GetCallback()), shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"),
-                                        file(ROOT_Directory + "/res/world/PLAYER"), r_key(*loader->GetWindow().inputptr)
+    Voxel_t(GL::SceneLoader *_loader) : Scene(_loader)
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
         cshader.Bind();

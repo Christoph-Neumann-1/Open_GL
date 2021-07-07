@@ -33,14 +33,14 @@ struct Star
 
 class Stars : public Scene
 {
-    Shader shader;
-    Model model;
+    Shader shader{ROOT_Directory + "/shader/Stars.vs", ROOT_Directory + "/shader/Star.fs"};
+    Model model{ROOT_Directory + "/res/Models/star.obj"};
     uint instance_info;
     Logger log;
 
     glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, clipping_distance);
     Camera3D cam;
-    Flycam fc;
+    Flycam fc{&cam, loader->GetWindow(), 100};
 
     std::vector<Star> stars;
 
@@ -109,8 +109,7 @@ class Stars : public Scene
     }
 
 public:
-    Stars(SceneLoader *loaderr) : Scene(loaderr), shader(ROOT_Directory + "/shader/Stars.vs", ROOT_Directory + "/shader/Star.fs"),
-                                  model(ROOT_Directory + "/res/Models/star.obj"), fc(&cam, loader->GetWindow(), 100)
+    Stars(SceneLoader *loaderr) : Scene(loaderr)
     {
         RegisterFunc(CallbackType::Render, &Stars::Render, this);
         RegisterFunc(CallbackType::Update, &Stars::ComputePositions, this);

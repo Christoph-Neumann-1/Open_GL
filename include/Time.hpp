@@ -35,9 +35,9 @@ namespace GL
         float deltatime_update = 0.0f;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> last_render;
-        double deltatime_render;
+        double deltatime_render{0.0f};
 
-        uint objid;
+        uint objid{cbh.GenId()};
 
         function<void()> PreRender = [&]() {
             auto current_time = std::chrono::high_resolution_clock::now();
@@ -49,7 +49,7 @@ namespace GL
         
         static constexpr float default_interval=1/100.0f;
 
-        explicit TimeInfo(CallbackHandler &_cbh) : cbh(_cbh), deltatime_render(0.0f), objid(cbh.GenId())
+        explicit TimeInfo(CallbackHandler &_cbh) : cbh(_cbh)
         {
             cbh.GetList(CallbackType::PreRender).Add(PreRender, objid);
         }
