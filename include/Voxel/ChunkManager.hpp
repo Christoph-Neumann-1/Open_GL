@@ -10,27 +10,33 @@
 namespace GL::Voxel
 {
 
+    /**
+     * @brief This class stores chunks and decides which chunks are visible and which need to be loaded/unloaded.
+     */
     class ChunkManager
     {
-        std::vector<Chunk *> chunks;
-        std::vector<Chunk *> free;
-        std::vector<Chunk *> loaded;
-        std::vector<Chunk *> pre_loaded;
-        std::vector<Chunk *> rendered;
+        std::vector<Chunk *> chunks;     //< A list of all chunks.
+        std::vector<Chunk *> free;       //< A list of unused chunks.
+        std::vector<Chunk *> loaded;     //< Chunks with meshes(renderdist+1).
+        std::vector<Chunk *> pre_loaded; //< Chunks where the data is loaded.
+        std::vector<Chunk *> rendered;   //< Chunks that are rendered.
 
         TexConfig &config;
-        ThreadPool pool;
+        ThreadPool pool;//Used for mesh building.
         CallbackHandler &cbh;
         uint cbid;
         uint c_cbid = cbh.GenId();
 
-        int renderdist = 11;
-        int preload = 1;
+        int renderdist = 11;//How far the player can see
+        int preload = 1;//How many chunk beyond mesh generation data is loades.
 
-        std::atomic_uint count = 0;
+        std::atomic_uint count = 0;//Number of chunks which meshes are being rebuilt.
 
         FileLayout file;
 
+        /**
+         * @brief Get a free chunk. If no chunks are free, make a new one.
+         */
         Chunk *GetFree()
         {
             Chunk *ptr;
@@ -47,6 +53,10 @@ namespace GL::Voxel
             return ptr;
         }
 
+        /**
+         * @brief Try loading the seed from the file, if the file does not exist create a new seed.
+         * 
+         */
         void SetSeed()
         {
 
@@ -73,6 +83,9 @@ namespace GL::Voxel
                    chunk.y >= pos.y - renderdist - preload - 1 && chunk.y <= pos.y + renderdist + preload + 1;
         }
 
+        /**
+         * @brief Check which chunks need to be loaded, have meshes build and be rendered.
+         */
         void LoadChunks(glm::ivec2 pos)
         {
             int xbegin = pos.x - (renderdist + preload + 1);
@@ -115,6 +128,11 @@ namespace GL::Voxel
             }
         }
 
+        /**
+         * @brief Get the chunk at the grid position.
+         * 
+         * @param pos from GetChunkPos
+         */
         Chunk *GetChunk(glm::ivec2 pos)
         {
             auto res = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *ptr)
@@ -125,7 +143,7 @@ namespace GL::Voxel
         ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb),
                                                             file(ROOT_Directory + "/res/world/SEED")
         {
-            chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1));
+            chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1));//No more chunks should be needed.
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
             for (int i = 0; i < 2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1); i++)
             {
@@ -138,6 +156,7 @@ namespace GL::Voxel
 
             SetSeed();
 
+            //After rendering check if any chunks were modifiesd, if so, rebuild them.
             cbid = cbh.GetList(CallbackType::PostRender).Add([&]()
                                                              {
                                                                  for (auto chunk : rendered)
@@ -160,16 +179,24 @@ namespace GL::Voxel
             cbh.RemoveAll(c_cbid);
         }
 
+        /**
+         * @brief Get the grid coordinates of a chunk using world coordinates.
+         * 
+         */
         glm::ivec2 GetChunkPos(int x, int z)
         {
             return {ceil((x + 1) / 16.0f) - 1, ceil((z + 1) / 16.0f) - 1};
         }
 
+        ///@overload
         glm::ivec2 GetChunkPos(glm::ivec2 pos)
         {
             return {ceil((pos.x + 1) / 16.0f) - 1, ceil((pos.y + 1) / 16.0f) - 1};
         }
 
+        /**
+         * @brief First finds the coresponding chunk, then gets the block at that position.
+         */
         uint *GetBlockAt(int x, int y, int z)
         {
             auto chunk = GetChunk(GetChunkPos(x, z));
@@ -189,12 +216,17 @@ namespace GL::Voxel
             }
         };
 
+        /**
+         * @brief Generate a new seed, delete world data and regenerate everything. If called again while the world is being rebuilt, the function will do nothing.
+         * 
+         */
         void Regenerate()
         {
 
             for (auto &file_ : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
                 std::filesystem::remove(file_);
 
+            //Check if all chunks have finished rebuilding.
             if (count > 0)
                 return;
             Chunk::NewSeed();
@@ -212,11 +244,19 @@ namespace GL::Voxel
             }
         }
 
+        /**
+         * @brief Used to check if the player has crossed a chunk boundary. If so new chunks must be loaded.
+         */
         bool HasCrossedChunk(glm::ivec2 last, glm::ivec2 now)
         {
             return GetChunkPos(last) != GetChunkPos(now);
         }
 
+        /**
+         * @brief Check which chunks are no longer needed and remove them.
+         * 
+         * If the only stop being visible but are still supposed to be loaded,  they will still be in the corresponding lists.
+         */
         void UnLoadChunks(glm::ivec2 pos)
         {
             for (auto chunk = loaded.begin(); chunk != loaded.end();)
@@ -246,6 +286,11 @@ namespace GL::Voxel
             }
         }
 
+        /**
+         * @brief This loads all the chunks around the player.
+         * 
+         * @param position In grid coords.
+         */
         void MoveChunk(glm::ivec2 position)
         {
             UnLoadChunks(position);

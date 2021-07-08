@@ -4,8 +4,10 @@
 #include <array>
 #include <Voxel/ConfigReader.hpp>
 
+///Retrieves the texture information about a block with a specific name and updates the cache.
 #define SET_TEX_INDEX(x) cache[B##x] = cfg.FindByName(#x)
 
+///How many types of blocks there are
 #define NBLOCKS 7
 
 namespace GL::Voxel
@@ -13,11 +15,16 @@ namespace GL::Voxel
     struct B_Vertex
     {
         glm::vec3 pos;
-        glm::vec2 tex;
+        glm::vec2 tex;//<Normalized texture coordinates
 
         constexpr B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
     };
 
+    /**
+     * @brief This is used for both lookup of information as well as data storage.
+     * 
+     * Air is a special case, as it is ignored. It also doesn't need a texture.
+     */
     enum BlockTypes
     {
         BAir,
@@ -28,6 +35,8 @@ namespace GL::Voxel
         BSand,
         BWood,
     };
+
+    ///@brief Transparent blocks are processed differently, so you need to tell the program which block is transparent.
     bool IsTransparent(BlockTypes t)
     {
         switch (t)
@@ -40,6 +49,10 @@ namespace GL::Voxel
             return false;
         }
     }
+
+    /**
+     * @brief If a specific block should not be picked up, specify it here.
+     */
     bool IsStorable(BlockTypes t)
     {
         switch (t)
@@ -54,6 +67,12 @@ namespace GL::Voxel
         }
     }
 
+    /**
+     * @brief Gets the texture information for each block and returns an array for easy and fast lookup.
+     * 
+     * Right now every block must be added manually.
+     * 
+     */
     std::array<uint, NBLOCKS> MakeBlockCache(const TexConfig &cfg)
     {
         std::array<uint, NBLOCKS> cache;
@@ -67,6 +86,7 @@ namespace GL::Voxel
         return cache;
     }
 
+    //Normal vectors for each block face the order is the same as below
     static const std::array<glm::vec3, 6> bnormals{
         glm::vec3{0, 0, 1},
         glm::vec3{0, 0, -1},
@@ -75,6 +95,7 @@ namespace GL::Voxel
         glm::vec3{1, 0, 0},
         glm::vec3{-1, 0, 0}};
 
+    //I will have to use indices at some point but for now arrays work well enough as memory is not a problem
     static const std::array<B_Vertex, 36> bvertices{
         //Front
         B_Vertex({-0.5f, -0.5f, 0.5f}, {0.0f, 0.0f}),

@@ -134,6 +134,7 @@ namespace GL::Voxel
                 {
                     if (blocks[x][y][z] == BAir)
                         continue;
+                    //If the block is on the edge of the chunk, it is treated differently. Right now this means the face is always drawn.
                     bool special = false;
 
                     if (!is_tp(x, y, z))
@@ -321,6 +322,7 @@ namespace GL::Voxel
             }
         }
 
+        //This function will probably be called in a seperate thread but Opengl only works in the render thread.
         renderid = render_thread.Add([&]()
                                      {
                                          glBindBuffer(GL_ARRAY_BUFFER, buffer);

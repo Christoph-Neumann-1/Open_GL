@@ -12,6 +12,9 @@
 
 namespace GL::Voxel
 {
+    /**
+     * @brief This class describes what data is stored in a file.
+     */
     class FileLayout
     {
         struct IElement
@@ -31,7 +34,7 @@ namespace GL::Voxel
         struct Element : IElement
         {
             T *data;
-            unsigned int n;
+            unsigned int n; //< How many objects should be stored.
             void Store(FILE *f) override
             {
                 fwrite(data, sizeof(T), n, f);
@@ -43,6 +46,7 @@ namespace GL::Voxel
             Element(T *d, unsigned int nn) : data(d), n(nn) {}
         };
 
+        //Same as Element, but both size and data just pointers, so they can be changed afterwards.
         template <typename T>
         struct Element_ptr : IElement
         {
@@ -82,10 +86,14 @@ namespace GL::Voxel
             return 1;
         }
         template <typename T>
-        void AddElement(T *data, unsigned int nn=1)
+        void AddElement(T *data, unsigned int nn = 1)
         {
             elements.emplace_back(new Element<T>(data, nn));
         }
+
+        /**
+         * @brief T should be a pointer to a pointer because it is supposed to be changed.
+         */
         template <typename T>
         void AddElement(T *data, unsigned int *nn)
         {

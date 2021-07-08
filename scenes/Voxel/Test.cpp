@@ -1,3 +1,5 @@
+//This is a simple voxel world
+
 #include <Scene.hpp>
 #include <glm/glm.hpp>
 #include <Data.hpp>
@@ -12,15 +14,17 @@
 #include <Voxel/Inventory.hpp>
 #include <Input.hpp>
 
-const double raydist = 8;
-const double raysteps = 32;
+const double raydist = 8;//How far the player can mine/place blocks
+const double raysteps = 32;//How often the ray should be sampled
 class Voxel_t final : public GL::Scene
 {
     uint texid;
+    ///The shader used for the chunks
     GL::Shader cshader{ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"};
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
     GL::Camera3D camera{{0, 30, 0}};
+    ///This camera controller does not allow roll or looking more than 90 degrees up.
     GL::Fplocked controller{&camera, loader->GetWindow(), 22};
     GL::Voxel::TexConfig blocks{ROOT_Directory + "/res/Textures/block.cfg"};
     GL::Voxel::ChunkManager chunks{blocks, loader->GetCallback()};
@@ -29,12 +33,17 @@ class Voxel_t final : public GL::Scene
 
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     uint vbo, ibo, vao;
+
+    //Shader for ui. Right now this means the square acting as the crosshair
     GL::Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
     GL::Voxel::Inventory inventory;
+    //Player data
     GL::Voxel::FileLayout file{ROOT_Directory + "/res/world/PLAYER"};
 
+    //This key regenerates the world
     GL::InputHandler::KeyCallback r_key{*loader->GetWindow().inputptr};
 
+    ///@brief Ray plane intersect
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
     {
         glm::vec3 diff = rayPoint - planePoint;
@@ -44,6 +53,7 @@ class Voxel_t final : public GL::Scene
         return rayPoint - rayVector * prod3;
     }
 
+    ///@brief Mine the block the player is looking at
     void Mine(int)
     {
             auto ray_pos = camera.position;
@@ -71,6 +81,7 @@ class Voxel_t final : public GL::Scene
             }
     }
 
+    ///@brief select a block for placing
     void Pick(int)
     {
         auto ray_pos = camera.position;
@@ -92,6 +103,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
+    ///@brief If there are blocks in the players inventory, place one.
     void Place(int)
     {
             auto ray_pos = camera.position;
@@ -190,8 +202,9 @@ public:
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
         cshader.Bind();
-        cshader.SetUniform1i("u_Texture", 0);
+        cshader.SetUniform1i("u_Texture", 0);//The texture array
 
+        //TODO This needs to use the newer system.
         lid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_LEFT,GL::InputHandler::Action::Press,&Voxel_t::Mine,this);
         rid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_RIGHT,GL::InputHandler::Action::Press,&Voxel_t::Place,this);
         mid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_MIDDLE,GL::InputHandler::Action::Press,&Voxel_t::Pick,this);
@@ -264,6 +277,7 @@ public:
     }
 };
 
+//Load the texture array
 void Voxel_t::TexSetup()
 {
     stbi_set_flip_vertically_on_load(1);
