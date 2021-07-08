@@ -15,7 +15,7 @@ namespace GL
     public:
         glm::dquat rotation;
         glm::dvec3 position;
-        static bool allow_mouse_lock;
+        static constexpr bool allow_mouse_lock=true;
 
         Camera3D(glm::dvec3 pos = glm::dvec3(0.0f, 0.0f, 0.0f), glm::dquat rot = glm::dquat(1, 0, 0, 0)) : rotation(rot), position(pos) {}
 

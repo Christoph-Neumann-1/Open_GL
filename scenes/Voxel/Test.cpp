@@ -39,7 +39,6 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::Inventory inventory;
     //Player data
     GL::Voxel::FileLayout file{ROOT_Directory + "/res/world/PLAYER"};
-
     //This key regenerates the world
     GL::InputHandler::KeyCallback r_key{*loader->GetWindow().inputptr};
 
