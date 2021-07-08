@@ -17,6 +17,8 @@
 using namespace GL;
 using cbt = CallbackType;
 
+static std::string startscene = "scenes/bin/Menu.scene";
+
 ///This function schedules a function to be called once both threads are ready. This may be useful for unloading or loading scenes.
 static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syncs, const std::function<void()> &func)
 {
@@ -103,18 +105,38 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
     cv.notify_one();
 }
 
+void ProcessArguments(int argc, char **argv, std::string &scene, std::string &rootdir)
+{
+    for (int i = 1; i < argc; i += 2)
+    {
+        std::string tmp = argv[i];
+        if (tmp == "-scene")
+        {
+            scene = argv[i + 1];
+        }
+        else if (tmp == "-rootdir")
+        {
+            rootdir = argv[i + 1];
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
     Logger log;
-
 
     //Determine the directory in which all the resources, such as shader and textures are found.
     //If a command line argument is passed, use that as the directory.
     //Otherwise it is checked if there is a res subdrive in the directory of the executable.
     //If not, check the parent directory. This is necessary for debugging as the exectable is in the build directory.
-    ROOT_Directory = argc > 1 ? argv[1] : std::filesystem::path(std::string(argv[0])).parent_path().string();
-    if (!std::filesystem::exists(ROOT_Directory + "/res") && std::filesystem::exists(ROOT_Directory + "/../res"))
-        ROOT_Directory = std::filesystem::path(ROOT_Directory + "/.."); // Needed to run it from build directory.
+
+    ProcessArguments(argc, argv, startscene, ROOT_Directory);
+    if (ROOT_Directory.empty())
+    {
+        ROOT_Directory=std::filesystem::path(std::string(argv[0])).parent_path().string();
+        if (!std::filesystem::exists(ROOT_Directory + "/res") && std::filesystem::exists(ROOT_Directory + "/../res"))
+            ROOT_Directory = std::filesystem::path(ROOT_Directory + "/.."); // Needed to run it from build directory.
+    }
 
     {
         std::mutex mutex;
@@ -210,7 +232,7 @@ int main(int argc, char **argv)
                            });
 
         //The menu allows for the selection of a scene by default it stays visible, but can be hidden by the scene.
-        loader.Load(ROOT_Directory + "/scenes/bin/Menu.scene");
+        loader.Load(ROOT_Directory + "/"+startscene);
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);
@@ -243,7 +265,7 @@ int main(int argc, char **argv)
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
-            
+
             //Interface
             imguirendercb();
 
