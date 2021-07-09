@@ -58,7 +58,7 @@ public:
         shader.Bind();
 
         //Set the color to pink
-        float color[]{1, 0.2, 0.8, 1};
+        glm::vec4 color{1, 0.2, 0.8, 1};
         shader.SetUniform4f("u_Color", color);
 
         shader.SetUniformMat4f("u_MVP", glm::mat4(1.0f)); //We are already using normalized device coordinates, so an identity matrix is fine I could have used a shader without this uniform, but I didn't want yet another file.

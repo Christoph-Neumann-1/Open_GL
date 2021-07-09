@@ -35,19 +35,24 @@ namespace GL
         ///@brief bind shader 0
         void UnBind() const;
 
-
-        //The following functions allow for setting uniform values. There are multiple ways to set some uniforms, for example the 
+        //The following functions allow for setting uniform values. There are multiple ways to set some uniforms, for example the
         //4f uniforms can be set using individual values or an array. The array make sense if you store colors in a vec4 for example.
-        //TODO add glm types 
 
-        void SetUniform1i(const std::string &name, int value);   ///<Set an integer uniform
-        void SetUniform1f(const std::string &name, float value); ///<Set a float uniform
+        void SetUniform1i(const std::string &name, int value);   
+        void SetUniform1f(const std::string &name, float value); 
+
         void SetUniform2f(const std::string &name, float v0, float v1);
         void SetUniform2f(const std::string &name, const float values[2]);
-        void SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3); ///<Set a vec4 uniform of floats
-        void SetUniform4f(const std::string &name, const float values[4]);
+        void SetUniform2f(const std::string &name, const glm::vec2 values);
+
         void SetUniform3f(const std::string &name, float v0, float v1, float v2);
         void SetUniform3f(const std::string &name, const float values[3]);
-        void SetUniformMat4f(const std::string &name, const glm::mat4 &matrix); ///<Set a mat4 uniform
+        void SetUniform3f(const std::string &name, const glm::vec3 values);
+
+        void SetUniform4f(const std::string &name, float v0, float v1, float v2, float v3); 
+        void SetUniform4f(const std::string &name, const float values[4]);
+        void SetUniform4f(const std::string &name, const glm::vec4 values);
+
+        void SetUniformMat4f(const std::string &name, const glm::mat4 &matrix);
     };
 }

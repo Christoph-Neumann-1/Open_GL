@@ -50,19 +50,20 @@ class BallInBox : public Scene
 
         for (int i = 0; i < 6; i++)
         {
-            shader.SetUniform4f("u_Color", (float *)&side_colors[i / 2]);
+            shader.SetUniform4f("u_Color", side_colors[i / 2]);
             glDrawArrays(GL_TRIANGLES, 6 * i, 6);
         }
 
         glBindVertexArray(0);
     }
 
+    //TODO render trail
     void Render()
     {
         shader.Bind();
         RenderBox();
 
-        shader.SetUniform4f("u_Color", (float *)&b_color);
+        shader.SetUniform4f("u_Color", b_color);
         shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix() * glm::scale(glm::translate(glm::mat4(1),b_pos), {bradius, bradius, bradius}));
 
         ball.Draw(shader);
