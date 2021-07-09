@@ -105,6 +105,12 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
     cv.notify_one();
 }
 
+/**
+ * @brief This function checks for command line arguments. 
+ * 
+ * @param scene The first scene to be loaded. Relative to rootdir.
+ * @param rootdir Where all files are located.
+ */
 void ProcessArguments(int argc, char **argv, std::string &scene, std::string &rootdir)
 {
     for (int i = 1; i < argc; i += 2)
@@ -125,12 +131,10 @@ int main(int argc, char **argv)
 {
     Logger log;
 
-    //Determine the directory in which all the resources, such as shader and textures are found.
-    //If a command line argument is passed, use that as the directory.
-    //Otherwise it is checked if there is a res subdrive in the directory of the executable.
-    //If not, check the parent directory. This is necessary for debugging as the exectable is in the build directory.
-
+    //First check for command line arguments.
     ProcessArguments(argc, argv, startscene, ROOT_Directory);
+    //If no root directory was provided, try the directory of the executable.
+    //If that fails, try the parent directory.
     if (ROOT_Directory.empty())
     {
         ROOT_Directory=std::filesystem::path(std::string(argv[0])).parent_path().string();
