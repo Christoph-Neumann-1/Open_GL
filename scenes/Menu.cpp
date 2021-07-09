@@ -18,7 +18,7 @@ class SceneMenu final : public Scene
     std::vector<std::pair<std::string, std::string>> scenes{
         {"Example", "Example"},
         {"Solar", "Solar"},
-        {"Batch", "Batch"},
+        {"Ball in Box", "BallInBox"},
         {"Voxel Test", "Voxel/Test"},
         {"Model Test", "Model"},
         {"Stars", "Stars"}};
