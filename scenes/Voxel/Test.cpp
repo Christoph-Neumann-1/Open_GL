@@ -14,8 +14,8 @@
 #include <Voxel/Inventory.hpp>
 #include <Input.hpp>
 
-const double raydist = 8;//How far the player can mine/place blocks
-const double raysteps = 32;//How often the ray should be sampled
+const double raydist = 8;   //How far the player can mine/place blocks
+const double raysteps = 32; //How often the ray should be sampled
 class Voxel_t final : public GL::Scene
 {
     uint texid;
@@ -29,16 +29,21 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::TexConfig blocks{ROOT_Directory + "/res/Textures/block.cfg"};
     GL::Voxel::ChunkManager chunks{blocks, loader->GetCallback()};
 
-    uint rid,mid,lid;
+    GL::InputHandler::MouseCallback leftButton{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_LEFT, GL::InputHandler::Action::Press, &Voxel_t::Mine, this},
+        right_button{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_RIGHT, GL::InputHandler::Action::Press, &Voxel_t::Place, this},
+        middle_button{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_MIDDLE, GL::InputHandler::Action::Press, &Voxel_t::Pick, this};
 
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     uint vbo, ibo, vao;
 
     //Shader for ui. Right now this means the square acting as the crosshair
     GL::Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
+
     GL::Voxel::Inventory inventory;
+
     //Player data
     GL::Voxel::FileLayout file{ROOT_Directory + "/res/world/PLAYER"};
+
     //This key regenerates the world
     GL::InputHandler::KeyCallback r_key{*loader->GetWindow().inputptr};
 
@@ -55,29 +60,29 @@ class Voxel_t final : public GL::Scene
     ///@brief Mine the block the player is looking at
     void Mine(int)
     {
-            auto ray_pos = camera.position;
-            auto stepvec = camera.Forward() / raysteps * raydist;
-            for (int i = 0; i < raysteps; i++)
-            {
-                ray_pos += stepvec;
-                int x = round(ray_pos.x);
-                int y = round(ray_pos.y);
-                int z = round(ray_pos.z);
-                y = std::clamp(y, 0, 63);
+        auto ray_pos = camera.position;
+        auto stepvec = camera.Forward() / raysteps * raydist;
+        for (int i = 0; i < raysteps; i++)
+        {
+            ray_pos += stepvec;
+            int x = round(ray_pos.x);
+            int y = round(ray_pos.y);
+            int z = round(ray_pos.z);
+            y = std::clamp(y, 0, 63);
 
-                uint *block = chunks.GetBlockAt(x, y, z);
-                if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
+            uint *block = chunks.GetBlockAt(x, y, z);
+            if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
+            {
+                if (GL::Voxel::IsStorable((GL::Voxel::BlockTypes)*block))
                 {
-                    if (GL::Voxel::IsStorable((GL::Voxel::BlockTypes)*block))
-                    {
-                        inventory.AddTo(*block);
-                    }
-                    *block = 0;
-                    auto chunk = chunks.GetChunkPos(x, z);
-                    chunks.GetChunk(chunk)->regen_mesh = true;
-                    return;
+                    inventory.AddTo(*block);
                 }
+                *block = 0;
+                auto chunk = chunks.GetChunkPos(x, z);
+                chunks.GetChunk(chunk)->regen_mesh = true;
+                return;
             }
+        }
     }
 
     ///@brief select a block for placing
@@ -105,65 +110,65 @@ class Voxel_t final : public GL::Scene
     ///@brief If there are blocks in the players inventory, place one.
     void Place(int)
     {
-            auto ray_pos = camera.position;
-            auto stepvec = camera.Forward() / raysteps * raydist;
-            for (int i = 0; i < raysteps; i++)
-            {
-                ray_pos += stepvec;
-                int x = round(ray_pos.x);
-                int y = round(ray_pos.y);
-                int z = round(ray_pos.z);
-                y = std::clamp(y, 0, 63);
+        auto ray_pos = camera.position;
+        auto stepvec = camera.Forward() / raysteps * raydist;
+        for (int i = 0; i < raysteps; i++)
+        {
+            ray_pos += stepvec;
+            int x = round(ray_pos.x);
+            int y = round(ray_pos.y);
+            int z = round(ray_pos.z);
+            y = std::clamp(y, 0, 63);
 
-                uint *block = chunks.GetBlockAt(x, y, z);
-                if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
+            uint *block = chunks.GetBlockAt(x, y, z);
+            if (*block != GL::Voxel::BAir && *block != GL::Voxel::BWater)
+            {
+                glm::vec3 forward = camera.Forward();
+                glm::vec3 intersect_face;
+                for (int j = 0; j < 6; j++)
                 {
-                    glm::vec3 forward = camera.Forward();
-                    glm::vec3 intersect_face;
-                    for (int j = 0; j < 6; j++)
+                    if (glm::dot(GL::Voxel::bnormals[j], forward) < 0)
                     {
-                        if (glm::dot(GL::Voxel::bnormals[j], forward) < 0)
+                        glm::vec3 p = intersectPoint(forward, (glm::vec3)camera.position, GL::Voxel::bnormals[j], GL::Voxel::bvertices[j * 6].pos + glm::vec3(x, y, z));
+                        switch (j)
                         {
-                            glm::vec3 p = intersectPoint(forward, (glm::vec3)camera.position, GL::Voxel::bnormals[j], GL::Voxel::bvertices[j * 6].pos + glm::vec3(x, y, z));
-                            switch (j)
-                            {
-                            case 0:
-                            Front:
-                                if (p.x > x - 0.5 && p.x < x + 0.5 && p.y > y - 0.5 && p.y < y + 0.5)
-                                    intersect_face = GL::Voxel::bnormals[j];
-                                break;
-                            case 1:
-                                goto Front;
-                            case 2:
-                            Bottom:
-                                if (p.x > x - 0.5 && p.x < x + 0.5 && p.z > z - 0.5 && p.z < z + 0.5)
-                                    intersect_face = GL::Voxel::bnormals[j];
-                                break;
-                            case 3:
-                                goto Bottom;
-                            case 4:
-                            Right:
-                                if (p.y > y - 0.5 && p.y < y + 0.5 && p.z > z - 0.5 && p.z < z + 0.5)
-                                    intersect_face = GL::Voxel::bnormals[j];
-                                break;
-                            case 5:
-                                goto Right;
-                            }
+                        case 0:
+                        Front:
+                            if (p.x > x - 0.5 && p.x < x + 0.5 && p.y > y - 0.5 && p.y < y + 0.5)
+                                intersect_face = GL::Voxel::bnormals[j];
+                            break;
+                        case 1:
+                            goto Front;
+                        case 2:
+                        Bottom:
+                            if (p.x > x - 0.5 && p.x < x + 0.5 && p.z > z - 0.5 && p.z < z + 0.5)
+                                intersect_face = GL::Voxel::bnormals[j];
+                            break;
+                        case 3:
+                            goto Bottom;
+                        case 4:
+                        Right:
+                            if (p.y > y - 0.5 && p.y < y + 0.5 && p.z > z - 0.5 && p.z < z + 0.5)
+                                intersect_face = GL::Voxel::bnormals[j];
+                            break;
+                        case 5:
+                            goto Right;
                         }
                     }
-
-                    auto block2 = chunks.GetBlockAt(x + intersect_face.x, y + intersect_face.y, z + intersect_face.z);
-                    if ((*block2 == GL::Voxel::BAir || *block2 == GL::Voxel::BWater) && inventory.GetCount() > 0)
-                    {
-                        *block2 = inventory.GetSelected();
-                        auto chunk = chunks.GetChunkPos(x + intersect_face.x, z + intersect_face.z);
-                        chunks.GetChunk(chunk)->regen_mesh = true;
-                        inventory.Remove();
-                    }
-                    return;
                 }
+
+                auto block2 = chunks.GetBlockAt(x + intersect_face.x, y + intersect_face.y, z + intersect_face.z);
+                if ((*block2 == GL::Voxel::BAir || *block2 == GL::Voxel::BWater) && inventory.GetCount() > 0)
+                {
+                    *block2 = inventory.GetSelected();
+                    auto chunk = chunks.GetChunkPos(x + intersect_face.x, z + intersect_face.z);
+                    chunks.GetChunk(chunk)->regen_mesh = true;
+                    inventory.Remove();
+                }
+                return;
             }
-    } 
+        }
+    }
 
     void Render()
     {
@@ -191,7 +196,6 @@ class Voxel_t final : public GL::Scene
 
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
             chunks.MoveChunk(chunks.GetChunkPos({round(camera.position.x), round(camera.position.z)}));
-
     }
 
     void TexSetup();
@@ -201,12 +205,7 @@ public:
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
         cshader.Bind();
-        cshader.SetUniform1i("u_Texture", 0);//The texture array
-
-        //TODO This needs to use the newer system.
-        lid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_LEFT,GL::InputHandler::Action::Press,&Voxel_t::Mine,this);
-        rid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_RIGHT,GL::InputHandler::Action::Press,&Voxel_t::Place,this);
-        mid=loader->GetWindow().inputptr->AddMouseCallback(GLFW_MOUSE_BUTTON_MIDDLE,GL::InputHandler::Action::Press,&Voxel_t::Pick,this);
+        cshader.SetUniform1i("u_Texture", 0); //The texture array is using slot 0
 
         TexSetup();
         cshader.UnBind();
@@ -270,9 +269,6 @@ public:
         glDeleteVertexArrays(1, &vao);
         file.Store();
         inventory.Store();
-        loader->GetWindow().inputptr->RemoveMouseCallback(GLFW_MOUSE_BUTTON_LEFT,lid);
-        loader->GetWindow().inputptr->RemoveMouseCallback(GLFW_MOUSE_BUTTON_MIDDLE,mid);
-        loader->GetWindow().inputptr->RemoveMouseCallback(GLFW_MOUSE_BUTTON_RIGHT,rid);
     }
 };
 
