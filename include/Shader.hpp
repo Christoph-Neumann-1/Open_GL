@@ -38,6 +38,7 @@ namespace GL
 
         //The following functions allow for setting uniform values. There are multiple ways to set some uniforms, for example the 
         //4f uniforms can be set using individual values or an array. The array make sense if you store colors in a vec4 for example.
+        //TODO add glm types 
 
         void SetUniform1i(const std::string &name, int value);   ///<Set an integer uniform
         void SetUniform1f(const std::string &name, float value); ///<Set a float uniform

@@ -18,32 +18,27 @@ class BallInBox : public Scene
     Camera3D camera{{0, 0, 1}};
     Fplocked fplocked{&camera, loader->GetWindow()};
 
-    glm::mat4 wall_transforms[1]{
-        glm::translate(glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(1, 0, 0)), {0, 0, -1})};
+    const glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
 
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
-
-    struct Side
-    {
-        std::array<glm::vec3, 6> vertices;
-        Side(std::array<glm::vec3, 6> v) : vertices(v) {}
+    const std::array<glm::vec3, 6 * 6> sides{
+        glm::vec3(1, -1, -1), glm::vec3(1, 1, -1), glm::vec3(-1, 1, -1), glm::vec3(-1, 1, -1), glm::vec3(-1, -1, -1), glm::vec3(1, -1, -1), //back
+        glm::vec3(-1, -1, 1), glm::vec3(-1, 1, 1), glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), glm::vec3(1, -1, 1), glm::vec3(-1, -1, 1),       //front
+        glm::vec3(1, 1, 1), glm::vec3(-1, 1, 1), glm::vec3(-1, 1, -1), glm::vec3(1, 1, 1), glm::vec3(-1, 1, -1), glm::vec3(1, 1, -1),       //top
+        glm::vec3(-1, -1, 1), glm::vec3(1, -1, 1), glm::vec3(1, -1, -1), glm::vec3(-1, -1, 1), glm::vec3(1, -1, -1), glm::vec3(-1, -1, -1), //bottom
+        glm::vec3(-1, 1, 1), glm::vec3(-1, -1, 1), glm::vec3(-1, -1, -1), glm::vec3(-1, 1, 1), glm::vec3(-1, -1, -1), glm::vec3(-1, 1, -1), //left
+        glm::vec3(1, 1, 1), glm::vec3(1, 1, -1), glm::vec3(1, -1, -1), glm::vec3(1, -1, -1), glm::vec3(1, -1, 1), glm::vec3(1, 1, 1)        //right
     };
 
-    Side sides[5]{
-        {std::array<glm::vec3, 6>{glm::vec3(1, -1, -1), glm::vec3(1, 1, -1), glm::vec3(-1, 1, -1), glm::vec3(-1, 1, -1), glm::vec3(-1, -1, -1), glm::vec3(1, -1, -1)}}, //back
-        {std::array<glm::vec3, 6>{glm::vec3(1, 1, 1), glm::vec3(-1, 1, 1), glm::vec3(-1, 1, -1), glm::vec3(1, 1, 1), glm::vec3(-1, 1, -1), glm::vec3(1, 1, -1)}},       //top
-        {std::array<glm::vec3, 6>{glm::vec3(-1, -1, 1), glm::vec3(1, -1, 1), glm::vec3(1, -1, -1), glm::vec3(-1, -1, 1), glm::vec3(1, -1, -1), glm::vec3(-1, -1, -1)}}, //bottom
-        {std::array<glm::vec3, 6>{glm::vec3(-1, 1, 1), glm::vec3(-1, -1, 1), glm::vec3(-1, -1, -1), glm::vec3(-1, 1, 1), glm::vec3(-1, -1, -1), glm::vec3(-1, 1, -1)}}, //left
-        {std::array<glm::vec3, 6>{glm::vec3(1, 1, 1), glm::vec3(1, 1, -1), glm::vec3(1, -1, -1), glm::vec3(1, -1, -1), glm::vec3(1, -1, 1), glm::vec3(1, 1, 1)}}        //right
+    const glm::vec4 side_colors[6]{
+        glm::vec4(0.0f, 0.8f, 0.0f, 1), //back/front
+        glm::vec4(0.2f, 0.0f, 1.0f, 1), //top/bottom
+        glm::vec4(1.0f, 0.2f, 0.0f, 1), //left/right
     };
 
-    glm::vec4 side_colors[5]{
-        glm::vec4(0.0f, 0.8f, 0.0f, 1), //back
-        glm::vec4(0.2f, 0.0f, 1.0f, 1), //top
-        glm::vec4(0.2f, 0.0f, 1.0f, 1), //bottom
-        glm::vec4(1.0f, 0.2f, 0.0f, 1), //left
-        glm::vec4(1.0f, 0.2f, 0.0f, 1)  //right
-    };
+    glm::vec3 b_pos;
+    glm::vec3 b_vel{0.5f, 0.2f, 0.3f};
+    const glm::vec4 b_color{1.0f, 0.8f, 0.6f, 1};
+    const float bradius = 0.07f;
 
     void RenderBox()
     {
@@ -53,12 +48,11 @@ class BallInBox : public Scene
 
         shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
 
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 6; i++)
         {
-            shader.SetUniform4f("u_Color", (float*)&side_colors[i]);
-            glDrawArrays(GL_TRIANGLES, 6*i, 6);
+            shader.SetUniform4f("u_Color", (float *)&side_colors[i / 2]);
+            glDrawArrays(GL_TRIANGLES, 6 * i, 6);
         }
-
 
         glBindVertexArray(0);
     }
@@ -67,7 +61,31 @@ class BallInBox : public Scene
     {
         shader.Bind();
         RenderBox();
+
+        shader.SetUniform4f("u_Color", (float *)&b_color);
+        shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix() * glm::scale(glm::translate(glm::mat4(1),b_pos), {bradius, bradius, bradius}));
+
+        ball.Draw(shader);
         shader.UnBind();
+    }
+
+    void CollideWithWalls()
+    {
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (b_pos[i] + bradius > 1 || b_pos[i] - bradius < -1)
+            {
+                b_vel[i] = -b_vel[i];
+            }
+        }
+    }
+
+    void Update()
+    {
+        auto dt = loader->GetTimeInfo().UpdateInterval();
+        CollideWithWalls();
+        b_pos += b_vel * dt;
     }
 
 public:
@@ -80,11 +98,14 @@ public:
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof(sides), sides, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(sides), &sides, GL_STATIC_DRAW);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         RegisterFunc(CallbackType::Render, &BallInBox::Render, this);
+        RegisterFunc(CallbackType::Update, &BallInBox::Update, this);
+
+        GetFlag("hide_menu") = true;
     }
     ~BallInBox()
     {
