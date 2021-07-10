@@ -18,16 +18,21 @@ const double raydist = 8;   //How far the player can mine/place blocks
 const double raysteps = 32; //How often the ray should be sampled
 class Voxel_t final : public GL::Scene
 {
-    uint texid;
-    ///The shader used for the chunks
-    GL::Shader cshader{ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"};
+    //The handle for the texture atlas
+    uint tex_id;
+
+    GL::Shader chunkShader{ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"};
+
+    //Shader for ui. Right now this means the square acting as the crosshair
+    GL::Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
+
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
     GL::Camera3D camera{{0, 30, 0}};
     ///This camera controller does not allow roll or looking more than 90 degrees up.
-    GL::Fplocked controller{&camera, loader->GetWindow(), 22};
-    GL::Voxel::TexConfig blocks{ROOT_Directory + "/res/Textures/block.cfg"};
-    GL::Voxel::ChunkManager chunks{blocks, loader->GetCallback()};
+    GL::Fplocked cameraController{&camera, loader->GetWindow(), 22};
+    GL::Voxel::TexConfig blockTextures{ROOT_Directory + "/res/Textures/block.cfg"};
+    GL::Voxel::ChunkManager chunks{blockTextures, loader->GetCallback()};
 
     GL::InputHandler::MouseCallback leftButton{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_LEFT, GL::InputHandler::Action::Press, &Voxel_t::Mine, this},
         right_button{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_RIGHT, GL::InputHandler::Action::Press, &Voxel_t::Place, this},
@@ -36,8 +41,6 @@ class Voxel_t final : public GL::Scene
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     uint vbo, ibo, vao;
 
-    //Shader for ui. Right now this means the square acting as the crosshair
-    GL::Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
 
     GL::Voxel::Inventory inventory;
 
@@ -47,7 +50,7 @@ class Voxel_t final : public GL::Scene
     //This key regenerates the world
     GL::InputHandler::KeyCallback r_key{*loader->GetWindow().inputptr};
 
-    ///@brief Ray plane intersect
+    ///@brief Ray plane intersect. Used to determine which side of a block the player is looking at.
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
     {
         glm::vec3 diff = rayPoint - planePoint;
@@ -85,7 +88,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-    ///@brief select a block for placing
+    ///@brief Select a block for placing
     void Pick(int)
     {
         auto ray_pos = camera.position;
@@ -174,18 +177,19 @@ class Voxel_t final : public GL::Scene
     {
         auto dt = loader->GetTimeInfo().RenderDeltaTime();
         glm::ivec2 lastpos = {round(camera.position.x), round(camera.position.z)};
-        controller.Update(dt);
+        cameraController.Update(dt);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D_ARRAY, texid);
+        glBindTexture(GL_TEXTURE_2D_ARRAY, tex_id);
 
-        cshader.Bind();
-        cshader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
+        chunkShader.Bind();
+        chunkShader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
 
         chunks.DrawChunks();
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
+        //The square in the middle.
         shader.Bind();
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
@@ -204,17 +208,17 @@ public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader)
     {
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
-        cshader.Bind();
-        cshader.SetUniform1i("u_Texture", 0); //The texture array is using slot 0
+        chunkShader.Bind();
+        chunkShader.SetUniform1i("u_Texture", 0); //The texture array is using slot 0
 
         TexSetup();
-        cshader.UnBind();
+        chunkShader.UnBind();
 
         GetFlag("hide_menu") = 1;
 
         file.AddElement<glm::dvec3>(&camera.position);
-        file.AddElement<double>(&controller.pitch);
-        file.AddElement<double>(&controller.yaw);
+        file.AddElement<double>(&cameraController.pitch);
+        file.AddElement<double>(&cameraController.yaw);
 
         file.Load();
 
@@ -237,8 +241,12 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         shader.Bind();
+        
         glm::mat4 mat;
+        
         auto &window = loader->GetWindow();
+
+        //This makes sure the the square always looks the same.
         if (window.GetWidth() > window.GetHeigth())
         {
             mat = glm::ortho(-(float)window.GetWidth() / window.GetHeigth(), (float)window.GetWidth() / window.GetHeigth(), -1.0f, 1.0f);
@@ -247,17 +255,20 @@ public:
         {
             mat = glm::ortho(-1.0f, 1.0f, -(float)window.GetHeigth() / window.GetWidth(), (float)window.GetHeigth() / window.GetWidth());
         }
+
         shader.SetUniformMat4f("u_MVP", mat);
         shader.SetUniform4f("u_Color", 1, 1, 1, 1);
         shader.UnBind();
+
         inventory.Load();
 
+        //Regenerate World and reset player position.
         r_key.Bind(
             glfwGetKeyScancode(GLFW_KEY_R), GL::InputHandler::Action::Press, [&](int)
             {
                 camera.position = glm::dvec3(0, 40, 0);
-                controller.pitch = 0;
-                controller.yaw = 0;
+                cameraController.pitch = 0;
+                cameraController.yaw = 0;
                 chunks.Regenerate();
                 inventory.Load();
             });
@@ -279,8 +290,8 @@ void Voxel_t::TexSetup()
     int w, h, bpp;
     auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/block.png").c_str(), &w, &h, &bpp, 4);
 
-    glGenTextures(1, &texid);
-    glBindTexture(GL_TEXTURE_2D_ARRAY, texid);
+    glGenTextures(1, &tex_id);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, tex_id);
 
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

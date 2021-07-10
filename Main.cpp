@@ -181,8 +181,9 @@ int main(int argc, char **argv)
         InputHandler handler(window);
         window.inputptr = &handler;
 
-        //Turns on VSync.
         glfwMakeContextCurrent(window);
+
+        //Turns on VSync.
         glfwWindowHint(GLFW_REFRESH_RATE, vidmode->refreshRate);
         glfwSwapInterval(1);
 
@@ -195,9 +196,9 @@ int main(int argc, char **argv)
 
         glViewport(0, 0, window.GetWidth(), window.GetHeigth());
 
-        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT);//Errors
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_MULTISAMPLE);
+        glEnable(GL_MULTISAMPLE);//Anti-aliasing
         glEnable(GL_CULL_FACE);
         glDebugMessageCallback(ErrorCallback, 0);
 
@@ -218,10 +219,10 @@ int main(int argc, char **argv)
         //Imgui boilerplate.
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();
-        (void)io;
+        ImGuiIO &io = ImGui::GetIO();//I dont't know if this is necessary, but it works.
+        (void)io;//I dont't know why this is here, but the example has it too.
         ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 330");
+        ImGui_ImplOpenGL3_Init("#version 450");
         ImGui::StyleColorsDark();
 
 #pragma endregion
