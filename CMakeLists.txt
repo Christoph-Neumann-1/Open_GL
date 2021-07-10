@@ -7,6 +7,8 @@ enable_testing()
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_BUILD_RPATH \$ORIGIN/Lib)
+
 link_directories(${CMAKE_SOURCE_DIR}/Lib )
 
 include_directories(Libs)
