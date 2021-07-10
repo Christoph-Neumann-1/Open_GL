@@ -44,6 +44,8 @@ namespace GL::Voxel
                 fread(data, sizeof(T), n, f);
             }
             Element(T *d, unsigned int nn) : data(d), n(nn) {}
+            Element(const Element&)=delete;
+            Element& operator=(const Element&)=delete;
         };
 
         //Same as Element, but both size and data just pointers, so they can be changed afterwards.
@@ -61,6 +63,9 @@ namespace GL::Voxel
                 fread(data, sizeof(T), *n, f);
             }
             Element_ptr(T *d, unsigned int *nn) : data(d), n(nn) {}
+
+            Element_ptr(const Element_ptr&)=delete;
+            Element_ptr& operator=(const Element_ptr&)=delete;
         };
         bool Store()
         {
@@ -106,5 +111,8 @@ namespace GL::Voxel
             for (IElement *e : elements)
                 delete e;
         }
+
+        FileLayout(const FileLayout &)=delete;
+        FileLayout& operator=(const FileLayout &)=delete;
     };
 }

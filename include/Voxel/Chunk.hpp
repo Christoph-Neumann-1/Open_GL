@@ -108,6 +108,9 @@ namespace GL::Voxel
 
         Chunk(const TexConfig &cfg, CallbackList &cb,uint cbid);
         
+        Chunk(const Chunk&)=delete;
+        Chunk& operator=(const Chunk&)=delete;
+
         /**
          * @brief Generates the mesh
          * 

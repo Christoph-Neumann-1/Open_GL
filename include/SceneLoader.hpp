@@ -47,6 +47,9 @@ namespace GL
             Terminate();
         }
 
+        SceneLoader(const SceneLoader &)=delete;
+        SceneLoader& operator=(const SceneLoader &)=delete;
+
         ///@brief Load a new Scene. Unloads old if necessary.
         void Load(const std::string &path);
 

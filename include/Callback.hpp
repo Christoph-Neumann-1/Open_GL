@@ -163,6 +163,9 @@ namespace GL
             std::lock_guard lk(mutex);
             ProcessQueues();
         }
+        CallbackList()=default;
+        CallbackList(const CallbackList &)=delete;
+        CallbackList& operator=(const CallbackList &)=delete;
     };
 
     ///@brief Contains multiple CallbackLists.
@@ -219,5 +222,8 @@ namespace GL
         {
             SyncFunc(func);
         }
+
+        CallbackHandler(const CallbackHandler &)=delete;
+        CallbackHandler& operator=(const CallbackHandler &)=delete;
     };
 }

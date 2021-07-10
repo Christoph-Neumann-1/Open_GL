@@ -74,5 +74,8 @@ namespace GL::Voxel
             return blocks[block];
         }
         BlockTypes GetSelected() { return block; }
+
+        Inventory(const Inventory&)=delete;
+        Inventory& operator=(const Inventory&)=delete;
     };
 }

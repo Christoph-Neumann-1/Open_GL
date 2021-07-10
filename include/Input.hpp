@@ -53,6 +53,10 @@ namespace GL
                     f.func(action);
                 }
             }
+
+            MouseCallbacks()=default;
+            MouseCallbacks(const MouseCallbacks &) = delete;
+            MouseCallbacks& operator=(const MouseCallbacks &) = delete;
         };
 
         //A list of all callbacks for a key.
@@ -86,6 +90,10 @@ namespace GL
                     f.func(action);
                 }
             }
+
+            KeyCallbacks()=default;
+            KeyCallbacks(const KeyCallbacks &) = delete;
+            KeyCallbacks& operator=(const KeyCallbacks &) = delete;
         };
 
         GL::Window &window;
@@ -199,6 +207,9 @@ namespace GL
             {
                 UnBind();
             }
+
+            KeyCallback(const KeyCallback &) = delete;
+            KeyCallback& operator=(const KeyCallback &) = delete;
         };
 
         /**
@@ -225,6 +236,9 @@ namespace GL
             {
                 handle.RemoveKeyCallback(scancode, id);
             }
+
+            KeyState(const KeyState &) = delete;
+            KeyState& operator=(const KeyState &) = delete;
 
             ///@brief Returns the state of the key.
             const int &GetValue() { return value; }
@@ -282,6 +296,9 @@ namespace GL
             {
                 UnBind();
             }
+
+            MouseCallback(const MouseCallback &) = delete;
+            MouseCallback& operator=(const MouseCallback &) = delete;
         };
 
         //The following functions add or remove callbacks from the lists. They all require the key or mouse button as well as an id.
@@ -364,5 +381,8 @@ namespace GL
             glfwSetMouseButtonCallback(window, nullptr);
             window.inputptr = nullptr;
         }
+
+        InputHandler(const InputHandler &)=delete;
+        InputHandler& operator=(const InputHandler &)=delete;
     };
 }

@@ -118,5 +118,8 @@ namespace GL::Voxel
             }
             return elements[pos];
         }
+
+        TexConfig(const TexConfig &)=delete;
+        TexConfig& operator=(const TexConfig &)=delete;
     };
 } // namespace GL

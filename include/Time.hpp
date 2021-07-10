@@ -59,5 +59,8 @@ namespace GL
         void SetUpdateInterval(float interval=default_interval) { deltatime_update = interval; }
         const float &UpdateInterval() const { return deltatime_update; }
         double RenderDeltaTime() const { return deltatime_render; }
+
+        TimeInfo(const TimeInfo &)=delete;
+        TimeInfo& operator=(const TimeInfo &)=delete;
     };
 }

@@ -101,4 +101,7 @@ public:
         while (!queue.empty())
             queue.pop();
     }
+
+    ThreadPool(const ThreadPool &)=delete;
+    ThreadPool& operator=(const ThreadPool &)=delete;
 };

@@ -179,6 +179,9 @@ namespace GL::Voxel
             cbh.RemoveAll(c_cbid);
         }
 
+        ChunkManager(const ChunkManager &)=delete;
+        ChunkManager& operator=(const ChunkManager &)=delete;
+
         /**
          * @brief Get the grid coordinates of a chunk using world coordinates.
          * 

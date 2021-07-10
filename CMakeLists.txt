@@ -7,6 +7,7 @@ enable_testing()
 
 set(CMAKE_CXX_STANDARD 20)
 
+#TODO remove build rpath when making package
 set(CMAKE_BUILD_RPATH \$ORIGIN/Lib)
 
 link_directories(${CMAKE_SOURCE_DIR}/Lib )

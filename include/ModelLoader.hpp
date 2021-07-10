@@ -49,6 +49,7 @@ namespace GL
         std::string path;
     };
 
+    //TODO allow copying of data
     /**
  * @brief A bunch of vertices + textures
  */
@@ -70,7 +71,6 @@ namespace GL
           * 
           */
         void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer);
-
 
         void Draw(Shader &shader, uint count = 0);
 

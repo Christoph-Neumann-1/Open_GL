@@ -5,6 +5,7 @@
 namespace GL
 {
 
+    //TODO allow for copies
     /**
      * @brief This class stores a single shader program and allows you to modify uniforms .
      */
