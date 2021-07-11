@@ -8,7 +8,7 @@
 #define SET_TEX_INDEX(x) cache[B##x] = cfg.FindByName(#x)
 
 ///How many types of blocks there are
-#define NBLOCKS 7
+#define NBLOCKS 8
 
 namespace GL::Voxel
 {
@@ -34,6 +34,7 @@ namespace GL::Voxel
         BWater,
         BSand,
         BWood,
+        BLeaves,
     };
 
     ///@brief Transparent blocks are processed differently, so you need to tell the program which block is transparent.
@@ -44,6 +45,8 @@ namespace GL::Voxel
         case BAir:
             return true;
         case BWater:
+            return true;
+        case BLeaves:
             return true;
         default:
             return false;
@@ -83,6 +86,7 @@ namespace GL::Voxel
         SET_TEX_INDEX(Water);
         SET_TEX_INDEX(Sand);
         SET_TEX_INDEX(Wood);
+        SET_TEX_INDEX(Leaves);
         return cache;
     }
 

@@ -252,7 +252,7 @@ int main(int argc, char **argv)
 
         timeinfo.SetUpdateInterval();
 
-        //Start the thread, now that everything is initialized.
+        //Start the update thread.
         std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),
                                  std::ref(cv), std::ref(should_sync), std::ref(is_synced));
 
