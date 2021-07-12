@@ -9,13 +9,13 @@
 
 using namespace GL;
 
-const uint natoms = 5;
-const float initial_velocity = 0.1f;
-const float dt_factor = 1.0f;
+const uint natoms = 30;
+const float initial_velocity = 0.2f;
+const float dt_factor = 0.8f;
 const float physics_rate = 500;
 
-const float attraction=150;
-const float equal_dist=0.061f;
+const float attraction=120;
+const float equal_dist=0.07f;
 
 class AtomsSim : public Scene
 {
@@ -141,6 +141,7 @@ class AtomsSim : public Scene
                 atoms[i].pos += atoms[i].vel * dt;
         }
 
+//TODO: Avoid collisions
         void Setup()
         {
             uint seed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -149,7 +150,7 @@ class AtomsSim : public Scene
             for (uint i = 0; i < natoms; i++)
             {
                 atoms.emplace_back(
-                    glm::vec3{(float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 * -0.9f },
+                    glm::vec3{(float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 -0.9f },
                     glm::vec3{(float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2});
             }
         }
@@ -175,8 +176,6 @@ class AtomsSim : public Scene
 
             glGenBuffers(1, &offsets);
             glBindBuffer(GL_ARRAY_BUFFER, offsets);
-
-            camera.UnlockMouse(loader->GetWindow());
 
             atoms.reserve(natoms);
             Setup();
