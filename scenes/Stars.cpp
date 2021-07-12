@@ -10,17 +10,17 @@
 
 using namespace GL;
 
-const uint NSTARS = 400;
-const float spawnradius = 310;
+const uint NSTARS = 800;
+const float spawnradius = 315;
 const float minsize = 0.5, maxsize = 2.3f;
-const float velocity = 10;
-const float G = 5;
+const float velocity = 11;
+const float G = 4.95f;
 const float FOV = 65;
 const float clipping_distance = 2000;
 const float dt_factor = 2;
 
-const glm::vec3 offset(300, 0, 0);
-const glm::vec3 speeddiff(0, 6, 0);
+const glm::vec3 offset(310, 0, 0);
+const glm::vec3 speeddiff(0, 4.9, 0);
 
 struct Star
 {
@@ -129,7 +129,7 @@ public:
 
         SetupStars();
 
-        loader->GetTimeInfo().SetUpdateInterval(1 / 500.0f);
+        loader->GetTimeInfo().SetUpdateInterval(1 / 250.0f);
 
         loader->GetWindow().bgcolor=glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     }
