@@ -21,6 +21,7 @@ class SceneMenu final : public Scene
         {"Ball in Box", "BallInBox"},
         {"Voxel Test", "Voxel/Test"},
         {"Model Test", "Model"},
+        {"Gas", "Gas"},
         {"Stars", "Stars"}};
 
     InputHandler::KeyCallback escape{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)
