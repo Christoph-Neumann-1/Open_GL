@@ -91,7 +91,7 @@ class Stars : public Scene
         uint seed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
         srand(seed);
 
-        for (int i = 0; i < NSTARS; i++)
+        for (uint i = 0; i < NSTARS; i++)
         {
             stars.emplace_back(
                 glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2},
@@ -99,7 +99,7 @@ class Stars : public Scene
                 glm::vec3{(float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2, (float)rand() / (float)RAND_MAX * velocity - velocity / 2} - speeddiff);
         }
 
-        for (int i = 0; i < NSTARS; i++)
+        for (uint i = 0; i < NSTARS; i++)
         {
             stars.emplace_back(
                 glm::vec3{(float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2, (float)rand() / (float)RAND_MAX * spawnradius - spawnradius / 2} + offset,

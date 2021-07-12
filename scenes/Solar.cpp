@@ -74,7 +74,7 @@ class SolarSim : public Scene
     void UpdateBuffer()
     {
         float tmpbuffer[7 * sizeof(float) * planets.size()];
-        for (int i = 0; i < planets.size(); i++)
+        for (uint i = 0; i < planets.size(); i++)
         {
             auto &planet = planets[i];
             *((glm::vec3 *)&tmpbuffer[i * 7]) = planet.position * scale_factor;

@@ -111,16 +111,16 @@ namespace GL::Voxel
                     else if (IsRendered({x, z}, pos) && std::find_if(rendered.begin(), rendered.end(), [&](Chunk *chunk)
                                                                      { return chunk->GetPos() == glm::ivec2{x, z}; }) == rendered.end())
                     {
-                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk)
-                                                  { return chunk->GetPos() == glm::ivec2{x, z}; });
+                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *_chunk)
+                                                  { return _chunk->GetPos() == glm::ivec2{x, z}; });
                         rendered.push_back(*chunk);
                         (*chunk)->Load();
                     }
                     else if (IsPreLoaded({x, z}, pos) && std::find_if(pre_loaded.begin(), pre_loaded.end(), [&](Chunk *chunk)
                                                                       { return chunk->GetPos() == glm::ivec2{x, z}; }) == pre_loaded.end())
                     {
-                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk)
-                                                  { return chunk->GetPos() == glm::ivec2{x, z}; });
+                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *_chunk)
+                                                  { return _chunk->GetPos() == glm::ivec2{x, z}; });
                         pre_loaded.push_back(*chunk);
                         (*chunk)->Load();
                     }
