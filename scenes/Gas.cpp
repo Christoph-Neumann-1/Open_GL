@@ -12,7 +12,7 @@ using namespace GL;
 const uint natoms = 30;
 const float initial_velocity = 0.2f;
 const float dt_factor = 0.8f;
-const float physics_rate = 500;
+const float physics_rate = 5000;
 
 const float attraction=120;
 const float equal_dist=0.07f;
@@ -56,7 +56,7 @@ class AtomsSim : public Scene
         glm::vec4(1.0f, 0.2f, 0.0f, 1), //left/right
     };
 
-    const glm::vec4 b_color{1.0f, 0.8f, 0.6f, 1};
+    const glm::vec4 b_color{1.0f, 1.0f, 0.1f, 1};
     const float bradius = 0.055f;
 
     void RenderBox()
