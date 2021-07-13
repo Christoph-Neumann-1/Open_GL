@@ -26,6 +26,19 @@ class AtomsSim : public Scene
     Shader shader{ROOT_Directory + "/shader/Atoms.vs", ROOT_Directory + "/shader/Atoms.fs"};
     Shader wall_shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
 
+    bool mouse_captured{true};
+
+    void MouseCapture(int)
+    {
+        mouse_captured = !mouse_captured;
+        if (mouse_captured)
+            camera.LockMouse(loader->GetWindow());
+        else
+            camera.UnlockMouse(loader->GetWindow());
+    }
+
+    InputHandler::KeyCallback mouse_capture_m{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_M), InputHandler::Action::Press, &AtomsSim::MouseCapture, this};
+
     std::mutex mutex;
 
     uint vb, va;
@@ -45,6 +58,8 @@ class AtomsSim : public Scene
 
     uint offsets;
 
+    float scale = 1;
+
     struct Atom
     {
         glm::vec3 pos;
@@ -56,7 +71,7 @@ class AtomsSim : public Scene
     std::vector<Atom> atoms;
 
     Camera3D camera{{0, 0, 1}};
-    Fplocked fplocked{&camera, loader->GetWindow()};
+    Fplocked fplocked{&camera, loader->GetWindow(), 1};
 
     const glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
 
@@ -76,7 +91,7 @@ class AtomsSim : public Scene
     };
 
     const glm::vec3 b_color{1.0f, 1.0f, 0.1f};
-    const float bradius = 0.055f;
+    const float bradius = 0.04f;
 
     void RenderBox()
     {
@@ -94,7 +109,7 @@ class AtomsSim : public Scene
         glm::vec3 buffer[natoms];
         for (uint i = 0; i < natoms; i++)
         {
-            buffer[i] = atoms[i].pos;
+            buffer[i] = atoms[i].pos / scale;
         }
         glBindBuffer(GL_ARRAY_BUFFER, offsets);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * natoms, buffer);
@@ -111,13 +126,14 @@ class AtomsSim : public Scene
         wall_shader.SetUniformMat4f("u_MVP", ortho_ui * glm::translate(glm::scale(glm::mat4(1), glm::vec3(1, PotE, 1)), glm::vec3(3, 0, 0)));
         glDrawArrays(GL_TRIANGLES, 36, 6);
         wall_shader.SetUniform4f("u_Color", {0, 0, 1, 1});
-        wall_shader.SetUniformMat4f("u_MVP", ortho_ui * glm::translate(glm::scale(glm::mat4(1), glm::vec3(1, PotE+KinE, 1)), glm::vec3(6, 0, 0)));
+        wall_shader.SetUniformMat4f("u_MVP", ortho_ui * glm::translate(glm::scale(glm::mat4(1), glm::vec3(1, PotE + KinE, 1)), glm::vec3(6, 0, 0)));
         glDrawArrays(GL_TRIANGLES, 36, 6);
     }
 
     void Render()
     {
-        fplocked.Update(loader->GetTimeInfo().RenderDeltaTime());
+        if (mouse_captured)
+            fplocked.Update(loader->GetTimeInfo().RenderDeltaTime());
 
         wall_shader.Bind();
         glBindVertexArray(va);
@@ -127,6 +143,8 @@ class AtomsSim : public Scene
         shader.Bind();
 
         shader.SetUniformMat4f("u_V", camera.ComputeMatrix());
+        shader.SetUniformMat4f("u_M", glm::scale(glm::mat4(1), glm::vec3(bradius / scale)));
+
         shader.SetUniform3f("u_CameraPosition", camera.position);
 
         FillBuffer();
@@ -139,9 +157,10 @@ class AtomsSim : public Scene
         for (uint i = 0; i < atoms.size(); i++)
             for (uint j = 0; j < 3; j++)
             {
-                if (atoms[i].pos[j] + bradius > 1 || atoms[i].pos[j] - bradius < -1)
+                if (atoms[i].pos[j] + bradius > 1 * scale || atoms[i].pos[j] - bradius < -1 * scale)
                 {
                     atoms[i].vel[j] = -atoms[i].vel[j];
+                    atoms[i].pos[j] = std::clamp(atoms[i].pos[j], -1 * scale + bradius, 1 * scale - bradius);
                 }
             }
     }
@@ -185,7 +204,7 @@ class AtomsSim : public Scene
         PotE = 0;
         for (auto &atom : atoms)
         {
-            KinE +=0.5f* glm::length2(atom.vel);
+            KinE += 0.5f * glm::length2(atom.vel);
             PotE += (atom.pos.y + 1) * G;
         }
     }
@@ -236,6 +255,7 @@ class AtomsSim : public Scene
         ImGui::Text("Kinetic energy: %f", KinE);
         ImGui::Text("Potential energy: %f", PotE);
         ImGui::Text("Total energy: %f", PotE + KinE);
+        ImGui::SliderFloat("scale", &scale, 0.1f, 20);
         ImGui::End();
     }
 
@@ -283,7 +303,6 @@ public:
         shader.Bind();
         shader.SetUniform3f("u_Color", b_color);
         shader.SetUniformMat4f("u_P", proj);
-        shader.SetUniformMat4f("u_M", glm::scale(glm::mat4(1), glm::vec3(bradius)));
 
         shader.SetUniform3f("u_LightDirection", glm::normalize(glm::vec3(0, -1, -0.3)));
         shader.SetUniform3f("u_LightColor", glm::vec3(0.32));
