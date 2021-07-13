@@ -16,8 +16,8 @@ const float initial_velocity = 0.2f;
 const float dt_factor = 0.8f;
 const float physics_rate = 5000;
 
-const float attraction = 110;
-const float equal_dist = 0.07f;
+const float attraction = 150;
+const float equal_dist = 0.075f;
 const float G = 0.2f;
 
 class AtomsSim : public Scene
