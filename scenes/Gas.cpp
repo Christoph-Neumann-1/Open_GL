@@ -11,10 +11,10 @@
 
 using namespace GL;
 
-const uint natoms = 50;
-const float initial_velocity = 0.2f;
+const uint natoms = 180;
+const float initial_velocity = 0.4f;
 const float dt_factor = 0.8f;
-const float physics_rate = 5000;
+const float physics_rate = 1000;
 
 const float attraction = 150;
 const float equal_dist = 0.075f;
@@ -39,7 +39,8 @@ class AtomsSim : public Scene
 
     InputHandler::KeyCallback mouse_capture_m{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_M), InputHandler::Action::Press, &AtomsSim::MouseCapture, this};
 
-    std::mutex mutex;
+    std::atomic_bool should_wait = 0;
+    std::atomic_bool is_waiting = 0;
 
     uint vb, va;
 
@@ -54,11 +55,11 @@ class AtomsSim : public Scene
         glm::vec3(2.0f, 0.0f, 0.0f),
         glm::vec3(4.0f, 0.0f, 0.0f)};
 
-    glm::mat4 ortho_ui = glm::ortho(0.0f, 100.0f, 0.0f, 1000.0f, -1.0f, 1.0f);
+    glm::mat4 ortho_ui = glm::ortho(0.0f, 100.0f, 0.0f, 10.0f * natoms, -1.0f, 1.0f);
 
     uint offsets;
 
-    float scale = 1;
+    float scale = 2;
 
     struct Atom
     {
@@ -205,21 +206,26 @@ class AtomsSim : public Scene
         for (auto &atom : atoms)
         {
             KinE += 0.5f * glm::length2(atom.vel);
-            PotE += (atom.pos.y + 1) * G;
+            PotE += (atom.pos.y + 1*scale) * G;
         }
     }
 
     void Update()
     {
-        static float dt = loader->GetTimeInfo().UpdateInterval() * dt_factor;
+        if (should_wait)
         {
-            std::scoped_lock lock(mutex);
-            CollideWithWalls();
-            ComputeForces(dt);
-            ComputeGravity(dt);
-            UpdatePositions(dt);
-            UpdateEnergie();
+            is_waiting = true;
+            //TODO use atomic wait
+            while (should_wait)
+            {
+            }
         }
+        static float dt = loader->GetTimeInfo().UpdateInterval() * dt_factor;
+        CollideWithWalls();
+        ComputeForces(dt);
+        ComputeGravity(dt);
+        UpdatePositions(dt);
+        UpdateEnergie();
     }
 
     //TODO: Avoid collisions
@@ -231,7 +237,7 @@ class AtomsSim : public Scene
         for (uint i = 0; i < natoms; i++)
         {
             atoms.emplace_back(
-                glm::vec3{(float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 - 0.9f},
+                glm::vec3{(float)rand() / (float)RAND_MAX * 1.8 * scale - 0.9f * scale, (float)rand() / (float)RAND_MAX * 1.8 * scale - 0.9f * scale, (float)rand() / (float)RAND_MAX * 1.8 * scale - 0.9f * scale},
                 glm::vec3{(float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2});
         }
     }
@@ -241,12 +247,16 @@ class AtomsSim : public Scene
 
     void ModifyVelocity(float change_percent, int)
     {
-        std::scoped_lock lock(mutex);
+        should_wait = true;
+        while (!is_waiting)
+            ;
 
         for (auto &atom : atoms)
         {
             atom.vel *= change_percent;
         }
+        is_waiting = false;
+        should_wait = false;
     }
 
     void UpdateUI()
@@ -255,7 +265,6 @@ class AtomsSim : public Scene
         ImGui::Text("Kinetic energy: %f", KinE);
         ImGui::Text("Potential energy: %f", PotE);
         ImGui::Text("Total energy: %f", PotE + KinE);
-        ImGui::SliderFloat("scale", &scale, 0.1f, 20);
         ImGui::End();
     }
 
@@ -322,6 +331,7 @@ public:
         glDeleteBuffers(1, &offsets);
         glDeleteVertexArrays(1, &va);
         RemoveFunctions();
+        loader->GetTimeInfo().SetUpdateInterval(TimeInfo::default_interval);
     }
 };
 
