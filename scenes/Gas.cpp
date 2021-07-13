@@ -9,18 +9,19 @@
 
 using namespace GL;
 
-const uint natoms = 30;
+const uint natoms = 28;
 const float initial_velocity = 0.2f;
 const float dt_factor = 0.8f;
 const float physics_rate = 5000;
 
-const float attraction=120;
-const float equal_dist=0.07f;
+const float attraction = 120;
+const float equal_dist = 0.07f;
 
 class AtomsSim : public Scene
 {
-    Model ball{ROOT_Directory + "/res/Models/sphere.obj"};
-    Shader shader{ROOT_Directory + "/shader/Atoms.vs", ROOT_Directory + "/shader/Default.fs"};
+    Model atom_model{ROOT_Directory + "/res/Models/sphere.obj"};
+    Shader shader{ROOT_Directory + "/shader/Atoms.vs", ROOT_Directory + "/shader/Atoms.fs"};
+    Shader wall_shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
 
     uint vb, va;
 
@@ -56,21 +57,22 @@ class AtomsSim : public Scene
         glm::vec4(1.0f, 0.2f, 0.0f, 1), //left/right
     };
 
-    const glm::vec4 b_color{1.0f, 1.0f, 0.1f, 1};
+    const glm::vec3 b_color{1.0f, 1.0f, 0.1f};
     const float bradius = 0.055f;
 
     void RenderBox()
     {
         glBindVertexArray(va);
 
+        wall_shader.Bind();
+
         fplocked.Update(loader->GetTimeInfo().RenderDeltaTime());
 
-        shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
-        shader.SetUniform1f("u_scale", 1);
+        wall_shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
 
         for (int i = 0; i < 6; i++)
         {
-            shader.SetUniform4f("u_Color", side_colors[i / 2]);
+            wall_shader.SetUniform4f("u_Color", side_colors[i / 2]);
             glDrawArrays(GL_TRIANGLES, 6 * i, 6);
         }
 
@@ -91,15 +93,13 @@ class AtomsSim : public Scene
 
     void Render()
     {
-        shader.Bind();
         RenderBox();
+        shader.Bind();
 
-        shader.SetUniform4f("u_Color", b_color);
-        shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
-        shader.SetUniform1f("u_scale", bradius);
+        shader.SetUniformMat4f("u_V", camera.ComputeMatrix());
 
         FillBuffer();
-        ball.Draw(shader, natoms);
+        atom_model.Draw(shader, natoms);
         shader.UnBind();
     }
 
@@ -121,81 +121,91 @@ class AtomsSim : public Scene
         {
             for (int j = i - 1; j >= 0; j--)
             {
-                glm::vec3 ij=atoms[j].pos-atoms[i].pos;
-                glm::vec3 nij=glm::normalize(ij);
-                float distij=glm::length(ij);
+                glm::vec3 ij = atoms[j].pos - atoms[i].pos;
+                glm::vec3 nij = glm::normalize(ij);
+                float distij = glm::length(ij);
 
-                glm::vec3 force=4*attraction*(powf((equal_dist/distij),12)-powf((equal_dist/distij),6))*nij*dt;
-                atoms[i].vel-=force;
-                atoms[j].vel+=force;
+                glm::vec3 force = 4 * attraction * (powf((equal_dist / distij), 12) - powf((equal_dist / distij), 6)) * nij * dt;
+                atoms[i].vel -= force;
+                atoms[j].vel += force;
             }
         }
     }
 
-        void Update()
+    void Update()
+    {
+        auto dt = loader->GetTimeInfo().UpdateInterval() * dt_factor;
+        CollideWithWalls();
+        ComputeForces(dt);
+        for (uint i = 0; i < natoms; i++)
+            atoms[i].pos += atoms[i].vel * dt;
+    }
+
+    //TODO: Avoid collisions
+    void Setup()
+    {
+        uint seed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+        srand(seed);
+
+        for (uint i = 0; i < natoms; i++)
         {
-            auto dt = loader->GetTimeInfo().UpdateInterval() * dt_factor;
-            CollideWithWalls();
-            ComputeForces(dt);
-            for (uint i = 0; i < natoms; i++)
-                atoms[i].pos += atoms[i].vel * dt;
+            atoms.emplace_back(
+                glm::vec3{(float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 - 0.9f},
+                glm::vec3{(float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2});
         }
+    }
 
-//TODO: Avoid collisions
-        void Setup()
-        {
-            uint seed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-            srand(seed);
+public:
+    AtomsSim(SceneLoader *_loader) : Scene(_loader)
+    {
+        glGenVertexArrays(1, &va);
+        glBindVertexArray(va);
+        glGenBuffers(1, &vb);
+        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-            for (uint i = 0; i < natoms; i++)
-            {
-                atoms.emplace_back(
-                    glm::vec3{(float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 - 0.9f, (float)rand() / (float)RAND_MAX * 1.8 -0.9f },
-                    glm::vec3{(float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2, (float)rand() / (float)RAND_MAX * initial_velocity - initial_velocity / 2});
-            }
-        }
+        glBufferData(GL_ARRAY_BUFFER, sizeof(sides), &sides, GL_STATIC_DRAW);
 
-    public:
-        AtomsSim(SceneLoader * _loader) : Scene(_loader)
-        {
-            glGenVertexArrays(1, &va);
-            glBindVertexArray(va);
-            glGenBuffers(1, &vb);
-            glBindBuffer(GL_ARRAY_BUFFER, vb);
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            glBufferData(GL_ARRAY_BUFFER, sizeof(sides), &sides, GL_STATIC_DRAW);
+        RegisterFunc(CallbackType::Render, &AtomsSim::Render, this);
+        RegisterFunc(CallbackType::Update, &AtomsSim::Update, this);
 
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        GetFlag("hide_menu") = true;
 
-            RegisterFunc(CallbackType::Render, &AtomsSim::Render, this);
-            RegisterFunc(CallbackType::Update, &AtomsSim::Update, this);
+        glGenBuffers(1, &offsets);
+        glBindBuffer(GL_ARRAY_BUFFER, offsets);
 
-            GetFlag("hide_menu") = true;
+        atoms.reserve(natoms);
+        Setup();
+        glBufferData(GL_ARRAY_BUFFER, natoms * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
 
-            glGenBuffers(1, &offsets);
-            glBindBuffer(GL_ARRAY_BUFFER, offsets);
+        InstanceBufferLayout layout;
+        layout.stride = sizeof(glm::vec3);
+        layout.attributes.push_back({GL_FLOAT, 3, 0});
+        atom_model.AddInstanceBuffer(layout, offsets);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            atoms.reserve(natoms);
-            Setup();
-            glBufferData(GL_ARRAY_BUFFER, natoms * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
+        loader->GetTimeInfo().SetUpdateInterval(1 / physics_rate);
 
-            InstanceBufferLayout layout;
-            layout.stride = sizeof(glm::vec3);
-            layout.attributes.push_back({GL_FLOAT, 3, 0});
-            ball.AddInstanceBuffer(layout, offsets);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        shader.Bind();
+        shader.SetUniform3f("u_Color", b_color);
+        shader.SetUniformMat4f("u_P", proj);
+        shader.SetUniformMat4f("u_M", glm::scale(glm::mat4(1), glm::vec3(bradius)));
 
-            loader->GetTimeInfo().SetUpdateInterval(1 / physics_rate);
-        }
-        ~AtomsSim()
-        {
-            glDeleteBuffers(1, &vb);
-            glDeleteBuffers(1, &offsets);
-            glDeleteVertexArrays(1, &va);
-            RemoveFunctions();
-        }
-    };
+        shader.SetUniform3f("u_LightDirection", glm::normalize(glm::vec3(0, -1, -0.3)));
+        shader.SetUniform3f("u_LightColor", glm::vec3(1));
+        shader.SetUniform1f("u_Ambient", 0.7);
+        shader.UnBind();
+    }
+    ~AtomsSim()
+    {
+        glDeleteBuffers(1, &vb);
+        glDeleteBuffers(1, &offsets);
+        glDeleteVertexArrays(1, &va);
+        RemoveFunctions();
+    }
+};
 
-    SCENE_LOAD_FUNC(AtomsSim)
+SCENE_LOAD_FUNC(AtomsSim)
