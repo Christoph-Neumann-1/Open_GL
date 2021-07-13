@@ -53,7 +53,7 @@ class AtomsSim : public Scene
 
     const glm::vec4 side_colors[6]{
         glm::vec4(0.0f, 0.8f, 0.0f, 1), //back/front
-        glm::vec4(0.2f, 0.0f, 1.0f, 1), //top/bottom
+        glm::vec4(0.8f, 0.0f, 0.7f, 1), //top/bottom
         glm::vec4(1.0f, 0.2f, 0.0f, 1), //left/right
     };
 
@@ -97,6 +97,8 @@ class AtomsSim : public Scene
         shader.Bind();
 
         shader.SetUniformMat4f("u_V", camera.ComputeMatrix());
+        shader.SetUniform3f("u_CameraPosition",camera.position);
+
 
         FillBuffer();
         atom_model.Draw(shader, natoms);
@@ -195,8 +197,11 @@ public:
         shader.SetUniformMat4f("u_M", glm::scale(glm::mat4(1), glm::vec3(bradius)));
 
         shader.SetUniform3f("u_LightDirection", glm::normalize(glm::vec3(0, -1, -0.3)));
-        shader.SetUniform3f("u_LightColor", glm::vec3(1));
-        shader.SetUniform1f("u_Ambient", 0.7);
+        shader.SetUniform3f("u_LightColor", glm::vec3(0.32));
+        shader.SetUniform1f("u_Ambient", 0.65);
+        shader.SetUniform1f("u_Specular",0.8f);
+        shader.SetUniform1f("u_Shininess",15.0f);
+
         shader.UnBind();
     }
     ~AtomsSim()
