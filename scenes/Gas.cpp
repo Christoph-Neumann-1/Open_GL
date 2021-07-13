@@ -7,6 +7,7 @@
 #include <Camera/Fplocked.hpp>
 #include <random>
 #include <Input.hpp>
+#include <imgui/imgui.h>
 
 using namespace GL;
 
@@ -17,7 +18,7 @@ const float physics_rate = 5000;
 
 const float attraction = 110;
 const float equal_dist = 0.07f;
-const float G = 0.15f;
+const float G = 0.2f;
 
 class AtomsSim : public Scene
 {
@@ -29,22 +30,20 @@ class AtomsSim : public Scene
 
     uint vb, va;
 
-    float Temperature;
+    float KinE;
+    float PotE;
 
-    glm::vec2 temp_gauge[6]{
-        glm::vec2(1.0f, 0.0f),
-        glm::vec2(1.0f, 1.0f),
-        glm::vec2(0.0f, 1.0f),
-        glm::vec2(0.0f, 1.0f),
-        glm::vec2(0.0f, 0.0f),
-        glm::vec2(1.0f, 0.0f)
-    };
-    
-    glm::mat4 ortho_ui=glm::ortho(0.0f, 100.0f, 0.0f, 1000.0f, -1.0f, 1.0f);
+    glm::vec3 bar[6]{
+        glm::vec3(4.0f, 0.0f, 0.0f),
+        glm::vec3(4.0f, 1.0f, 0.0f),
+        glm::vec3(2.0f, 1.0f, 0.0f),
+        glm::vec3(2.0f, 1.0f, 0.0f),
+        glm::vec3(2.0f, 0.0f, 0.0f),
+        glm::vec3(4.0f, 0.0f, 0.0f)};
+
+    glm::mat4 ortho_ui = glm::ortho(0.0f, 100.0f, 0.0f, 1000.0f, -1.0f, 1.0f);
 
     uint offsets;
-
-
 
     struct Atom
     {
@@ -81,12 +80,6 @@ class AtomsSim : public Scene
 
     void RenderBox()
     {
-        glBindVertexArray(va);
-
-        wall_shader.Bind();
-
-        fplocked.Update(loader->GetTimeInfo().RenderDeltaTime());
-
         wall_shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
 
         for (int i = 0; i < 6; i++)
@@ -94,8 +87,6 @@ class AtomsSim : public Scene
             wall_shader.SetUniform4f("u_Color", side_colors[i / 2]);
             glDrawArrays(GL_TRIANGLES, 6 * i, 6);
         }
-
-        glBindVertexArray(0);
     }
 
     void FillBuffer()
@@ -110,9 +101,29 @@ class AtomsSim : public Scene
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
+    void RenderBar()
+    {
+
+        wall_shader.SetUniform4f("u_Color", {1, 0, 0, 1});
+        wall_shader.SetUniformMat4f("u_MVP", ortho_ui * glm::scale(glm::mat4(1), glm::vec3(1, KinE, 1)));
+        glDrawArrays(GL_TRIANGLES, 36, 6);
+        wall_shader.SetUniform4f("u_Color", {0, 1, 0, 1});
+        wall_shader.SetUniformMat4f("u_MVP", ortho_ui * glm::translate(glm::scale(glm::mat4(1), glm::vec3(1, PotE, 1)), glm::vec3(3, 0, 0)));
+        glDrawArrays(GL_TRIANGLES, 36, 6);
+        wall_shader.SetUniform4f("u_Color", {0, 0, 1, 1});
+        wall_shader.SetUniformMat4f("u_MVP", ortho_ui * glm::translate(glm::scale(glm::mat4(1), glm::vec3(1, PotE+KinE, 1)), glm::vec3(6, 0, 0)));
+        glDrawArrays(GL_TRIANGLES, 36, 6);
+    }
+
     void Render()
     {
+        fplocked.Update(loader->GetTimeInfo().RenderDeltaTime());
+
+        wall_shader.Bind();
+        glBindVertexArray(va);
         RenderBox();
+        RenderBar();
+        glBindVertexArray(0);
         shader.Bind();
 
         shader.SetUniformMat4f("u_V", camera.ComputeMatrix());
@@ -156,7 +167,7 @@ class AtomsSim : public Scene
     {
         for (auto &atom : atoms)
         {
-            atom.vel -= G * dt;
+            atom.vel.y -= G * dt;
         }
     }
 
@@ -165,6 +176,17 @@ class AtomsSim : public Scene
         for (auto &atom : atoms)
         {
             atom.pos += atom.vel * dt;
+        }
+    }
+
+    void UpdateEnergie()
+    {
+        KinE = 0;
+        PotE = 0;
+        for (auto &atom : atoms)
+        {
+            KinE +=0.5f* glm::length2(atom.vel);
+            PotE += (atom.pos.y + 1) * G;
         }
     }
 
@@ -177,6 +199,7 @@ class AtomsSim : public Scene
             ComputeForces(dt);
             ComputeGravity(dt);
             UpdatePositions(dt);
+            UpdateEnergie();
         }
     }
 
@@ -207,6 +230,15 @@ class AtomsSim : public Scene
         }
     }
 
+    void UpdateUI()
+    {
+        ImGui::Begin("Info");
+        ImGui::Text("Kinetic energy: %f", KinE);
+        ImGui::Text("Potential energy: %f", PotE);
+        ImGui::Text("Total energy: %f", PotE + KinE);
+        ImGui::End();
+    }
+
 public:
     AtomsSim(SceneLoader *_loader) : Scene(_loader)
     {
@@ -220,7 +252,10 @@ public:
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof(sides), &sides, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(sides) + sizeof(bar), nullptr, GL_DYNAMIC_DRAW);
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(sides), &sides);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(sides), sizeof(bar), &bar);
 
         glBindBuffer(GL_ARRAY_BUFFER, offsets);
 
@@ -238,6 +273,7 @@ public:
 
         RegisterFunc(CallbackType::Render, &AtomsSim::Render, this);
         RegisterFunc(CallbackType::Update, &AtomsSim::Update, this);
+        RegisterFunc(CallbackType::ImGuiRender, &AtomsSim::UpdateUI, this);
 
         GetFlag("hide_menu") = true;
 
@@ -256,6 +292,8 @@ public:
         shader.SetUniform1f("u_Shininess", 15.0f);
 
         shader.UnBind();
+
+        // camera.UnlockMouse(loader->GetWindow());
 
 #pragma endregion
     }
