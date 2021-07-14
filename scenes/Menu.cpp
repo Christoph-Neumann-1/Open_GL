@@ -18,6 +18,7 @@ class SceneMenu final : public Scene
     std::vector<std::pair<std::string, std::string>> scenes{
         {"Example", "Example"},
         {"Solar", "Solar"},
+        {"BallShoot", "BallShoot"},
         {"Ball in Box", "BallInBox"},
         {"Voxel Test", "Voxel/Test"},
         {"Model Test", "Model"},
@@ -68,7 +69,7 @@ void SceneMenu::ImGui()
 
         for (unsigned int i = 0; i < scenes.size(); i++)
         {
-            if (ImGui::Button(scenes[i].first.c_str()) || glfwGetKey(loader->GetWindow(), GLFW_KEY_1 + i))
+            if (ImGui::Button(scenes[i].first.c_str()))
             {
                 path = ROOT_Directory + "/scenes/bin/" + scenes[i].second + ".scene";
                 scene.Load(path);

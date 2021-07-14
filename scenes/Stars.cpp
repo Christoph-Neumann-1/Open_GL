@@ -19,8 +19,8 @@ const float FOV = 65;
 const float clipping_distance = 2000;
 const float dt_factor = 2;
 
-const glm::vec3 offset(310, 0, 0);
-const glm::vec3 speeddiff(0, 4.9, 0);
+const glm::vec3 offset(318, 0, 0);
+const glm::vec3 speeddiff(0, 6, 0);
 
 struct Star
 {
