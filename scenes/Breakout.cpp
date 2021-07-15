@@ -8,7 +8,7 @@
 
 using namespace GL;
 
-class BallShoot : public Scene
+class Breakout : public Scene
 {
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
     Shader bshader{ROOT_Directory + "/shader/Boxes.vs", ROOT_Directory + "/shader/Boxes.fs"};
@@ -236,7 +236,7 @@ class BallShoot : public Scene
     }
 
 public:
-    BallShoot(SceneLoader *_loader) : Scene(_loader)
+    Breakout(SceneLoader *_loader) : Scene(_loader)
     {
 
 #pragma region Buffers
@@ -272,8 +272,8 @@ public:
 
         Setup();
 
-        RegisterFunc(CallbackType::Render, &BallShoot::Render, this);
-        RegisterFunc(CallbackType::Update, &BallShoot::Fly, this);
+        RegisterFunc(CallbackType::Render, &Breakout::Render, this);
+        RegisterFunc(CallbackType::Update, &Breakout::Fly, this);
 
         auto &window = loader->GetWindow();
 
@@ -290,7 +290,7 @@ public:
             bounds.y = (float)window.GetHeigth() / window.GetWidth();
         }
     }
-    ~BallShoot()
+    ~Breakout()
     {
         glDeleteBuffers(1, &vb);
         glDeleteVertexArrays(1, &va);
@@ -298,4 +298,4 @@ public:
     }
 };
 
-SCENE_LOAD_FUNC(BallShoot)
+SCENE_LOAD_FUNC(Breakout)
