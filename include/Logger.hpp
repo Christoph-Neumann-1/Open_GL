@@ -27,7 +27,7 @@ namespace GL
          * 
          * This function is synchronized to avoid print statements interfering.
          */
-        void print(bool newline=true);
+        void print(bool newline = true);
 
         /**
          * @brief Adds the message to the stringstream.
@@ -64,15 +64,15 @@ namespace GL
             return operator<<(static_cast<const char *>(message));
         }
 
-        Logger &operator<<(glm::vec2 vec)
+        /// @brief Logs a vector of any size and type.
+        template <glm::length_t L, typename T, glm::qualifier Q>
+        Logger &operator<<(glm::vec<L, T, Q> const &v)
         {
-            stream << " Vec2: " << vec.x << ' ' << vec.y << ' ';
-            return *this;
-        }
-
-        Logger &operator<<(glm::vec3 vec)
-        {
-            stream << " Vec3: " << vec.x << ' ' << vec.y << ' ' << vec.z << ' ';
+            stream << "vec" << L << ": ";
+            for (int i = 0; i < L; i++)
+            {
+                stream << v[i] << ", ";
+            }
             return *this;
         }
 
