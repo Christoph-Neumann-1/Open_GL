@@ -16,15 +16,12 @@ class BallShoot : public Scene
     glm::mat4 ortho;
 
     glm::vec2 b_pos{0.0f, 0.0f};
-    glm::vec2 b_vel;
+    glm::vec2 b_vel{0.0f, 0.0f};
     const glm::vec4 b_color{1, 0, 0, 1};
 
     glm::vec2 vertices[32 + 2];
 
     float xdiameter, ydiameter;
-
-    uint movement;
-    std::atomic_bool is_moving{false};
 
     InputHandler::MouseCallback mouse_callback{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_LEFT, InputHandler::Action::ReleasePress, &BallShoot::DragMouse, this};
 
@@ -44,8 +41,6 @@ class BallShoot : public Scene
 
     void DragMouse(int action)
     {
-        if (is_moving)
-            return;
 
         if (action == GLFW_PRESS)
         {
@@ -56,12 +51,12 @@ class BallShoot : public Scene
         glfwGetCursorPos(loader->GetWindow(), &mouse_end.x, &mouse_end.y);
 
         glm::vec2 movevec = (mouse_end - mouse_start);
-        movevec.x =movevec.x/ loader->GetWindow().GetWidth() * xdiameter;
-        movevec.y = movevec.y/loader->GetWindow().GetHeigth() * ydiameter;
+
+        movevec.x = movevec.x / loader->GetWindow().GetWidth() * xdiameter;
+        movevec.y = movevec.y / loader->GetWindow().GetHeigth() * ydiameter;
         movevec.y *= -1;
 
-        movement=RegisterFunc(CallbackType::Update,&BallShoot::Fly,this);
-        b_vel = movevec*0.5f;
+        b_vel = movevec * 1.2f;
     }
 
     void Render()
@@ -78,10 +73,19 @@ class BallShoot : public Scene
         shader.UnBind();
     }
 
+    void ComputeGravity(float dt) {}
+
+    void Bounce() {}
+
+    void UpdatePosition(float dt)
+    {
+        b_pos += b_vel * dt;
+    }
+
     void Fly()
     {
         auto dt = loader->GetTimeInfo().UpdateInterval();
-        b_pos+=b_vel*dt;
+        UpdatePosition(dt);
     }
 
 public:
@@ -101,6 +105,7 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         RegisterFunc(CallbackType::Render, &BallShoot::Render, this);
+        RegisterFunc(CallbackType::Update, &BallShoot::Fly, this);
 
         auto &window = loader->GetWindow();
 
