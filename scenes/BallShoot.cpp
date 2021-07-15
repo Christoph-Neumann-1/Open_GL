@@ -132,6 +132,7 @@ class BallShoot : public Scene
 
     void CollideBar()
     {
+        //TODO change xvel
         if (b_pos.y - bradius < bary + bar_size.y)
         {
             if (b_pos.x < barx + bar_size.x && b_pos.x > barx - bar_size.x)
@@ -186,6 +187,23 @@ class BallShoot : public Scene
             auto &box = boxes[i];
             if (circleRectCollision(b_pos, bradius, box.pos - box_size / 2.0f, box_size))
             {
+                //TODO fix corners
+                if(b_pos.x>box.pos.x+box_size.x/2.0f)
+                {
+                    b_vel.x = -b_vel.x;
+                }
+                else if(b_pos.x<box.pos.x-box_size.x/2.0f)
+                {
+                    b_vel.x = -b_vel.x;
+                }
+                if(b_pos.y>box.pos.y+box_size.y/2.0f)
+                {
+                    b_vel.y = -b_vel.y;
+                }
+                else if(b_pos.y<box.pos.y-box_size.y/2.0f)
+                {
+                    b_vel.y = -b_vel.y;
+                }
                 boxes.erase(boxes.begin() + i);
             }
         }
