@@ -245,6 +245,17 @@ public:
         glGenVertexArrays(1, &va);
         glBindVertexArray(va);
         glGenBuffers(1, &vb);
+        
+        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+        ComputeVertices();
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(square_vertices), 0, GL_STATIC_DRAW);
+
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(square_vertices), square_vertices);
 
         glGenBuffers(1, &instance_buffer);
         glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
