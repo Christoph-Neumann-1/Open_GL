@@ -294,12 +294,15 @@ public:
         }
 
         GetFlag("hide_menu") = true;
+
+        loader->GetWindow().bgcolor={0.0f, 0.0f, 0.0f, 1.0f};
     }
     ~Breakout()
     {
         glDeleteBuffers(1, &vb);
         glDeleteVertexArrays(1, &va);
         RemoveFunctions();
+        loader->GetWindow().bgcolor=Window::defaultbg;
     }
 };
 
