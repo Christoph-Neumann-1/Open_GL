@@ -10,6 +10,7 @@ using namespace GL;
 
 class Breakout : public Scene
 {
+    #pragma region Variables
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
     Shader bshader{ROOT_Directory + "/shader/Boxes.vs", ROOT_Directory + "/shader/Boxes.fs"};
 
@@ -57,6 +58,8 @@ class Breakout : public Scene
     const uint cols = 5;
 
     const glm::vec2 box_size{2.0f / cols, 1.0f / rows};
+
+#pragma endregion
 
     void ComputeVertices()
     {
@@ -133,12 +136,11 @@ class Breakout : public Scene
     void CollideBar()
     {
         //TODO change xvel
-        if (b_pos.y - bradius < bary + bar_size.y)
+        if (b_pos.y - bradius < bary + bar_size.y && b_pos.x < barx + bar_size.x && b_pos.x > barx - bar_size.x)
         {
-            if (b_pos.x < barx + bar_size.x && b_pos.x > barx - bar_size.x)
-            {
-                b_vel.y *= -1;
-            }
+            float offset=(b_pos.x-barx)/bar_size.x;
+            b_vel.y*=-1;
+            b_pos.y=bary+bar_size.y+bradius;
         }
     }
 
@@ -188,19 +190,19 @@ class Breakout : public Scene
             if (circleRectCollision(b_pos, bradius, box.pos - box_size / 2.0f, box_size))
             {
                 //TODO fix corners
-                if(b_pos.x>box.pos.x+box_size.x/2.0f)
+                if (b_pos.x > box.pos.x + box_size.x / 2.0f)
                 {
                     b_vel.x = -b_vel.x;
                 }
-                else if(b_pos.x<box.pos.x-box_size.x/2.0f)
+                else if (b_pos.x < box.pos.x - box_size.x / 2.0f)
                 {
                     b_vel.x = -b_vel.x;
                 }
-                if(b_pos.y>box.pos.y+box_size.y/2.0f)
+                if (b_pos.y > box.pos.y + box_size.y / 2.0f)
                 {
                     b_vel.y = -b_vel.y;
                 }
-                else if(b_pos.y<box.pos.y-box_size.y/2.0f)
+                else if (b_pos.y < box.pos.y - box_size.y / 2.0f)
                 {
                     b_vel.y = -b_vel.y;
                 }
