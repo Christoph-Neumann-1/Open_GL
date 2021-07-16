@@ -61,6 +61,12 @@ class AtomsSim : public Scene
 
     float scale = 2;
 
+    uint collsions;
+    float collision_time_span = 3;
+    float collision_time_span_counter = 0;
+
+    float pressure=0;
+
     struct Atom
     {
         glm::vec3 pos;
@@ -162,6 +168,7 @@ class AtomsSim : public Scene
                 {
                     atoms[i].vel[j] = -atoms[i].vel[j];
                     atoms[i].pos[j] = std::clamp(atoms[i].pos[j], -1 * scale + bradius, 1 * scale - bradius);
+                    collsions++;
                 }
             }
     }
@@ -206,7 +213,7 @@ class AtomsSim : public Scene
         for (auto &atom : atoms)
         {
             KinE += 0.5f * glm::length2(atom.vel);
-            PotE += (atom.pos.y + 1*scale) * G;
+            PotE += (atom.pos.y + 1 * scale) * G;
         }
     }
 
@@ -215,7 +222,7 @@ class AtomsSim : public Scene
         if (should_wait)
         {
             is_waiting = true;
-            //TODO use atomic wait
+            //TODO use condition variable
             while (should_wait)
             {
             }
@@ -226,6 +233,13 @@ class AtomsSim : public Scene
         ComputeGravity(dt);
         UpdatePositions(dt);
         UpdateEnergie();
+        collision_time_span_counter+=dt;
+        if (collision_time_span_counter > collision_time_span)
+        {
+            collision_time_span_counter = 0;
+            pressure=collsions/collision_time_span;
+            collsions = 0;
+        }
     }
 
     //TODO: Avoid collisions
@@ -265,6 +279,7 @@ class AtomsSim : public Scene
         ImGui::Text("Kinetic energy: %f", KinE);
         ImGui::Text("Potential energy: %f", PotE);
         ImGui::Text("Total energy: %f", PotE + KinE);
+        ImGui::Text("Pressure: %f", pressure);
         ImGui::End();
     }
 
@@ -321,7 +336,7 @@ public:
 
         shader.UnBind();
 
-        // camera.UnlockMouse(loader->GetWindow());
+        camera.UnlockMouse(loader->GetWindow());
 
 #pragma endregion
     }
