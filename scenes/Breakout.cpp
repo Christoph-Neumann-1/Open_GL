@@ -26,7 +26,7 @@ class Breakout : public Scene
 
     glm::vec2 b_pos;
     glm::vec2 b_vel;
-    const glm::vec4 b_color{rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 1};
+    glm::vec4 b_color;
     const float bradius = 0.045f;
 
     glm::vec2 vertices[32 + 2];
@@ -48,7 +48,7 @@ class Breakout : public Scene
         {1.0f, 1.0f},
         {-1.0f, 1.0f},
         {-1.0f, -1.0f}};
-    const float speedincrease = 0.025f;
+    const float speedincrease = 0.02f;
 
     const float centerLineWidth = 0.005f;
 
@@ -237,6 +237,8 @@ class Breakout : public Scene
 
     void Setup()
     {
+        uint seed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+        srand(seed);
         boxes.clear();
         for (uint i = 0; i < rows; i++)
             for (uint j = 0; j < cols; j++)
@@ -247,6 +249,7 @@ class Breakout : public Scene
             }
         b_pos = {0, -0.3};
         b_vel = {rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX / 4 - 1};
+        b_color={rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 1};
     }
 
 public:
