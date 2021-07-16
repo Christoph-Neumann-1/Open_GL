@@ -48,7 +48,7 @@ class Breakout : public Scene
         {1.0f, 1.0f},
         {-1.0f, 1.0f},
         {-1.0f, -1.0f}};
-    const float speedincrease = 0.02f;
+    const float speedincrease = 0.025f;
 
     const float centerLineWidth = 0.005f;
 
@@ -151,7 +151,7 @@ class Breakout : public Scene
         if (b_pos.y - bradius < bary + bar_size.y && b_pos.x < barx + bar_size.x && b_pos.x > barx - bar_size.x)
         {
             float offset = (b_pos.x - barx) / bar_size.x;
-            b_vel = glm::rotate(glm::vec2(0, glm::length(b_vel) * (1 + speedincrease)), glm::radians(-offset * 60));
+            b_vel = glm::rotate(glm::vec2(0, glm::length(b_vel)+ speedincrease), glm::radians(-offset * 60));
             b_pos.y = bary + bar_size.y + bradius;
         }
     }
