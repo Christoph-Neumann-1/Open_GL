@@ -7,6 +7,10 @@
 #include <random>
 #include <glm/gtx/rotate_vector.hpp>
 
+//TODO: background image
+//TODO: better colors
+//TODO: postprocessing
+
 using namespace GL;
 
 class Breakout : public Scene
@@ -22,8 +26,8 @@ class Breakout : public Scene
 
     glm::vec2 b_pos;
     glm::vec2 b_vel;
-    const glm::vec4 b_color{1, 0, 0, 1};
-    const float bradius = 0.055f;
+    const glm::vec4 b_color{rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 1};
+    const float bradius = 0.045f;
 
     glm::vec2 vertices[32 + 2];
 
@@ -35,16 +39,18 @@ class Breakout : public Scene
 
     float bary = -0.9f;
 
-    glm::vec2 bar_size{0.4f, 0.04f};
+    const glm::vec2 bar_size{0.4f, 0.04f};
 
-    glm::vec2 square_vertices[6]{
+    const glm::vec2 square_vertices[6]{
         {-1.0f, -1.0f},
         {1.0f, -1.0f},
         {1.0f, 1.0f},
         {1.0f, 1.0f},
         {-1.0f, 1.0f},
         {-1.0f, -1.0f}};
-    const float speedincrease = 0.05f;
+    const float speedincrease = 0.02f;
+
+    const float centerLineWidth = 0.005f;
 
     struct BufferElement
     {
@@ -55,8 +61,8 @@ class Breakout : public Scene
 
     std::vector<BufferElement> boxes;
 
-    const uint rows = 6;
-    const uint cols = 8;
+    const uint rows = 9;
+    const uint cols = 10;
 
     const glm::vec2 box_size{2.0f / cols, 1.0f / rows};
 
@@ -111,6 +117,12 @@ class Breakout : public Scene
         shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::mat4(1), glm::vec3(barx, bary, 0)), glm::vec3(bar_size, 0)));
 
         glDrawArrays(GL_TRIANGLES, 34, 6);
+
+        shader.SetUniform4f("u_Color", {1, 0, 0, 1});
+        //Needed because opengl seems to draw only once if something already is at this z value
+        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::mat4(1), glm::vec3(barx, bary, 0.001)), glm::vec3(centerLineWidth,bar_size.y, 0)));
+        glDrawArrays(GL_TRIANGLES, 34, 6);
+
 
         bshader.Bind();
 
@@ -245,7 +257,7 @@ public:
         glGenVertexArrays(1, &va);
         glBindVertexArray(va);
         glGenBuffers(1, &vb);
-        
+
         glBindBuffer(GL_ARRAY_BUFFER, vb);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
@@ -295,14 +307,14 @@ public:
 
         GetFlag("hide_menu") = true;
 
-        loader->GetWindow().bgcolor={0.0f, 0.0f, 0.0f, 1.0f};
+        loader->GetWindow().bgcolor = {0.0f, 0.0f, 0.0f, 1.0f};
     }
     ~Breakout()
     {
         glDeleteBuffers(1, &vb);
         glDeleteVertexArrays(1, &va);
         RemoveFunctions();
-        loader->GetWindow().bgcolor=Window::defaultbg;
+        loader->GetWindow().bgcolor = Window::defaultbg;
     }
 };
 
