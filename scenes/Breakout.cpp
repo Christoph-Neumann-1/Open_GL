@@ -5,6 +5,7 @@
 #include <Input.hpp>
 #include <Logger.hpp>
 #include <random>
+#include <glm/gtx/rotate_vector.hpp>
 
 using namespace GL;
 
@@ -22,7 +23,7 @@ class Breakout : public Scene
     glm::vec2 b_pos;
     glm::vec2 b_vel;
     const glm::vec4 b_color{1, 0, 0, 1};
-    const float bradius = 0.06f;
+    const float bradius = 0.055f;
 
     glm::vec2 vertices[32 + 2];
 
@@ -43,7 +44,7 @@ class Breakout : public Scene
         {1.0f, 1.0f},
         {-1.0f, 1.0f},
         {-1.0f, -1.0f}};
-    const float speedincrease = 0.01f;
+    const float speedincrease = 0.05f;
 
     struct BufferElement
     {
@@ -54,8 +55,8 @@ class Breakout : public Scene
 
     std::vector<BufferElement> boxes;
 
-    const uint rows = 3;
-    const uint cols = 5;
+    const uint rows = 6;
+    const uint cols = 8;
 
     const glm::vec2 box_size{2.0f / cols, 1.0f / rows};
 
@@ -139,7 +140,7 @@ class Breakout : public Scene
         if (b_pos.y - bradius < bary + bar_size.y && b_pos.x < barx + bar_size.x && b_pos.x > barx - bar_size.x)
         {
             float offset=(b_pos.x-barx)/bar_size.x;
-            b_vel.y*=-1;
+            b_vel=glm::rotate(glm::vec2(0, glm::length(b_vel)*(1+speedincrease)),glm::radians(-offset * 60));
             b_pos.y=bary+bar_size.y+bradius;
         }
     }
