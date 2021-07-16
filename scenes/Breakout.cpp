@@ -11,7 +11,7 @@ using namespace GL;
 
 class Breakout : public Scene
 {
-    #pragma region Variables
+#pragma region Variables
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
     Shader bshader{ROOT_Directory + "/shader/Boxes.vs", ROOT_Directory + "/shader/Boxes.fs"};
 
@@ -136,12 +136,11 @@ class Breakout : public Scene
 
     void CollideBar()
     {
-        //TODO change xvel
         if (b_pos.y - bradius < bary + bar_size.y && b_pos.x < barx + bar_size.x && b_pos.x > barx - bar_size.x)
         {
-            float offset=(b_pos.x-barx)/bar_size.x;
-            b_vel=glm::rotate(glm::vec2(0, glm::length(b_vel)*(1+speedincrease)),glm::radians(-offset * 60));
-            b_pos.y=bary+bar_size.y+bradius;
+            float offset = (b_pos.x - barx) / bar_size.x;
+            b_vel = glm::rotate(glm::vec2(0, glm::length(b_vel) * (1 + speedincrease)), glm::radians(-offset * 60));
+            b_pos.y = bary + bar_size.y + bradius;
         }
     }
 
@@ -246,16 +245,6 @@ public:
         glGenVertexArrays(1, &va);
         glBindVertexArray(va);
         glGenBuffers(1, &vb);
-        glBindBuffer(GL_ARRAY_BUFFER, vb);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-        ComputeVertices();
-
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) + sizeof(square_vertices), 0, GL_STATIC_DRAW);
-
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-        glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(square_vertices), square_vertices);
 
         glGenBuffers(1, &instance_buffer);
         glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
@@ -292,6 +281,8 @@ public:
             bounds.x = 1.0f;
             bounds.y = (float)window.GetHeigth() / window.GetWidth();
         }
+
+        GetFlag("hide_menu") = true;
     }
     ~Breakout()
     {
