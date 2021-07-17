@@ -1,34 +1,37 @@
 #include <Scene.hpp>
-#include <ModuleLoader.hpp>
 #include <Data.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <Primitives/Circle.hpp>
 
 using namespace GL;
 
 class CircleScene final : public Scene
 {
-    void *circle;
-    ModuleLoader circle_mod;
-    void (*Draw)(void *, glm::mat4);
-
+    Circle circle{ROOT_Directory+"/shader/Default.vs", ROOT_Directory+"/shader/Default.fs"};
     void Render()
     {
-        Draw(circle, glm::mat4(1.0f));
+        circle.shader.Bind();
+        glBindVertexArray(circle.VAO);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, circle.vcount);
+        glBindVertexArray(0);
+        circle.shader.UnBind();
     }
 
 public:
-    CircleScene(SceneLoader *_loader) : Scene(_loader), circle_mod(ROOT_Directory + "/modules/bin/Primitives/Circle.module")
+    CircleScene(SceneLoader *_loader) : Scene(_loader)
     {
-        circle = circle_mod.RETRIEVE(void *, CreateCircle, float, uint)(0.5, 6);
-        float color[4]{1, 0.5, 0.8, 1};
-        circle_mod.RETRIEVE(void, SetColor, void *, float *)(circle, color);
-        Draw = circle_mod.RETRIEVE(void, Draw, void *, glm::mat4);
-        RegisterFunc(CallbackType::Render,&CircleScene::Render, this);
+        circle.ComputeVertices(0.5f, 100);
+        circle.shader.Bind();
+        circle.shader.SetUniform4f("u_Color", {1, 0.5, 0.8, 1});
+        circle.shader.SetUniformMat4f("u_MVP", glm::mat4(1));
+        circle.shader.UnBind();
+
+        RegisterFunc(CallbackType::Render, &CircleScene::Render, this);
     }
     ~CircleScene()
     {
-        circle_mod.RETRIEVE(void, DeleteCircle, void *)(circle);
+        RemoveFunctions();
     }
 };
 
