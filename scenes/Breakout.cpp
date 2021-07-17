@@ -196,29 +196,23 @@ class Breakout : public Scene
 
     void CollideBoxes()
     {
-        for (int i = boxes.size() - 1; i >= 0; i--)
+        for (int j = boxes.size() - 1; j >= 0; j--)
         {
-            auto &box = boxes[i];
+            auto &box = boxes[j];
             if (circleRectCollision(b_pos, bradius, box.pos - box_size / 2.0f, box_size))
             {
+                for(int i=0; i<b_pos.length(); i++){
                 //TODO fix corners
-                if (b_pos.x > box.pos.x + box_size.x / 2.0f)
+                if (b_pos[i] > box.pos[i] + box_size[i] / 2.0f)
                 {
-                    b_vel.x = -b_vel.x;
+                    b_vel[i] = -b_vel[i];
                 }
-                else if (b_pos.x < box.pos.x - box_size.x / 2.0f)
+                else if (b_pos[i] < box.pos[i] - box_size[i] / 2.0f)
                 {
-                    b_vel.x = -b_vel.x;
+                    b_vel[i] = -b_vel[i];
                 }
-                if (b_pos.y > box.pos.y + box_size.y / 2.0f)
-                {
-                    b_vel.y = -b_vel.y;
                 }
-                else if (b_pos.y < box.pos.y - box_size.y / 2.0f)
-                {
-                    b_vel.y = -b_vel.y;
-                }
-                boxes.erase(boxes.begin() + i);
+                boxes.erase(boxes.begin() + j);
             }
         }
     }
