@@ -178,7 +178,7 @@ int main(int argc, char **argv)
         }
 
         Window window(_window, cbh.GetList(cbt::OnWindowResize));
-        InputHandler handler(window);
+        InputHandler handler(window,cbh.GetList(cbt::Render));
         window.inputptr = &handler;
 
         glfwMakeContextCurrent(window);

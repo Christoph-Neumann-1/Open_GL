@@ -23,6 +23,12 @@ namespace GL
         };
 
     private:
+        double m_mouse_x;
+        double m_mouse_y;
+
+        uint rendercb;
+        CallbackList &mrendercbs;
+
         //Contains a list of all callbacks for each mouse button.
         struct MouseCallbacks
         {
@@ -54,9 +60,9 @@ namespace GL
                 }
             }
 
-            MouseCallbacks()=default;
+            MouseCallbacks() = default;
             MouseCallbacks(const MouseCallbacks &) = delete;
-            MouseCallbacks& operator=(const MouseCallbacks &) = delete;
+            MouseCallbacks &operator=(const MouseCallbacks &) = delete;
         };
 
         //A list of all callbacks for a key.
@@ -91,9 +97,9 @@ namespace GL
                 }
             }
 
-            KeyCallbacks()=default;
+            KeyCallbacks() = default;
             KeyCallbacks(const KeyCallbacks &) = delete;
-            KeyCallbacks& operator=(const KeyCallbacks &) = delete;
+            KeyCallbacks &operator=(const KeyCallbacks &) = delete;
         };
 
         GL::Window &window;
@@ -125,6 +131,9 @@ namespace GL
         }
 
     public:
+        //These values will be updated every frame, use them if you need the mouse position in other threads.
+        const double &mouse_x = m_mouse_x, &mouse_y = m_mouse_y;
+
         /**
          * @brief This class allows you to register one callback for one key. 
          * 
@@ -209,7 +218,7 @@ namespace GL
             }
 
             KeyCallback(const KeyCallback &) = delete;
-            KeyCallback& operator=(const KeyCallback &) = delete;
+            KeyCallback &operator=(const KeyCallback &) = delete;
         };
 
         /**
@@ -238,7 +247,7 @@ namespace GL
             }
 
             KeyState(const KeyState &) = delete;
-            KeyState& operator=(const KeyState &) = delete;
+            KeyState &operator=(const KeyState &) = delete;
 
             ///@brief Returns the state of the key.
             const int &GetValue() { return value; }
@@ -298,7 +307,7 @@ namespace GL
             }
 
             MouseCallback(const MouseCallback &) = delete;
-            MouseCallback& operator=(const MouseCallback &) = delete;
+            MouseCallback &operator=(const MouseCallback &) = delete;
         };
 
         //The following functions add or remove callbacks from the lists. They all require the key or mouse button as well as an id.
@@ -361,7 +370,7 @@ namespace GL
          * That value is neccesary, because glfw only allows setting one user pointer so some class needs to store all 
          * information needed in callback funtions. It made sense to use the window class for that as it already used this user pointer.
          **/
-        InputHandler(Window &w) : window(w)
+        InputHandler(Window &w, CallbackList &rendercbs) : mrendercbs(rendercbs), window(w)
         {
 
             glfwSetKeyCallback(w, [](GLFWwindow *ww, int, int code, int action, int)
@@ -370,8 +379,10 @@ namespace GL
             glfwSetMouseButtonCallback(w, [](GLFWwindow *ww, int button, int action, int)
                                        { ((Window *)glfwGetWindowUserPointer(ww))
                                              ->inputptr->MouseCallbackFunc(button, action); });
-            //TODO add mouse position listener
+            glfwGetCursorPos(window, &m_mouse_x, &m_mouse_y);
             window.inputptr = this;
+            rendercb = mrendercbs.Add([&]()
+                                      { glfwGetCursorPos(window, &m_mouse_x, &m_mouse_y); });
         }
 
         ///@brief This will remove the glfw callbacks. The user pointer is also set to null.
@@ -380,9 +391,10 @@ namespace GL
             glfwSetKeyCallback(window, nullptr);
             glfwSetMouseButtonCallback(window, nullptr);
             window.inputptr = nullptr;
+            mrendercbs.Remove(rendercb);
         }
 
-        InputHandler(const InputHandler &)=delete;
-        InputHandler& operator=(const InputHandler &)=delete;
+        InputHandler(const InputHandler &) = delete;
+        InputHandler &operator=(const InputHandler &) = delete;
     };
 }
