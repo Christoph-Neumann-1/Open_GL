@@ -6,6 +6,7 @@
 #include <Logger.hpp>
 #include <random>
 #include <glm/gtx/rotate_vector.hpp>
+#include <Image/stb_image.h>
 
 //TODO: background image
 //TODO: better colors
@@ -66,6 +67,10 @@ class Breakout : public Scene
 
     const glm::vec2 box_size{2.0f / cols, 1.0f / rows};
 
+    uint BG;
+    glm::mat4 BG_MVP;
+    Shader bgshader{ROOT_Directory + "/shader/BG.vs", ROOT_Directory + "/shader/BG.fs"};
+
 #pragma endregion
 
     void ComputeVertices()
@@ -120,9 +125,8 @@ class Breakout : public Scene
 
         shader.SetUniform4f("u_Color", {1, 0, 0, 1});
         //Needed because opengl seems to draw only once if something already is at this z value
-        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::mat4(1), glm::vec3(barx, bary, 0.001)), glm::vec3(centerLineWidth,bar_size.y, 0)));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::mat4(1), glm::vec3(barx, bary, 0.001)), glm::vec3(centerLineWidth, bar_size.y, 0)));
         glDrawArrays(GL_TRIANGLES, 34, 6);
-
 
         bshader.Bind();
 
@@ -131,7 +135,13 @@ class Breakout : public Scene
 
         glDrawArraysInstanced(GL_TRIANGLES, 34, 6, boxes.size());
 
-        shader.UnBind();
+        bgshader.Bind();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, BG);
+
+        glDrawArrays(GL_TRIANGLES, 34, 6);
+
+        bgshader.UnBind();
     }
 
     void BounceWalls()
@@ -151,7 +161,7 @@ class Breakout : public Scene
         if (b_pos.y - bradius < bary + bar_size.y && b_pos.x < barx + bar_size.x && b_pos.x > barx - bar_size.x)
         {
             float offset = (b_pos.x - barx) / bar_size.x;
-            b_vel = glm::rotate(glm::vec2(0, glm::length(b_vel)+ speedincrease), glm::radians(-offset * 60));
+            b_vel = glm::rotate(glm::vec2(0, glm::length(b_vel) + speedincrease), glm::radians(-offset * 60));
             b_pos.y = bary + bar_size.y + bradius;
         }
     }
@@ -201,16 +211,17 @@ class Breakout : public Scene
             auto &box = boxes[j];
             if (circleRectCollision(b_pos, bradius, box.pos - box_size / 2.0f, box_size))
             {
-                for(int i=0; i<b_pos.length(); i++){
-                //TODO fix corners
-                if (b_pos[i] > box.pos[i] + box_size[i] / 2.0f)
+                for (int i = 0; i < b_pos.length(); i++)
                 {
-                    b_vel[i] = -b_vel[i];
-                }
-                else if (b_pos[i] < box.pos[i] - box_size[i] / 2.0f)
-                {
-                    b_vel[i] = -b_vel[i];
-                }
+                    //TODO fix corners
+                    if (b_pos[i] > box.pos[i] + box_size[i] / 2.0f)
+                    {
+                        b_vel[i] = -b_vel[i];
+                    }
+                    else if (b_pos[i] < box.pos[i] - box_size[i] / 2.0f)
+                    {
+                        b_vel[i] = -b_vel[i];
+                    }
                 }
                 boxes.erase(boxes.begin() + j);
             }
@@ -243,7 +254,31 @@ class Breakout : public Scene
             }
         b_pos = {0, -0.3};
         b_vel = {rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX / 4 - 1};
-        b_color={rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 1};
+        b_color = {rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, rand() / (float)RAND_MAX, 1};
+    }
+
+    void SetupBackground()
+    {
+        glGenTextures(1, &BG);
+        glBindTexture(GL_TEXTURE_2D, BG);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        int width, height, channels;
+        void *data = stbi_load((ROOT_Directory + "/res/Textures/background.png").c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        stbi_image_free(data);
+
+        bgshader.Bind();
+        bgshader.SetUniform1i("u_texture", 0);
+        bgshader.SetUniform1f("u_zOffset",0.01f);
+        //TODO: use 3d matrices
+        bgshader.SetUniformMat4f("u_MVP",glm::translate(glm::mat4(1.0f), glm::vec3(1,1,0)));
+    
     }
 
 public:
@@ -305,6 +340,7 @@ public:
         GetFlag("hide_menu") = true;
 
         loader->GetWindow().bgcolor = {0.0f, 0.0f, 0.0f, 1.0f};
+        SetupBackground();
     }
     ~Breakout()
     {
