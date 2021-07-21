@@ -68,7 +68,6 @@ class Breakout : public Scene
     const glm::vec2 box_size{2.0f / cols, 1.0f / rows};
 
     uint BG;
-    glm::mat4 BG_MVP;
     Shader bgshader{ROOT_Directory + "/shader/BG.vs", ROOT_Directory + "/shader/BG.fs"};
 
 #pragma endregion
@@ -112,26 +111,26 @@ class Breakout : public Scene
         shader.Bind();
 
         shader.SetUniform4f("u_Color", b_color);
-        shader.SetUniformMat4f("u_MVP", ortho * glm::translate(glm::mat4(1), glm::vec3(b_pos, 0)));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::translate(glm::vec3(b_pos, 0)));
 
         glBindVertexArray(va);
 
         glDrawArrays(GL_TRIANGLE_FAN, 0, 32 + 2);
 
         shader.SetUniform4f("u_Color", glm::vec4(1, 1, 1, 1));
-        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::mat4(1), glm::vec3(barx, bary, 0)), glm::vec3(bar_size, 0)));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0)), glm::vec3(bar_size, 0)));
 
         glDrawArrays(GL_TRIANGLES, 34, 6);
 
         shader.SetUniform4f("u_Color", {1, 0, 0, 1});
         //Needed because opengl seems to draw only once if something already is at this z value
-        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::mat4(1), glm::vec3(barx, bary, 0.001)), glm::vec3(centerLineWidth, bar_size.y, 0)));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0.001)), glm::vec3(centerLineWidth, bar_size.y, 0)));
         glDrawArrays(GL_TRIANGLES, 34, 6);
 
         bshader.Bind();
 
         bshader.SetUniformMat4f("u_MVP", ortho);
-        bshader.SetUniformMat4f("scale_mat", glm::scale(glm::mat4(1), glm::vec3(0.5f * box_size, 0)));
+        bshader.SetUniformMat4f("scale_mat", glm::scale(glm::vec3(0.5f * box_size, 0)));
 
         glDrawArraysInstanced(GL_TRIANGLES, 34, 6, boxes.size());
 
@@ -275,10 +274,11 @@ class Breakout : public Scene
 
         bgshader.Bind();
         bgshader.SetUniform1i("u_texture", 0);
-        bgshader.SetUniform1f("u_zOffset",0.01f);
+        bgshader.SetUniform1f("u_zOffset", 0.01f);
         //TODO: use 3d matrices
-        bgshader.SetUniformMat4f("u_MVP",glm::translate(glm::mat4(1.0f), glm::vec3(1,1,0)));
-    
+        //TODO: fix rotation and size
+        glm::mat4 scalemat = glm::scale(glm::vec3(loader->GetWindow().GetWidth() / (float)width / 2, loader->GetWindow().GetHeigth() / (float)height / 2, 1));
+        bgshader.SetUniformMat4f("u_MVP", scalemat);
     }
 
 public:
