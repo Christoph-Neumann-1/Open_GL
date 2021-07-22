@@ -12,9 +12,9 @@ class CircleScene final : public Scene
     void Render()
     {
         circle.shader.Bind();
-        glBindVertexArray(circle.VAO);
+        circle.VAO.Bind();
         glDrawArrays(GL_TRIANGLE_FAN, 0, circle.vcount);
-        glBindVertexArray(0);
+        VertexArray::Unbind();
         circle.shader.UnBind();
     }
 

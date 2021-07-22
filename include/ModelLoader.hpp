@@ -16,6 +16,7 @@
 #include <assimp/postprocess.h>
 #include <Image/stb_image.h>
 
+//TODO: use new vertexarray
 namespace GL
 {
 

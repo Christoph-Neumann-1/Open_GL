@@ -9,7 +9,7 @@
 #include <Voxel/ConfigReader.hpp>
 #include <Callback.hpp>
 
-//TODO: new buffer wrapper
+//TODO: new buffer wrapper and vertexarray
 namespace GL::Voxel
 {
     /**

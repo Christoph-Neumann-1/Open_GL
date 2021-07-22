@@ -1,13 +1,14 @@
+#pragma once
 #include <glad/glad.h>
 
 namespace GL
 {
     /**
- * @brief This wrapper can't do much, but it is better than deleting buffers myself in the destructor.
- * 
- * The current version creates the buffer and deletes it.
- *  It also offers a bind and unbind function as well as access to the id of the buffer.
- */
+    * @brief This wrapper can't do much, but it is better than deleting buffers myself in the destructor.
+    * 
+    * The current version creates the buffer and deletes it.
+    *  It also offers a bind and unbind function as well as access to the id of the buffer.
+    */
     class Buffer
     {
         uint bufferId{0};

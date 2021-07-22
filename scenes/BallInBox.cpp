@@ -6,6 +6,7 @@
 #include <Camera/Camera3D.hpp>
 #include <Camera/Fplocked.hpp>
 #include <Buffer.hpp>
+#include <VertexArray.hpp>
 
 using namespace GL;
 
@@ -15,7 +16,7 @@ class BallInBox : public Scene
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
 
     Buffer vb;
-    uint va;
+    VertexArray va;
 
     Camera3D camera{{0, 0, 1}};
     Fplocked fplocked{&camera, loader->GetWindow()};
@@ -44,7 +45,7 @@ class BallInBox : public Scene
 
     void RenderBox()
     {
-        glBindVertexArray(va);
+        va.Bind();
 
         fplocked.Update(loader->GetTimeInfo().RenderDeltaTime());
 
@@ -56,7 +57,7 @@ class BallInBox : public Scene
             glDrawArrays(GL_TRIANGLES, 6 * i, 6);
         }
 
-        glBindVertexArray(0);
+        VertexArray::Unbind();
     }
 
     //TODO render trail
@@ -94,8 +95,7 @@ class BallInBox : public Scene
 public:
     BallInBox(SceneLoader *_loader) : Scene(_loader)
     {
-        glGenVertexArrays(1, &va);
-        glBindVertexArray(va);
+        va.Bind();
         vb.Bind(GL_ARRAY_BUFFER);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -111,7 +111,6 @@ public:
     }
     ~BallInBox()
     {
-        glDeleteVertexArrays(1, &va);
         RemoveFunctions();
     }
 };

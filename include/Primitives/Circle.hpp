@@ -5,13 +5,14 @@
 #include <glm/glm.hpp>
 #include <cmath>
 #include <Buffer.hpp>
+#include <VertexArray.hpp>
 
 namespace GL
 {
     struct Circle
     {
         Buffer VBO;
-        uint VAO;
+        VertexArray VAO;
         Shader shader;
         uint vcount = 0;
 
@@ -19,17 +20,12 @@ namespace GL
         Circle(std::string vshader, std::string fshader)
             : shader(vshader, fshader)
         {
-            glGenVertexArrays(1, &VAO);
-            glBindVertexArray(VAO);
+            VAO.Bind();
             VBO.Bind(GL_ARRAY_BUFFER);
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0);
             Buffer::Unbind(GL_ARRAY_BUFFER);
-            glBindVertexArray(0);
-        }
-        ~Circle()
-        {
-            glDeleteVertexArrays(1, &VAO);
+            VertexArray::Unbind();
         }
 
         void ComputeVertices(float radius, uint segcount)

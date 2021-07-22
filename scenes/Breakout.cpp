@@ -8,6 +8,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <Image/stb_image.h>
 #include <Buffer.hpp>
+#include <VertexArray.hpp>
 
 //TODO: background image
 //TODO: better colors
@@ -21,7 +22,7 @@ class Breakout : public Scene
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
     Shader bshader{ROOT_Directory + "/shader/Boxes.vs", ROOT_Directory + "/shader/Boxes.fs"};
 
-    uint va;
+    VertexArray va;
     Buffer vb;
     Buffer instance_buffer;
 
@@ -115,7 +116,7 @@ class Breakout : public Scene
         shader.SetUniform4f("u_Color", b_color);
         shader.SetUniformMat4f("u_MVP", ortho * glm::translate(glm::vec3(b_pos, 0)));
 
-        glBindVertexArray(va);
+        va.Bind();
 
         glDrawArrays(GL_TRIANGLE_FAN, 0, 32 + 2);
 
@@ -288,8 +289,7 @@ public:
     {
 
 #pragma region Buffers
-        glGenVertexArrays(1, &va);
-        glBindVertexArray(va);
+        va.Bind();
 
         vb.Bind(GL_ARRAY_BUFFER);
         glEnableVertexAttribArray(0);
@@ -313,7 +313,7 @@ public:
         glVertexAttribDivisor(2, 1);
 
         Buffer::Unbind(GL_ARRAY_BUFFER);
-        glBindVertexArray(0);
+        VertexArray::Unbind();
 
 #pragma endregion
 
@@ -344,7 +344,6 @@ public:
     }
     ~Breakout()
     {
-        glDeleteVertexArrays(1, &va);
         RemoveFunctions();
         loader->GetWindow().bgcolor = Window::defaultbg;
     }

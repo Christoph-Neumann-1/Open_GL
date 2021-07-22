@@ -9,6 +9,7 @@
 #include <Logger.hpp>
 #include <glad/glad.h>
 #include <Buffer.hpp>
+#include <VertexArray.hpp>
 
 //All my classes are in this namespace
 using namespace GL;
@@ -17,7 +18,7 @@ using namespace GL;
 class Example final : public Scene
 {
     Buffer VBO;
-    uint VAO;
+    VertexArray VAO;
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
 
     //A triangle
@@ -28,14 +29,14 @@ class Example final : public Scene
     void Render()
     {
         //Bind all buffers and the shader
-        glBindVertexArray(VAO);
+        VAO.Bind();
         shader.Bind();
 
         //Draw 3 vertices = a triangle
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         //Unbind before next draw call
-        glBindVertexArray(0);
+        VertexArray::Unbind();
         shader.UnBind();
     }
 
@@ -44,9 +45,7 @@ public:
     Example(SceneLoader *_loader) : Scene(_loader)
     {
         //Generate and set up Buffer
-        glGenVertexArrays(1, &VAO);
-
-        glBindVertexArray(VAO);
+        VAO.Bind();
         VBO.Bind(GL_ARRAY_BUFFER);
 
         //Fill the buffer with the 3 vertices
@@ -67,7 +66,7 @@ public:
         RegisterFunc(CallbackType::Render, &Example::Render, this);
 
         //Unbind opengl stuff
-        glBindVertexArray(0);
+        VertexArray::Unbind();
         Buffer::Unbind(GL_ARRAY_BUFFER);
         shader.UnBind();
     }
@@ -75,9 +74,6 @@ public:
     //The threads will be synchronized here as well
     ~Example()
     {
-        //Clean up gpu ressources
-        glDeleteVertexArrays(1, &VAO);
-
         RemoveFunctions(); //Remove callbacks before closing scene
     }
 };

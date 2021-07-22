@@ -14,6 +14,7 @@
 #include <Voxel/Inventory.hpp>
 #include <Input.hpp>
 #include <Buffer.hpp>
+#include <VertexArray.hpp>
 
 const double raydist = 8;   //How far the player can mine/place blocks
 const double raysteps = 32; //How often the ray should be sampled
@@ -41,7 +42,7 @@ class Voxel_t final : public GL::Scene
 
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     GL::Buffer vbo, ibo;
-    uint vao;
+    GL::VertexArray vao;
 
     GL::Voxel::Inventory inventory;
 
@@ -192,11 +193,11 @@ class Voxel_t final : public GL::Scene
 
         //The square in the middle.
         shader.Bind();
-        glBindVertexArray(vao);
+        vao.Bind();
         ibo.Bind(GL_ELEMENT_ARRAY_BUFFER);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         GL::Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
-        glBindVertexArray(0);
+        GL::VertexArray::Unbind();
         shader.UnBind();
 
         if (chunks.HasCrossedChunk(lastpos, {round(camera.position.x), round(camera.position.z)}))
@@ -225,8 +226,7 @@ public:
 
         chunks.LoadChunks(chunks.GetChunkPos(camera.position.x, camera.position.z));
 
-        glGenVertexArrays(1, &vao);
-        glBindVertexArray(vao);
+        vao.Bind();
         vbo.Bind(GL_ARRAY_BUFFER);
         glVertexAttribPointer(0, 2, GL_FLOAT, 0, 2 * sizeof(float), 0);
         glEnableVertexAttribArray(0);
@@ -237,7 +237,7 @@ public:
             0, 1, 2,
             2, 3, 0};
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-        glBindVertexArray(0);
+        GL::VertexArray::Unbind();
         GL::Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
         GL::Buffer::Unbind(GL_ARRAY_BUFFER);
         shader.Bind();
@@ -276,7 +276,6 @@ public:
     ~Voxel_t()
     {
         RemoveFunctions();
-        glDeleteVertexArrays(1, &vao);
         file.Store();
         inventory.Store();
     }

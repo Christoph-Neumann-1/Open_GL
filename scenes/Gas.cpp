@@ -9,6 +9,7 @@
 #include <Input.hpp>
 #include <imgui/imgui.h>
 #include <Buffer.hpp>
+#include <VertexArray.hpp>
 
 using namespace GL;
 
@@ -44,7 +45,7 @@ class AtomsSim : public Scene
     std::atomic_bool is_waiting = 0;
 
     Buffer vb;
-    uint va;
+    VertexArray va;
 
     float KinE;
     float PotE;
@@ -145,10 +146,10 @@ class AtomsSim : public Scene
             fplocked.Update(loader->GetTimeInfo().RenderDeltaTime());
 
         wall_shader.Bind();
-        glBindVertexArray(va);
+        va.Bind();
         RenderBox();
         RenderBar();
-        glBindVertexArray(0);
+        VertexArray::Unbind();
         shader.Bind();
 
         shader.SetUniformMat4f("u_V", camera.ComputeMatrix());
@@ -289,8 +290,7 @@ public:
     AtomsSim(SceneLoader *_loader) : Scene(_loader)
     {
 #pragma region Buffers
-        glGenVertexArrays(1, &va);
-        glBindVertexArray(va);
+        va.Bind();
         vb.Bind(GL_ARRAY_BUFFER);
 
         glEnableVertexAttribArray(0);
@@ -342,7 +342,6 @@ public:
     }
     ~AtomsSim()
     {
-        glDeleteVertexArrays(1, &va);
         RemoveFunctions();
         loader->GetTimeInfo().SetUpdateInterval(TimeInfo::default_interval);
     }
