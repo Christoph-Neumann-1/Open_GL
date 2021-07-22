@@ -13,6 +13,7 @@
 #include <Voxel/ChunkManager.hpp>
 #include <Voxel/Inventory.hpp>
 #include <Input.hpp>
+#include <Buffer.hpp>
 
 const double raydist = 8;   //How far the player can mine/place blocks
 const double raysteps = 32; //How often the ray should be sampled
@@ -39,8 +40,8 @@ class Voxel_t final : public GL::Scene
         middle_button{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_MIDDLE, GL::InputHandler::Action::Press, &Voxel_t::Pick, this};
 
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
-    uint vbo, ibo, vao;
-
+    GL::Buffer vbo, ibo;
+    uint vao;
 
     GL::Voxel::Inventory inventory;
 
@@ -192,9 +193,9 @@ class Voxel_t final : public GL::Scene
         //The square in the middle.
         shader.Bind();
         glBindVertexArray(vao);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        ibo.Bind(GL_ELEMENT_ARRAY_BUFFER);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        GL::Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
         glBindVertexArray(0);
         shader.UnBind();
 
@@ -224,26 +225,25 @@ public:
 
         chunks.LoadChunks(chunks.GetChunkPos(camera.position.x, camera.position.z));
 
-        glGenBuffers(2, &vbo);
         glGenVertexArrays(1, &vao);
         glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        vbo.Bind(GL_ARRAY_BUFFER);
         glVertexAttribPointer(0, 2, GL_FLOAT, 0, 2 * sizeof(float), 0);
         glEnableVertexAttribArray(0);
         glBufferData(GL_ARRAY_BUFFER, sizeof(crosshair), crosshair, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        ibo.Bind(GL_ELEMENT_ARRAY_BUFFER);
         uint indices[]{
             0, 1, 2,
             2, 3, 0};
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
         glBindVertexArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        GL::Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
+        GL::Buffer::Unbind(GL_ARRAY_BUFFER);
         shader.Bind();
-        
+
         glm::mat4 mat;
-        
+
         auto &window = loader->GetWindow();
 
         //This makes sure the the square always looks the same.
@@ -276,7 +276,6 @@ public:
     ~Voxel_t()
     {
         RemoveFunctions();
-        glDeleteBuffers(2, &vbo);
         glDeleteVertexArrays(1, &vao);
         file.Store();
         inventory.Store();

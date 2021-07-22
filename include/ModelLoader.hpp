@@ -109,6 +109,7 @@ namespace GL
     public:
         Model(const std::string &path);
 
+        //TODO: use buffer class
         void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
         {
             for (auto &mesh : meshes)

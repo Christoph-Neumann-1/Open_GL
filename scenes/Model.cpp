@@ -9,6 +9,7 @@
 #include <ModelLoader.hpp>
 #include <Camera/Flycam.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <Buffer.hpp>
 
 //The namespace I used for this project
 using namespace GL;
@@ -19,7 +20,7 @@ class Star final : public Scene
 
     Shader shader{ROOT_Directory + "/shader/Star.vs", ROOT_Directory + "/shader/Star.fs"};
     Model model{ROOT_Directory + "/res/Models/star.obj"};
-    uint buff; //A buffer holding offsets for multiple instances of the model
+    Buffer buff; //A buffer holding offsets for multiple instances of the model
 
     //Standard projection matrix
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
@@ -46,7 +47,6 @@ public:
     Star(SceneLoader *_loader) : Scene(_loader)
     {
         RegisterFunc(CallbackType::Render, &Star::Render, this); //Register the method to be called each frame. This will be bound to the method automatically.
-        glGenBuffers(1, &buff);
 
         //The location of the model instances
         float offsets[9]{
@@ -54,7 +54,7 @@ public:
             -2, -2, -4,
             8, 8, -6};
 
-        glBindBuffer(GL_ARRAY_BUFFER, buff);
+        buff.Bind(GL_ARRAY_BUFFER);
         //Since nothing changes later on Static draw is used
         glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), offsets, GL_STATIC_DRAW);
 
@@ -73,7 +73,6 @@ public:
     ~Star()
     {
         RemoveFunctions();//Remove all callbacks created by this class
-        glDeleteBuffers(1, &buff);
     }
 };
 

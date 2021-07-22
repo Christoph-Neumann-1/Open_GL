@@ -5,6 +5,7 @@
 #include <Data.hpp>
 #include <Camera/Camera3D.hpp>
 #include <Camera/Fplocked.hpp>
+#include <Buffer.hpp>
 
 using namespace GL;
 
@@ -13,7 +14,8 @@ class BallInBox : public Scene
     Model ball{ROOT_Directory + "/res/Models/sphere.obj"};
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
 
-    uint vb, va;
+    Buffer vb;
+    uint va;
 
     Camera3D camera{{0, 0, 1}};
     Fplocked fplocked{&camera, loader->GetWindow()};
@@ -94,14 +96,13 @@ public:
     {
         glGenVertexArrays(1, &va);
         glBindVertexArray(va);
-        glGenBuffers(1, &vb);
-        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        vb.Bind(GL_ARRAY_BUFFER);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(sides), &sides, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
 
         RegisterFunc(CallbackType::Render, &BallInBox::Render, this);
         RegisterFunc(CallbackType::Update, &BallInBox::Update, this);
@@ -110,7 +111,6 @@ public:
     }
     ~BallInBox()
     {
-        glDeleteBuffers(1, &vb);
         glDeleteVertexArrays(1, &va);
         RemoveFunctions();
     }

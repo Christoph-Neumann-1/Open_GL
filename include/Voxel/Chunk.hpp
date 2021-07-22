@@ -9,6 +9,7 @@
 #include <Voxel/ConfigReader.hpp>
 #include <Callback.hpp>
 
+//TODO: new buffer wrapper
 namespace GL::Voxel
 {
     /**

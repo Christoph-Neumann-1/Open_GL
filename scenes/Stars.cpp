@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <Camera/Flycam.hpp>
 #include <random>
+#include <Buffer.hpp>
 
 using namespace GL;
 
@@ -35,7 +36,7 @@ class Stars : public Scene
 {
     Shader shader{ROOT_Directory + "/shader/Stars.vs", ROOT_Directory + "/shader/Star.fs"};
     Model model{ROOT_Directory + "/res/Models/star.obj"};
-    uint instance_info;
+    Buffer instance_info;
     Logger log;
 
     glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, clipping_distance);
@@ -79,9 +80,10 @@ class Stars : public Scene
         fc.Update(loader->GetTimeInfo().RenderDeltaTime());
         shader.SetUniformMat4f("u_MVP", proj * cam.ComputeMatrix());
 
-        glBindBuffer(GL_ARRAY_BUFFER, instance_info);
+        instance_info.Bind(GL_ARRAY_BUFFER);
         glBufferSubData(GL_ARRAY_BUFFER, 0, stars.size() * sizeof(Star), &stars[0]);
         model.Draw(shader, stars.size());
+        Buffer::Unbind(GL_ARRAY_BUFFER);
 
         shader.UnBind();
     }
@@ -114,8 +116,7 @@ public:
         RegisterFunc(CallbackType::Render, &Stars::Render, this);
         RegisterFunc(CallbackType::Update, &Stars::ComputePositions, this);
 
-        glGenBuffers(1, &instance_info);
-        glBindBuffer(GL_ARRAY_BUFFER, instance_info);
+        instance_info.Bind(GL_ARRAY_BUFFER);
         stars.reserve(2 * NSTARS);
         glBufferData(GL_ARRAY_BUFFER, 2 * NSTARS * sizeof(Star), nullptr, GL_DYNAMIC_DRAW);
 
@@ -124,6 +125,8 @@ public:
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         layout.attributes.push_back({GL_FLOAT, 1, (void *)sizeof(glm::vec3)});
         model.AddInstanceBuffer(layout, instance_info);
+
+        Buffer::Unbind(GL_ARRAY_BUFFER);
 
         GetFlag("hide_menu") = true;
 
@@ -137,7 +140,6 @@ public:
     ~Stars()
     {
         RemoveFunctions();
-        glDeleteBuffers(1, &instance_info);
         loader->GetTimeInfo().SetUpdateInterval();
         loader->GetWindow().bgcolor=Window::defaultbg;
     }

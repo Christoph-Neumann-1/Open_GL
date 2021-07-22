@@ -8,6 +8,7 @@
 #include <random>
 #include <Input.hpp>
 #include <imgui/imgui.h>
+#include <Buffer.hpp>
 
 using namespace GL;
 
@@ -42,7 +43,8 @@ class AtomsSim : public Scene
     std::atomic_bool should_wait = 0;
     std::atomic_bool is_waiting = 0;
 
-    uint vb, va;
+    Buffer vb;
+    uint va;
 
     float KinE;
     float PotE;
@@ -57,7 +59,7 @@ class AtomsSim : public Scene
 
     glm::mat4 ortho_ui = glm::ortho(0.0f, 100.0f, 0.0f, 10.0f * natoms, -1.0f, 1.0f);
 
-    uint offsets;
+    Buffer offsets;
 
     float scale = 2;
 
@@ -65,7 +67,7 @@ class AtomsSim : public Scene
     float collision_time_span = 3;
     float collision_time_span_counter = 0;
 
-    float pressure=0;
+    float pressure = 0;
 
     struct Atom
     {
@@ -118,9 +120,9 @@ class AtomsSim : public Scene
         {
             buffer[i] = atoms[i].pos / scale;
         }
-        glBindBuffer(GL_ARRAY_BUFFER, offsets);
+        offsets.Bind(GL_ARRAY_BUFFER);
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(glm::vec3) * natoms, buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
     }
 
     void RenderBar()
@@ -233,11 +235,11 @@ class AtomsSim : public Scene
         ComputeGravity(dt);
         UpdatePositions(dt);
         UpdateEnergie();
-        collision_time_span_counter+=dt;
+        collision_time_span_counter += dt;
         if (collision_time_span_counter > collision_time_span)
         {
             collision_time_span_counter = 0;
-            pressure=collsions/collision_time_span;
+            pressure = collsions / collision_time_span;
             collsions = 0;
         }
     }
@@ -289,9 +291,7 @@ public:
 #pragma region Buffers
         glGenVertexArrays(1, &va);
         glBindVertexArray(va);
-        glGenBuffers(1, &vb);
-        glGenBuffers(1, &offsets);
-        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        vb.Bind(GL_ARRAY_BUFFER);
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -301,14 +301,14 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(sides), &sides);
         glBufferSubData(GL_ARRAY_BUFFER, sizeof(sides), sizeof(bar), &bar);
 
-        glBindBuffer(GL_ARRAY_BUFFER, offsets);
+        offsets.Bind(GL_ARRAY_BUFFER);
 
         glBufferData(GL_ARRAY_BUFFER, natoms * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
         InstanceBufferLayout layout;
         layout.stride = sizeof(glm::vec3);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         atom_model.AddInstanceBuffer(layout, offsets);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
 
 #pragma endregion
 
@@ -342,8 +342,6 @@ public:
     }
     ~AtomsSim()
     {
-        glDeleteBuffers(1, &vb);
-        glDeleteBuffers(1, &offsets);
         glDeleteVertexArrays(1, &va);
         RemoveFunctions();
         loader->GetTimeInfo().SetUpdateInterval(TimeInfo::default_interval);

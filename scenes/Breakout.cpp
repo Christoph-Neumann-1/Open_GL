@@ -7,6 +7,7 @@
 #include <random>
 #include <glm/gtx/rotate_vector.hpp>
 #include <Image/stb_image.h>
+#include <Buffer.hpp>
 
 //TODO: background image
 //TODO: better colors
@@ -20,8 +21,9 @@ class Breakout : public Scene
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
     Shader bshader{ROOT_Directory + "/shader/Boxes.vs", ROOT_Directory + "/shader/Boxes.fs"};
 
-    uint vb, va;
-    uint instance_buffer;
+    uint va;
+    Buffer vb;
+    Buffer instance_buffer;
 
     glm::mat4 ortho;
 
@@ -95,11 +97,11 @@ class Breakout : public Scene
 
     void UpdateBuffer()
     {
-        glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
+        instance_buffer.Bind(GL_ARRAY_BUFFER);
 
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(BufferElement) * boxes.size(), boxes.data());
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
     }
 
     void Render()
@@ -288,9 +290,8 @@ public:
 #pragma region Buffers
         glGenVertexArrays(1, &va);
         glBindVertexArray(va);
-        glGenBuffers(1, &vb);
 
-        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        vb.Bind(GL_ARRAY_BUFFER);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
@@ -301,8 +302,7 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
         glBufferSubData(GL_ARRAY_BUFFER, sizeof(vertices), sizeof(square_vertices), square_vertices);
 
-        glGenBuffers(1, &instance_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, instance_buffer);
+        instance_buffer.Bind(GL_ARRAY_BUFFER);
         glBufferData(GL_ARRAY_BUFFER, sizeof(BufferElement) * rows * cols, 0, GL_DYNAMIC_DRAW);
 
         glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(BufferElement), 0);
@@ -312,7 +312,7 @@ public:
         glVertexAttribDivisor(1, 1);
         glVertexAttribDivisor(2, 1);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
         glBindVertexArray(0);
 
 #pragma endregion
@@ -344,7 +344,6 @@ public:
     }
     ~Breakout()
     {
-        glDeleteBuffers(1, &vb);
         glDeleteVertexArrays(1, &va);
         RemoveFunctions();
         loader->GetWindow().bgcolor = Window::defaultbg;
