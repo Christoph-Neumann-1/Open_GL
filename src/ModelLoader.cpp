@@ -48,15 +48,13 @@ namespace GL
     Mesh::Mesh(const std::vector<Vertex> &_vertices, const std::vector<u_int> &_indices, const std::vector<s_Texture> &_textures)
         : vertices(_vertices), indices(_indices), textures(_textures)
     {
-        glGenVertexArrays(1, &va);
-        glGenBuffers(2, &vb);
-        glBindBuffer(GL_ARRAY_BUFFER, vb);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+        vb.Bind(GL_ARRAY_BUFFER);
+        ib.Bind(GL_ELEMENT_ARRAY_BUFFER);
 
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint), &indices[0], GL_STATIC_DRAW);
 
-        glBindVertexArray(va);
+        va.Bind();
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), 0);
@@ -67,14 +65,15 @@ namespace GL
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, texcoord));
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
+        Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
+        VertexArray::Unbind();
     }
 
+    //I keep this here in case the buffer class is insuficient
     void Mesh::AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
     {
-        glBindVertexArray(va);
+        va.Bind();
         glBindBuffer(GL_ARRAY_BUFFER, Buffer);
         u_int attribute_index = 3;
 
@@ -85,14 +84,33 @@ namespace GL
             glVertexAttribDivisor(attribute_index, 1);
             attribute_index++;
         }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
+        VertexArray::Unbind();
+    }
+
+    ///This has the same purpose as the above function, but uses the buffer class. Both work exactly the same as 
+    ///the Buffer class will be cast to an uint implicitly.
+    void Mesh::AddInstanceBuffer(const InstanceBufferLayout &layout, Buffer &Buffer)
+    {
+        va.Bind();
+        Buffer.Bind(GL_ARRAY_BUFFER);
+        u_int attribute_index = 3;
+
+        for (auto &attrib : layout.attributes)
+        {
+            glEnableVertexAttribArray(attribute_index);
+            glVertexAttribPointer(attribute_index, attrib.count, attrib.type, false, layout.stride, attrib.offset);
+            glVertexAttribDivisor(attribute_index, 1);
+            attribute_index++;
+        }
+        Buffer::Unbind(GL_ARRAY_BUFFER);
+        VertexArray::Unbind();
     }
 
     void Mesh::Draw(Shader &shader, uint count)
     {
-        glBindVertexArray(va);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+        va.Bind();
+        ib.Bind(GL_ELEMENT_ARRAY_BUFFER);
 
         unsigned int diffuseNr = 1;
         unsigned int specularNr = 1;
@@ -123,8 +141,8 @@ namespace GL
         else
             glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
 
-        glBindVertexArray(0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
+        VertexArray::Unbind();
     }
 
     std::vector<s_Texture> Model::LoadTextures(aiMaterial *mat, aiTextureType type, std::string typeName)

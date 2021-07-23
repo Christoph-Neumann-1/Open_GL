@@ -15,8 +15,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <Image/stb_image.h>
+#include <Buffer.hpp>
+#include <VertexArray.hpp>
 
-//TODO: use new vertexarray
 namespace GL
 {
 
@@ -56,7 +57,8 @@ namespace GL
  */
     class Mesh
     {
-        uint va, vb, ib;
+        Buffer vb, ib;
+        VertexArray va;
 
     public:
         std::vector<Vertex> vertices;
@@ -73,12 +75,12 @@ namespace GL
           */
         void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer);
 
+        void AddInstanceBuffer(const InstanceBufferLayout &layout, Buffer &Buffer);
+
         void Draw(Shader &shader, uint count = 0);
 
         ~Mesh()
         {
-            glDeleteBuffers(2, &vb);
-            glDeleteVertexArrays(1, &va);
         }
     };
 
@@ -110,7 +112,6 @@ namespace GL
     public:
         Model(const std::string &path);
 
-        //TODO: use buffer class
         void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
         {
             for (auto &mesh : meshes)
