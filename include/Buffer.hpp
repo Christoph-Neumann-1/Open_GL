@@ -1,6 +1,7 @@
 #pragma once
 #include <glad/glad.h>
 
+//TODO: add a way to send data to the buffer
 namespace GL
 {
     /**

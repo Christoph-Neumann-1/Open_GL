@@ -62,27 +62,24 @@ namespace GL::Voxel
 
         lookup_cache = MakeBlockCache(config);
 
-        glGenVertexArrays(2, &va);
-        glGenBuffers(2, &buffer);
+        va.Bind();
 
-        glBindVertexArray(va);
-
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        buffer.Bind(GL_ARRAY_BUFFER);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
         glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
-        glBindVertexArray(va_transparent);
+        va_transparent.Bind();
 
-        glBindBuffer(GL_ARRAY_BUFFER, buffer_transparent);
+        buffer_transparent.Bind(GL_ARRAY_BUFFER);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
         glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
+        VertexArray::Unbind();
     }
 
     void Chunk::Load()
@@ -325,12 +322,11 @@ namespace GL::Voxel
         //This function will probably be called in a seperate thread but Opengl only works in the render thread.
         renderid = render_thread.Add([&]()
                                      {
-                                         glBindBuffer(GL_ARRAY_BUFFER, buffer);
+                                         buffer.Bind(GL_ARRAY_BUFFER);
                                          glBufferData(GL_ARRAY_BUFFER, faces.size() * sizeof(Face), &faces[0], GL_STATIC_DRAW);
-                                         glBindBuffer(GL_ARRAY_BUFFER, 0);
-                                         glBindBuffer(GL_ARRAY_BUFFER, buffer_transparent);
+                                         buffer_transparent.Bind(GL_ARRAY_BUFFER);
                                          glBufferData(GL_ARRAY_BUFFER, faces_transparent.size() * sizeof(Face), &faces_transparent[0], GL_STATIC_DRAW);
-                                         glBindBuffer(GL_ARRAY_BUFFER, 0);
+                                         Buffer::Unbind(GL_ARRAY_BUFFER);
                                          render_thread.Remove(renderid);
                                      },
                                      callback_id);

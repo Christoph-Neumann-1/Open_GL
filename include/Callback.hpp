@@ -11,6 +11,7 @@
 #include <mutex>
 #include <atomic>
 
+//TODO: replace uint with custom type for searching
 namespace GL
 {
     ///@brief a list of possible callbacks

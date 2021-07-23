@@ -8,6 +8,8 @@
 #include <string.h>
 #include <Voxel/ConfigReader.hpp>
 #include <Callback.hpp>
+#include <Buffer.hpp>
+#include <VertexArray.hpp>
 
 //TODO: new buffer wrapper and vertexarray
 namespace GL::Voxel
@@ -19,8 +21,8 @@ namespace GL::Voxel
      */
     class Chunk
     {
-        bool isactive=false;//Prevents unneccesary mesh building.
-        const static int sealevel = 8; 
+        bool isactive = false; //Prevents unneccesary mesh building.
+        const static int sealevel = 8;
         uint renderid;
 
         /**
@@ -36,14 +38,13 @@ namespace GL::Voxel
 
     public:
         static int Seed;
-        bool regen_mesh=false;//The mesh is rebuilt after rendering.
+        bool regen_mesh = false; //The mesh is rebuilt after rendering.
         static void NewSeed()
         {
             int nseed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
             srand(nseed);
             Seed = rand();
         }
-
 
     private:
         std::array<uint, NBLOCKS> lookup_cache;
@@ -72,16 +73,15 @@ namespace GL::Voxel
             Left = 30
         };
 
-
-        glm::ivec2 chunk_offset;//Grid position of the chunk.
+        glm::ivec2 chunk_offset; //Grid position of the chunk.
         std::vector<Face> faces;
         std::vector<Face> faces_transparent;
         std::array<std::array<std::array<uint, 16>, 64>, 16> blocks;
-        uint buffer, buffer_transparent, va, va_transparent;
+        Buffer buffer, buffer_transparent;
+        VertexArray va, va_transparent;
         const TexConfig &config;
 
         Face GenFace(glm::ivec3 pos, FaceIndices type);
-
 
     public:
         /**
@@ -107,10 +107,10 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(const TexConfig &cfg, CallbackList &cb,uint cbid);
-        
-        Chunk(const Chunk&)=delete;
-        Chunk& operator=(const Chunk&)=delete;
+        Chunk(const TexConfig &cfg, CallbackList &cb, uint cbid);
+
+        Chunk(const Chunk &) = delete;
+        Chunk &operator=(const Chunk &) = delete;
 
         /**
          * @brief Generates the mesh
@@ -132,30 +132,28 @@ namespace GL::Voxel
 
         ~Chunk()
         {
-            if(isactive)
+            if (isactive)
                 UnLoad();
-            glDeleteBuffers(2, &buffer);
-            glDeleteVertexArrays(2, &va);
         }
 
         void DrawOpaque()
         {
-            glBindVertexArray(va);
+            va.Bind();
             glDrawArrays(GL_TRIANGLES, 0, 6 * faces.size());
-            glBindVertexArray(0);
+            VertexArray::Unbind();
         }
 
         void DrawTransparent()
         {
-            glBindVertexArray(va_transparent);
+            va_transparent.Bind();
             glDrawArrays(GL_TRIANGLES, 0, 6 * faces_transparent.size());
-            glBindVertexArray(0);
+            VertexArray::Unbind();
         }
 
         /// @brief Access block at a position.
         uint &operator()(int x, int y, int z)
         {
-            return At({x,y,z});
+            return At({x, y, z});
         }
 
         // @brief Returns the grid position of the chunk.
