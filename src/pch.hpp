@@ -6,3 +6,5 @@
 #include <functional>
 #include <vector>
 #include <Logger.hpp>
+#include <Buffer.hpp>
+#include <VertexArray.hpp>
