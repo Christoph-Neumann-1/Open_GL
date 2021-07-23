@@ -22,15 +22,17 @@ namespace GL::Voxel
         std::vector<Chunk *> rendered;   //< Chunks that are rendered.
 
         TexConfig &config;
-        ThreadPool pool;//Used for mesh building.
+        ThreadPool pool; //Used for mesh building.
         CallbackHandler &cbh;
         uint cbid;
         uint c_cbid = cbh.GenId();
 
-        int renderdist = 11;//How far the player can see
-        int preload = 1;//How many chunk beyond mesh generation data is loades.
+    public:
+        static const int renderdist = 11; //How far the player can see
+        static const int preload = 1;     //How many chunk beyond mesh generation data is loades.
 
-        std::atomic_uint count = 0;//Number of chunks which meshes are being rebuilt.
+    private:
+        std::atomic_uint count = 0; //Number of chunks which meshes are being rebuilt.
 
         FileLayout file;
 
@@ -143,7 +145,7 @@ namespace GL::Voxel
         ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb),
                                                             file(ROOT_Directory + "/res/world/SEED")
         {
-            chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1));//No more chunks should be needed.
+            chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1)); //No more chunks should be needed.
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
             for (int i = 0; i < 2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1); i++)
             {
@@ -179,8 +181,8 @@ namespace GL::Voxel
             cbh.RemoveAll(c_cbid);
         }
 
-        ChunkManager(const ChunkManager &)=delete;
-        ChunkManager& operator=(const ChunkManager &)=delete;
+        ChunkManager(const ChunkManager &) = delete;
+        ChunkManager &operator=(const ChunkManager &) = delete;
 
         /**
          * @brief Get the grid coordinates of a chunk using world coordinates.

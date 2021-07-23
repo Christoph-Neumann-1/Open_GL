@@ -1,5 +1,3 @@
-//This is a simple voxel world
-
 #include <Scene.hpp>
 #include <glm/glm.hpp>
 #include <Data.hpp>
@@ -186,6 +184,8 @@ class Voxel_t final : public GL::Scene
 
         chunkShader.Bind();
         chunkShader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
+        chunkShader.SetUniform2f("u_player_pos", {camera.position.x, camera.position.z});
+        chunkShader.SetUniform1f("u_view_dist", GL::Voxel::ChunkManager::renderdist * 16);
 
         chunks.DrawChunks();
 
