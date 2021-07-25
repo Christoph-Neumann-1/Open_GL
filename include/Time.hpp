@@ -76,17 +76,23 @@ namespace GL
         std::chrono::time_point<std::chrono::steady_clock> begin;
         PerformanceLogger(const PerformanceLogger &) = delete;
         PerformanceLogger &operator=(const PerformanceLogger &) = delete;
-        std::string m_message;
-        std::function<std::string(std::chrono::nanoseconds)> m_callback;
+
+        //I hope I am using this right
+        union
+        {
+            std::string m_message;
+            std::function<std::string(std::chrono::nanoseconds)> m_callback;
+        };
+        bool use_callback;
 
     public:
         ///@brief Outputs the string followed by " ", the time, and "seconds"
-        PerformanceLogger(std::string message = std::string()) : m_message(message)
+        PerformanceLogger(std::string message = std::string()) : m_message(message), use_callback(false)
         {
             begin = std::chrono::steady_clock::now();
         }
         ///@brief Outputs whatever your function returns.
-        PerformanceLogger(std::function<std::string(std::chrono::nanoseconds)> callback) : m_callback(callback)
+        PerformanceLogger(std::function<std::string(std::chrono::nanoseconds)> callback) : m_callback(callback), use_callback(true)
         {
             begin = std::chrono::steady_clock::now();
         }
@@ -95,10 +101,17 @@ namespace GL
             auto end = std::chrono::steady_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
             Logger logger;
-            if (m_callback)
+            if (use_callback)
+            {
                 logger << m_callback(duration);
+                using functype=std::function<std::string(std::chrono::nanoseconds)>;
+                m_callback.~functype();
+            }
             else
+            {
                 logger << m_message << " " << duration.count() / 1e9 << " seconds";
+                m_message.~basic_string();
+            }
             logger.print();
         }
     };
