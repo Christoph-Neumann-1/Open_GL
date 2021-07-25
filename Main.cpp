@@ -38,6 +38,7 @@ static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syn
 static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv,
                        std::atomic_bool &should_sync, std::atomic_bool &is_synced)
 {
+    //TODO: better timing
     Logger log;
     auto &updatecb = cbh.GetList(cbt::Update);
     auto &preupdatecb = cbh.GetList(cbt::PreUpdate);
@@ -54,14 +55,14 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 #ifdef UPDATE_COUNT
     int second = 0;
     int count = 0;
-    auto fs = std::chrono::high_resolution_clock::now();
+    auto fs = std::chrono::steady_clock::now();
 #endif
 
     while (!close)
     {
         //Determine how long each iteration should take.
         std::chrono::nanoseconds Interval((int)(powf(10, 9) * interval));
-        auto begin = std::chrono::high_resolution_clock::now();
+        auto begin = std::chrono::steady_clock::now();
 
 #ifdef UPDATE_COUNT
 
@@ -88,7 +89,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
                 ;
         }
 
-        auto end = std::chrono::high_resolution_clock::now();
+        auto end = std::chrono::steady_clock::now();
         auto time = Interval - (end - begin);
         PreciseSleep(time);
     }
@@ -129,6 +130,7 @@ void ProcessArguments(int argc, char **argv, std::string &scene, std::string &ro
 
 int main(int argc, char **argv)
 {
+    PerformanceLogger plog("Program ran for");
     Logger log;
 
     //First check for command line arguments.
