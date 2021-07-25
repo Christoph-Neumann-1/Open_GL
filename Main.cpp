@@ -252,7 +252,7 @@ int main(int argc, char **argv)
         std::atomic_bool should_sync = false;
         std::atomic_bool is_synced = false;
 
-        timeinfo.SetUpdateInterval();
+        timeinfo.SetUpdateInterval(1/500.0f);
 
         //Start the update thread.
         std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),

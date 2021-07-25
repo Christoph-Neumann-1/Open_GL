@@ -77,19 +77,28 @@ namespace GL
         PerformanceLogger(const PerformanceLogger &) = delete;
         PerformanceLogger &operator=(const PerformanceLogger &) = delete;
         std::string m_message;
+        std::function<std::string(std::chrono::nanoseconds)> m_callback;
 
     public:
-        PerformanceLogger(std::string message=std::string()) : m_message(message)
+        ///@brief Outputs the string followed by " ", the time, and "seconds"
+        PerformanceLogger(std::string message = std::string()) : m_message(message)
+        {
+            begin = std::chrono::steady_clock::now();
+        }
+        ///@brief Outputs whatever your function returns.
+        PerformanceLogger(std::function<std::string(std::chrono::nanoseconds)> callback) : m_callback(callback)
         {
             begin = std::chrono::steady_clock::now();
         }
         ~PerformanceLogger()
-
         {
             auto end = std::chrono::steady_clock::now();
-            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
+            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
             Logger logger;
-            logger<<m_message<<" "<<duration/1e9<<" seconds";
+            if (m_callback)
+                logger << m_callback(duration);
+            else
+                logger << m_message << " " << duration.count() / 1e9 << " seconds";
             logger.print();
         }
     };

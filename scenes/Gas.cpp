@@ -343,7 +343,7 @@ public:
     ~AtomsSim()
     {
         RemoveFunctions();
-        loader->GetTimeInfo().SetUpdateInterval(TimeInfo::default_interval);
+        loader->GetTimeInfo().SetUpdateInterval();
     }
 };
 
