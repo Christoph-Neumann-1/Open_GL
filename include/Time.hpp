@@ -6,6 +6,8 @@
 #include <thread>
 #include <Logger.hpp>
 
+//TODO: split file
+
 namespace GL
 {
 
@@ -115,7 +117,10 @@ namespace GL
         }
     };
 
-    //TODO: document this correctly
+    /**
+     * @brief This is the same as PerformanceLoggerScoped but has explicit begin and end functions, making
+     * it useful for repeated logging or just outputting many different timestamps.
+     */
     class PerformanceLoggerManual
     {
         std::chrono::time_point<std::chrono::steady_clock> begin;
@@ -132,11 +137,13 @@ namespace GL
         Logger logger;
 
     public:
+    ///@brief Record the start time
         void Begin()
         {
             begin = std::chrono::steady_clock::now();
         }
 
+        ///@brief Record the current timea and either output the duration or call the function provided
         void End()
         {
             auto end = std::chrono::steady_clock::now();
@@ -151,12 +158,13 @@ namespace GL
             }
             logger.print();
         }
-        ///@brief Outputs the string followed by " ", the time, and "seconds"
+        ///@brief Outputs the string followed by " ", the time, and "seconds" during the end function.
         PerformanceLoggerManual(std::string message = std::string()) : m_message(message), use_callback(false) {}
-        ///@brief Outputs whatever your function returns.
+        ///@brief Outputs whatever your function returns during the end function.
         PerformanceLoggerManual(std::function<std::string(std::chrono::nanoseconds)> callback) : m_callback(callback), use_callback(true) {}
         ~PerformanceLoggerManual()
         {
+            //Since I am using an union, I need to destroy the correct member manually
             if (use_callback)
             {
                 m_callback.~function<std::string(std::chrono::nanoseconds)>();
