@@ -130,7 +130,7 @@ void ProcessArguments(int argc, char **argv, std::string &scene, std::string &ro
 
 int main(int argc, char **argv)
 {
-    PerformanceLogger plog("Program ran for");
+    PerformanceLoggerScoped plog("Program ran for");
     Logger log;
 
     //First check for command line arguments.

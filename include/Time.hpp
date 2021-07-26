@@ -71,11 +71,11 @@ namespace GL
      * This class uses the steady clock to reduce outside effects. 
      * The time is measured in nanoseconds but is displayed in seconds.
      */
-    class PerformanceLogger
+    class PerformanceLoggerScoped
     {
         std::chrono::time_point<std::chrono::steady_clock> begin;
-        PerformanceLogger(const PerformanceLogger &) = delete;
-        PerformanceLogger &operator=(const PerformanceLogger &) = delete;
+        PerformanceLoggerScoped(const PerformanceLoggerScoped &) = delete;
+        PerformanceLoggerScoped &operator=(const PerformanceLoggerScoped &) = delete;
 
         //I hope I am using this right
         union
@@ -87,16 +87,16 @@ namespace GL
 
     public:
         ///@brief Outputs the string followed by " ", the time, and "seconds"
-        PerformanceLogger(std::string message = std::string()) : m_message(message), use_callback(false)
+        PerformanceLoggerScoped(std::string message = std::string()) : m_message(message), use_callback(false)
         {
             begin = std::chrono::steady_clock::now();
         }
         ///@brief Outputs whatever your function returns.
-        PerformanceLogger(std::function<std::string(std::chrono::nanoseconds)> callback) : m_callback(callback), use_callback(true)
+        PerformanceLoggerScoped(std::function<std::string(std::chrono::nanoseconds)> callback) : m_callback(callback), use_callback(true)
         {
             begin = std::chrono::steady_clock::now();
         }
-        ~PerformanceLogger()
+        ~PerformanceLoggerScoped()
         {
             auto end = std::chrono::steady_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
@@ -112,6 +112,59 @@ namespace GL
                 m_message.~basic_string();
             }
             logger.print();
+        }
+    };
+
+    //TODO: document this correctly
+    class PerformanceLoggerManual
+    {
+        std::chrono::time_point<std::chrono::steady_clock> begin;
+        PerformanceLoggerManual(const PerformanceLoggerManual &) = delete;
+        PerformanceLoggerManual &operator=(const PerformanceLoggerManual &) = delete;
+
+        //I hope I am using this right
+        union
+        {
+            std::string m_message;
+            std::function<std::string(std::chrono::nanoseconds)> m_callback;
+        };
+        bool use_callback;
+        Logger logger;
+
+    public:
+        void Begin()
+        {
+            begin = std::chrono::steady_clock::now();
+        }
+
+        void End()
+        {
+            auto end = std::chrono::steady_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin);
+            if (use_callback)
+            {
+                logger << m_callback(duration);
+            }
+            else
+            {
+                logger << m_message << " " << duration.count() / 1e9 << " seconds";
+            }
+            logger.print();
+        }
+        ///@brief Outputs the string followed by " ", the time, and "seconds"
+        PerformanceLoggerManual(std::string message = std::string()) : m_message(message), use_callback(false) {}
+        ///@brief Outputs whatever your function returns.
+        PerformanceLoggerManual(std::function<std::string(std::chrono::nanoseconds)> callback) : m_callback(callback), use_callback(true) {}
+        ~PerformanceLoggerManual()
+        {
+            if (use_callback)
+            {
+                m_callback.~function<std::string(std::chrono::nanoseconds)>();
+            }
+            else
+            {
+                m_message.~basic_string();
+            }
         }
     };
 }
