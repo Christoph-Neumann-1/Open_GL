@@ -104,8 +104,7 @@ namespace GL
             if (use_callback)
             {
                 logger << m_callback(duration);
-                using functype=std::function<std::string(std::chrono::nanoseconds)>;
-                m_callback.~functype();
+                m_callback.~function<std::string(std::chrono::nanoseconds)>();
             }
             else
             {
