@@ -48,6 +48,8 @@ namespace GL
             last_render = current_time;
         };
 
+        const std::chrono::time_point<std::chrono::steady_clock> starttime{std::chrono::steady_clock::now()};
+
     public:
         static constexpr float default_interval = 1 / 100.0f;
 
@@ -61,6 +63,12 @@ namespace GL
         void SetUpdateInterval(float interval = default_interval) { deltatime_update = interval; }
         const float &UpdateInterval() const { return deltatime_update; }
         double RenderDeltaTime() const { return deltatime_render; }
+
+        std::chrono::nanoseconds NsSinceStart()
+        {
+            auto current_time = std::chrono::steady_clock::now();
+            return std::chrono::duration_cast<std::chrono::nanoseconds>(current_time - starttime);
+        }
 
         TimeInfo(const TimeInfo &) = delete;
         TimeInfo &operator=(const TimeInfo &) = delete;
@@ -137,7 +145,7 @@ namespace GL
         Logger logger;
 
     public:
-    ///@brief Record the start time
+        ///@brief Record the start time
         void Begin()
         {
             begin = std::chrono::steady_clock::now();
