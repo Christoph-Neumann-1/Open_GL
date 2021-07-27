@@ -24,8 +24,8 @@ namespace GL::Voxel
         TexConfig &config;
         ThreadPool pool; //Used for mesh building.
         CallbackHandler &cbh;
-        uint cbid;
-        uint c_cbid = cbh.GenId();
+        CallbackId cbid;
+        CallbackId c_cbid = cbh.GenId();
 
     public:
         static const int renderdist = 11; //How far the player can see

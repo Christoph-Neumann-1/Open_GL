@@ -28,7 +28,7 @@ namespace GL
     }
 
 
-    void CallbackList::Remove(uint id)
+    void CallbackList::Remove(CallbackId id)
     {
         if (!id)
             return;
@@ -36,7 +36,7 @@ namespace GL
         remove_queue.emplace_back(id, false);
     }
 
-    void CallbackList::RemoveAll(uint caller_id)
+    void CallbackList::RemoveAll(CallbackGroupId caller_id)
     {
         if (!caller_id)
             return;
@@ -44,7 +44,7 @@ namespace GL
         remove_queue.emplace_back(caller_id, true);
     }
 
-    void CallbackHandler::RemoveAll(uint caller_id)
+    void CallbackHandler::RemoveAll(CallbackGroupId caller_id)
     {
         for (auto &i : lists)
         {

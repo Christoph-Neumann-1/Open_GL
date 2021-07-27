@@ -23,7 +23,7 @@ namespace GL::Voxel
     {
         bool isactive = false; //Prevents unneccesary mesh building.
         const static int sealevel = 8;
-        uint renderid;
+        CallbackId renderid;
 
         /**
          * @brief Because the blocks are stored in an one dimensional array, I need an easy way to acess them.

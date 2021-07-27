@@ -22,7 +22,7 @@ namespace GL
     {
     protected:
         SceneLoader *loader; //All scenes will need this.
-        uint callback_id = loader->GetCallback().GenId();
+        CallbackGroupId callback_id = loader->GetCallback().GenId();
         float RenderDelta() { return loader->GetTimeInfo().RenderDeltaTime(); } //Purely for convenience.
         float PhysicsDelta() { return loader->GetTimeInfo().UpdateInterval(); } //Purely for convenience.
 
@@ -31,20 +31,20 @@ namespace GL
          * 
          * I forgot using callback_id and caused segfaults, so I added this.
          */
-        uint RegisterFunc(std::function<void()> &&func, CallbackList &list)
+        CallbackId RegisterFunc(std::function<void()> &&func, CallbackList &list)
         {
             return list.Add(func, callback_id);
         }
 
         ///@overload
-        uint RegisterFunc(std::function<void()> &&func, CallbackType cbt)
+        CallbackId RegisterFunc(std::function<void()> &&func, CallbackType cbt)
         {
             return loader->GetCallback().GetList(cbt).Add(func, callback_id);
         }
     
         ///@overload
         template <typename F, typename... Args>
-        uint RegisterFunc(CallbackType cbt, F &&func, Args... args)
+        CallbackId RegisterFunc(CallbackType cbt, F &&func, Args... args)
         {
             return loader->GetCallback().GetList(cbt).Add(func,callback_id,args...);
         }

@@ -39,7 +39,7 @@ namespace GL
         std::chrono::time_point<std::chrono::steady_clock> last_render;
         double deltatime_render{0.0f};
 
-        uint objid{cbh.GenId()};
+        CallbackGroupId objid{cbh.GenId()};
 
         function<void()> PreRender = [&]()
         {

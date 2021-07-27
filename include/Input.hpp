@@ -26,7 +26,7 @@ namespace GL
         double m_mouse_x;
         double m_mouse_y;
 
-        uint rendercb;
+        CallbackId rendercb;
         CallbackList &mrendercbs;
 
         //Contains a list of all callbacks for each mouse button.

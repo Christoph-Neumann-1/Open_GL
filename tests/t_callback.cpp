@@ -11,7 +11,7 @@ void CountCalls(int *count)
     (*count)++;
 }
 
-void RemoveSelf(GL::CallbackList *ls, uint *id, bool *wascalled)
+void RemoveSelf(GL::CallbackList *ls, GL::CallbackId *id, bool *wascalled)
 {
     ls->Remove(*id);
     *wascalled = true;
@@ -25,7 +25,7 @@ TEST(CALLBACK, TestSingleCallback)
     CallbackHandler handler([](const std::function<void()> &func) { func(); });
     CallbackList &list = handler.GetList(CallbackType::Render);
     bool wascalled = false;
-    uint callback_id = list.Add(std::bind(CheckIfCalled, &wascalled));
+    CallbackId callback_id = list.Add(std::bind(CheckIfCalled, &wascalled));
     list();
     EXPECT_TRUE(wascalled);
 
@@ -42,7 +42,7 @@ TEST(CALLBACK, TestMultipleCallbacks)
 
     CallbackHandler handler([](const std::function<void()> &func) { func(); });
     CallbackList &list = handler.GetList(CallbackType::Render);
-    uint id = handler.GenId();
+    CallbackGroupId id = handler.GenId();
 
     int count = 0;
 
@@ -66,9 +66,9 @@ TEST(CALLBACK, TestMultipleCallbacks)
     ASSERT_EQ(count, 0);
 
     count = 0;
-    uint id1 = list.Add(std::bind(CountCalls, &count), id);
-    uint id2 = list.Add(std::bind(CountCalls, &count), id);
-    uint id3 = list.Add(std::bind(CountCalls, &count), id);
+    CallbackId id1 = list.Add(std::bind(CountCalls, &count), id);
+    CallbackId id2 = list.Add(std::bind(CountCalls, &count), id);
+    CallbackId id3 = list.Add(std::bind(CountCalls, &count), id);
 
     list.Remove(id1);
     list.Remove(id2);
@@ -85,7 +85,7 @@ TEST(CALLBACK, RemoveSelfFromList)
     CallbackHandler handler([](const std::function<void()> &func) { func(); });
     CallbackList &list = handler.GetList(CallbackType::Render);
     bool wascalled = false;
-    uint id = list.Add(std::bind(RemoveSelf, &list, &id, &wascalled));
+    CallbackId id = list.Add(std::bind(RemoveSelf, &list, &id, &wascalled));
     list();
     ASSERT_TRUE(wascalled);
 
