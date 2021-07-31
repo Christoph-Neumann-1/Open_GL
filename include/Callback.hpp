@@ -11,7 +11,6 @@
 #include <mutex>
 #include <atomic>
 
-//TODO: replace uint with custom type for searching and update docs and other files
 namespace GL
 {
     using CallbackId = uint;

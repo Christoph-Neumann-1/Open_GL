@@ -1,5 +1,6 @@
 #pragma once
 #include <glad/glad.h>
+#include <Buffer.hpp>
 
 namespace GL
 {
@@ -24,6 +25,21 @@ namespace GL
         ///The distance between two attributes. Usually the sum of the size of all attributes.
         u_int stride;
         std::vector<Attribute> attributes;
+
+        void AddToVertexArray(VertexArray &array)
+        {
+            for (auto &attribute : attributes)
+            {
+                array.AddAttrib(attribute, *this);
+            }
+        }
+
+        void BindAndAddToVertexArray(VertexArray &array, Buffer &buffer)
+        {
+            buffer.Bind(GL_ARRAY_BUFFER);
+            array.Bind();
+            AddToVertexArray(array);
+        }
     };
 
     //TODO: add functions to add buffers and set vertex attribs
@@ -37,6 +53,7 @@ namespace GL
     class VertexArray
     {
         uint id{0};
+        uint currentAttribIndex{0};
 
     public:
         VertexArray() { glGenVertexArrays(1, &id); }
@@ -46,5 +63,14 @@ namespace GL
         const uint GetId() { return id; }
         //Same as GetId, but it makes working with GL functions a bit easier.
         operator uint() { return id; }
+        //This function assumes that the buffer and the vertex array are already bound.
+        void AddAttrib(const VertexBufferLayout::Attribute &attrib, const VertexBufferLayout &layout)
+        {
+            glEnableVertexAttribArray(currentAttribIndex);
+            glVertexAttribPointer(currentAttribIndex, attrib.count, attrib.type, false, layout.stride, attrib.offset);
+            glVertexAttribDivisor(currentAttribIndex, layout.attribdivisor);
+        }
+        void SetCurrentAttrib(const uint index) { currentAttribIndex = index; }
+        uint GetCurrentAttrib() { return currentAttribIndex; }
     };
 }

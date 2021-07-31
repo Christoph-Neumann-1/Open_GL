@@ -10,8 +10,6 @@
 #include <Buffer.hpp>
 #include <VertexArray.hpp>
 
-//TODO: background image
-//TODO: better colors
 //TODO: postprocessing
 
 using namespace GL;
