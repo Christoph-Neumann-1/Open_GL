@@ -17,6 +17,7 @@ namespace GL
         uint vcount = 0;
 
         //TODO: use external shader and add support for instancing
+        //TODO: allow for the vertices to be generated without creating buffers and such
         Circle(std::string vshader, std::string fshader)
             : shader(vshader, fshader)
         {
@@ -32,7 +33,7 @@ namespace GL
         {
             vcount = segcount + 2;
             VBO.Bind(GL_ARRAY_BUFFER);
-            glm::vec2 vertices[vcount];
+            glm::vec2 *vertices =new glm::vec2[vcount];
             vertices[0] = {0, 0};
             for (uint i = 1; i <= segcount; i++)
             {
@@ -43,6 +44,7 @@ namespace GL
                                       radius * sin(2 * M_PI / segcount)};
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
             Buffer::Unbind(GL_ARRAY_BUFFER);
+            delete[] vertices;
         }
 
         //TODO: add a draw function
