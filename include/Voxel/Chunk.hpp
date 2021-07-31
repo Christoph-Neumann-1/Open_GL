@@ -11,7 +11,6 @@
 #include <Buffer.hpp>
 #include <VertexArray.hpp>
 
-//TODO: new buffer wrapper and vertexarray
 namespace GL::Voxel
 {
     /**
@@ -34,7 +33,7 @@ namespace GL::Voxel
         }
 
         CallbackList &render_thread;
-        uint callback_id;
+        CallbackGroupId callback_id;
 
     public:
         static int Seed;
@@ -107,7 +106,7 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(const TexConfig &cfg, CallbackList &cb, uint cbid);
+        Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid);
 
         Chunk(const Chunk &) = delete;
         Chunk &operator=(const Chunk &) = delete;

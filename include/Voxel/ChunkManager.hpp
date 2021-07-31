@@ -25,7 +25,7 @@ namespace GL::Voxel
         ThreadPool pool; //Used for mesh building.
         CallbackHandler &cbh;
         CallbackId cbid;
-        CallbackId c_cbid = cbh.GenId();
+        CallbackGroupId c_cbid = cbh.GenId();
 
     public:
         static const int renderdist = 11; //How far the player can see

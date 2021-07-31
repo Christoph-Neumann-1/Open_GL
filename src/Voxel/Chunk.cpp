@@ -57,7 +57,7 @@ namespace GL::Voxel
         }
     }
 
-    Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, uint cbid) : render_thread(cb), callback_id(cbid), config(cfg)
+    Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid) : render_thread(cb), callback_id(cbid), config(cfg)
     {
 
         lookup_cache = MakeBlockCache(config);
