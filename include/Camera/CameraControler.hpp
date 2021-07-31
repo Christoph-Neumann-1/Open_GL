@@ -12,7 +12,7 @@ namespace GL
     class CameraControler
     {
     protected:
-        Camera3D *cam;
+        Camera3D &cam;
         GLFWwindow *window;
 
     public:
@@ -23,7 +23,7 @@ namespace GL
          */
         virtual void Update(double deltatime)=0;
 
-        CameraControler(Camera3D *_cam, GLFWwindow *_window = nullptr) : cam(_cam), window(_window) {}
+        CameraControler(Camera3D &_cam, GLFWwindow *_window = nullptr) : cam(_cam), window(_window) {}
         virtual ~CameraControler() {}
     };
 }

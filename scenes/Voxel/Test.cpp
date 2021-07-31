@@ -30,7 +30,7 @@ class Voxel_t final : public GL::Scene
 
     GL::Camera3D camera{{0, 30, 0}};
     ///This camera controller does not allow roll or looking more than 90 degrees up.
-    GL::Fplocked cameraController{&camera, loader->GetWindow(), 22};
+    GL::Fplocked cameraController{camera, loader->GetWindow(), 22};
     GL::Voxel::TexConfig blockTextures{ROOT_Directory + "/res/Textures/block.cfg"};
     GL::Voxel::ChunkManager chunks{blockTextures, loader->GetCallback()};
 

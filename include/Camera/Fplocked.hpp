@@ -24,7 +24,7 @@ namespace GL
 
     public:
         double pitch = 0, yaw = 0; 
-        Fplocked(Camera3D *_cam, GLFWwindow *_window, double move = 4, double rot = 0.12) : CameraControler(_cam, _window), movement(move), rotation(rot)
+        Fplocked(Camera3D &_cam, GLFWwindow *_window, double move = 4, double rot = 0.12) : CameraControler(_cam, _window), movement(move), rotation(rot)
         {
             Camera3D::LockMouse(window);
             glfwGetCursorPos(window, &m_x, &m_y);
@@ -48,17 +48,17 @@ namespace GL
 
             double m_dt = movement * deltatime;
 
-            glm::dvec3 forward = glm::normalize(glm::vec3{cam->Forward().x, 0, cam->Forward().z});
-            glm::dvec3 right = cam->Right();
+            glm::dvec3 forward = glm::normalize(glm::vec3{cam.Forward().x, 0, cam.Forward().z});
+            glm::dvec3 right = cam.Right();
 
-            cam->position += m_dt * forward * (double)glfwGetKey(window, GLFW_KEY_W) - m_dt * forward * (double)glfwGetKey(window, GLFW_KEY_S);
-            cam->position += m_dt * right * (double)glfwGetKey(window, GLFW_KEY_D) - m_dt * right * (double)glfwGetKey(window, GLFW_KEY_A);
-            cam->position += m_dt * up * (double)glfwGetKey(window, GLFW_KEY_E) - m_dt * up * (double)glfwGetKey(window, GLFW_KEY_Q);
+            cam.position += m_dt * forward * (double)glfwGetKey(window, GLFW_KEY_W) - m_dt * forward * (double)glfwGetKey(window, GLFW_KEY_S);
+            cam.position += m_dt * right * (double)glfwGetKey(window, GLFW_KEY_D) - m_dt * right * (double)glfwGetKey(window, GLFW_KEY_A);
+            cam.position += m_dt * up * (double)glfwGetKey(window, GLFW_KEY_E) - m_dt * up * (double)glfwGetKey(window, GLFW_KEY_Q);
             pitch = std::clamp(pitch + rotation * mousedeltay, -max_up, max_up);
             yaw += rotation * mousedeltax;
 
-            cam->rotation = glm::rotate(glm::dquat(1, 0, 0, 0), glm::radians(pitch), {1, 0, 0});
-            cam->rotation = glm::rotate(cam->rotation, glm::radians(yaw), up);
+            cam.rotation = glm::rotate(glm::dquat(1, 0, 0, 0), glm::radians(pitch), {1, 0, 0});
+            cam.rotation = glm::rotate(cam.rotation, glm::radians(yaw), up);
         }
     };
 }

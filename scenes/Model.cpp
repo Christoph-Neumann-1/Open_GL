@@ -25,7 +25,7 @@ class Star final : public Scene
     //Standard projection matrix
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
     Camera3D cam;
-    Flycam fc{&cam, loader->GetWindow()}; // A camera controller that allows free movement and rotation
+    Flycam fc{cam, loader->GetWindow()}; // A camera controller that allows free movement and rotation
 
     //This will be called once per frame
     void Render()

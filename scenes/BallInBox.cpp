@@ -19,7 +19,7 @@ class BallInBox : public Scene
     VertexArray va;
 
     Camera3D camera{{0, 0, 1}};
-    Fplocked fplocked{&camera, loader->GetWindow()};
+    Fplocked fplocked{camera, loader->GetWindow()};
 
     const glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
 

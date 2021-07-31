@@ -3,6 +3,7 @@
 
 namespace GL
 {
+    //TODO: add a function that adds this buffer to a vertex array
     struct VertexBufferLayout
     {
         struct Attribute
@@ -26,6 +27,7 @@ namespace GL
     };
 
     //TODO: add functions to add buffers and set vertex attribs
+    //TODO: keep track of the current vertex attribs
     /**
     * @brief Handles creating and destroying vertex array objects.
     * 
