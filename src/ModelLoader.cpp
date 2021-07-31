@@ -70,8 +70,8 @@ namespace GL
         VertexArray::Unbind();
     }
 
-    //I keep this here in case the buffer class is insuficient
-    void Mesh::AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
+    //I keep this here in case the buffer class is insufficient
+    void Mesh::AddInstanceBuffer(const VertexBufferLayout &layout, u_int Buffer)
     {
         va.Bind();
         glBindBuffer(GL_ARRAY_BUFFER, Buffer);
@@ -90,7 +90,7 @@ namespace GL
 
     ///This has the same purpose as the above function, but uses the buffer class. Both work exactly the same as 
     ///the Buffer class will be cast to an uint implicitly.
-    void Mesh::AddInstanceBuffer(const InstanceBufferLayout &layout, Buffer &Buffer)
+    void Mesh::AddInstanceBuffer(const VertexBufferLayout &layout, Buffer &Buffer)
     {
         va.Bind();
         Buffer.Bind(GL_ARRAY_BUFFER);

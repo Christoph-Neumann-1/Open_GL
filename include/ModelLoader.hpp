@@ -20,23 +20,6 @@
 
 namespace GL
 {
-
-    /**
-     * @brief When using instancing this defines how the buffer is structured
-     */
-    struct InstanceBufferLayout
-    {
-        struct Attribute
-        {
-            GLenum type;
-            uint count;
-            void *offset;
-        };
-
-        u_int stride;
-        std::vector<Attribute> attributes;
-    };
-
     struct Vertex
     {
         glm::vec3 Position;
@@ -73,9 +56,9 @@ namespace GL
           * Used in the star scene, for example.
           * 
           */
-        void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer);
+        void AddInstanceBuffer(const VertexBufferLayout &layout, u_int Buffer);
 
-        void AddInstanceBuffer(const InstanceBufferLayout &layout, Buffer &Buffer);
+        void AddInstanceBuffer(const VertexBufferLayout &layout, Buffer &Buffer);
 
         void Draw(Shader &shader, uint count = 0);
 
@@ -112,7 +95,7 @@ namespace GL
     public:
         Model(const std::string &path);
 
-        void AddInstanceBuffer(const InstanceBufferLayout &layout, u_int Buffer)
+        void AddInstanceBuffer(const VertexBufferLayout &layout, u_int Buffer)
         {
             for (auto &mesh : meshes)
             {

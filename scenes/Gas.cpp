@@ -304,7 +304,7 @@ public:
         offsets.Bind(GL_ARRAY_BUFFER);
 
         glBufferData(GL_ARRAY_BUFFER, natoms * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
-        InstanceBufferLayout layout;
+        VertexBufferLayout layout;
         layout.stride = sizeof(glm::vec3);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         atom_model.AddInstanceBuffer(layout, offsets);

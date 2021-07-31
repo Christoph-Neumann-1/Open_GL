@@ -3,6 +3,27 @@
 
 namespace GL
 {
+    struct VertexBufferLayout
+    {
+        struct Attribute
+        {
+            ///For example GL_FLOAT
+            GLenum type;
+            ///How many values of type. For a vec3, it would be 3.
+            uint count;
+            ///If you store more than one value in the buffer, you need to specify where the attribute begins.
+            void *offset;
+        };
+
+        ///Whether the attribute is per vertex or per instance.
+        ///Currently this can only be set per buffer, as I have not found any reason to allow it to be
+        ///per attribute.
+        bool attribdivisor = 0;
+
+        ///The distance between two attributes. Usually the sum of the size of all attributes.
+        u_int stride;
+        std::vector<Attribute> attributes;
+    };
 
     //TODO: add functions to add buffers and set vertex attribs
     /**

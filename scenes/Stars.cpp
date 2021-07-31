@@ -120,7 +120,7 @@ public:
         stars.reserve(2 * NSTARS);
         glBufferData(GL_ARRAY_BUFFER, 2 * NSTARS * sizeof(Star), nullptr, GL_DYNAMIC_DRAW);
 
-        InstanceBufferLayout layout;
+        VertexBufferLayout layout;
         layout.stride = 7 * sizeof(float);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         layout.attributes.push_back({GL_FLOAT, 1, (void *)sizeof(glm::vec3)});

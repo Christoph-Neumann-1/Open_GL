@@ -60,7 +60,7 @@ public:
 
         //This tells the model, how the instance buffer looks.
         //In this case attribure 3 will be 3 floats aka a vec3 and there are no other atrributes, so we can use that as the stride
-        InstanceBufferLayout layout;
+        VertexBufferLayout layout;
         layout.stride = 3 * sizeof(float);
         layout.attributes.push_back({GL_FLOAT, 3, 0});
         model.AddInstanceBuffer(layout, buff);
