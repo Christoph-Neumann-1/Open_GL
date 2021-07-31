@@ -21,12 +21,10 @@ namespace GL
         Circle(std::string vshader, std::string fshader)
             : shader(vshader, fshader)
         {
-            VAO.Bind();
-            VBO.Bind(GL_ARRAY_BUFFER);
-            glEnableVertexAttribArray(0);
-            glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0);
-            Buffer::Unbind(GL_ARRAY_BUFFER);
-            VertexArray::Unbind();
+            VertexBufferLayout layout;
+            layout.stride=sizeof(glm::vec2);
+            layout.Push({GL_FLOAT,2,0});
+            layout.BindAndAddToVertexArray(VAO,VBO);
         }
 
         void ComputeVertices(float radius, uint segcount)
@@ -42,7 +40,7 @@ namespace GL
             }
             vertices[segcount + 1] = {radius * cos(2 * M_PI / segcount),
                                       radius * sin(2 * M_PI / segcount)};
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)*vcount, vertices, GL_STATIC_DRAW);
             Buffer::Unbind(GL_ARRAY_BUFFER);
             delete[] vertices;
         }

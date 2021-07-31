@@ -65,21 +65,13 @@ namespace GL::Voxel
         va.Bind();
 
         buffer.Bind(GL_ARRAY_BUFFER);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
+        VertexBufferLayout layout;
+        layout.stride = 6*sizeof(float);
+        layout.Push({GL_FLOAT,3,0});
+        layout.Push({GL_FLOAT,3,(void *)sizeof(glm::vec3)});
+        layout.AddToVertexArray(va);
 
-        va_transparent.Bind();
-
-        buffer_transparent.Bind(GL_ARRAY_BUFFER);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * sizeof(float), 0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-
-        Buffer::Unbind(GL_ARRAY_BUFFER);
-        VertexArray::Unbind();
+        layout.BindAndAddToVertexArray(va_transparent,buffer_transparent);
     }
 
     void Chunk::Load()

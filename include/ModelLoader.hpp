@@ -56,9 +56,9 @@ namespace GL
           * Used in the star scene, for example.
           * 
           */
-        void AddInstanceBuffer(const VertexBufferLayout &layout, u_int Buffer);
+        void AddInstanceBuffer(VertexBufferLayout &layout, u_int Buffer);
 
-        void AddInstanceBuffer(const VertexBufferLayout &layout, Buffer &Buffer);
+        void AddInstanceBuffer(VertexBufferLayout &layout, Buffer &Buffer);
 
         void Draw(Shader &shader, uint count = 0);
 
@@ -95,7 +95,7 @@ namespace GL
     public:
         Model(const std::string &path);
 
-        void AddInstanceBuffer(const VertexBufferLayout &layout, u_int Buffer)
+        void AddInstanceBuffer(VertexBufferLayout &layout, u_int Buffer)
         {
             for (auto &mesh : meshes)
             {

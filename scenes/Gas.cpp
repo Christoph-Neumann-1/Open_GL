@@ -292,9 +292,9 @@ public:
 #pragma region Buffers
         va.Bind();
         vb.Bind(GL_ARRAY_BUFFER);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        VertexBufferLayout layout;
+        layout.Push({GL_FLOAT,3,0});
+        layout.AddToVertexArray(va);
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(sides) + sizeof(bar), nullptr, GL_DYNAMIC_DRAW);
 
@@ -304,10 +304,10 @@ public:
         offsets.Bind(GL_ARRAY_BUFFER);
 
         glBufferData(GL_ARRAY_BUFFER, natoms * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
-        VertexBufferLayout layout;
-        layout.stride = sizeof(glm::vec3);
-        layout.attributes.push_back({GL_FLOAT, 3, 0});
-        atom_model.AddInstanceBuffer(layout, offsets);
+        VertexBufferLayout instance_layout;
+        instance_layout.stride = sizeof(glm::vec3);
+        instance_layout.Push({GL_FLOAT, 3, 0});
+        atom_model.AddInstanceBuffer(instance_layout, offsets);
         Buffer::Unbind(GL_ARRAY_BUFFER);
 
 #pragma endregion

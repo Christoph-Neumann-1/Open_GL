@@ -290,8 +290,10 @@ public:
         va.Bind();
 
         vb.Bind(GL_ARRAY_BUFFER);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
+        VertexBufferLayout layout;
+        layout.Push({GL_FLOAT,2,0});
+        layout.AddToVertexArray(va);
 
         ComputeVertices();
 
@@ -303,12 +305,12 @@ public:
         instance_buffer.Bind(GL_ARRAY_BUFFER);
         glBufferData(GL_ARRAY_BUFFER, sizeof(BufferElement) * rows * cols, 0, GL_DYNAMIC_DRAW);
 
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(BufferElement), 0);
-        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(BufferElement), (void *)sizeof(glm::vec2));
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glVertexAttribDivisor(1, 1);
-        glVertexAttribDivisor(2, 1);
+        VertexBufferLayout instance_layout;
+        instance_layout.stride = sizeof(BufferElement);
+        instance_layout.Push({GL_FLOAT, 2, 0});
+        instance_layout.Push({GL_FLOAT, 4, (void *)sizeof(glm::vec2)});
+        instance_layout.attribdivisor = 1;
+        instance_layout.AddToVertexArray(va);
 
         Buffer::Unbind(GL_ARRAY_BUFFER);
         VertexArray::Unbind();

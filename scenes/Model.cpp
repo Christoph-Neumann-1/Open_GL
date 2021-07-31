@@ -62,7 +62,7 @@ public:
         //In this case attribure 3 will be 3 floats aka a vec3 and there are no other atrributes, so we can use that as the stride
         VertexBufferLayout layout;
         layout.stride = 3 * sizeof(float);
-        layout.attributes.push_back({GL_FLOAT, 3, 0});
+        layout.Push({GL_FLOAT, 3, 0});
         model.AddInstanceBuffer(layout, buff);
 
         //Sets a value in the loader, the menu checks this value to decide if it needs to be visible.

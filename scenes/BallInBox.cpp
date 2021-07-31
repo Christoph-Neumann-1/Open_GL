@@ -97,12 +97,15 @@ public:
     {
         va.Bind();
         vb.Bind(GL_ARRAY_BUFFER);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        VertexBufferLayout layout;
+        layout.stride=sizeof(glm::vec3);
+        layout.Push({GL_FLOAT, 3, 0});
+        layout.AddToVertexArray(va);
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(sides), &sides, GL_STATIC_DRAW);
 
         Buffer::Unbind(GL_ARRAY_BUFFER);
+        VertexArray::Unbind();
 
         RegisterFunc(CallbackType::Render, &BallInBox::Render, this);
         RegisterFunc(CallbackType::Update, &BallInBox::Update, this);

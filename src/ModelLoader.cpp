@@ -56,14 +56,13 @@ namespace GL
 
         va.Bind();
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), 0);
+        VertexBufferLayout layout;
+        layout.Push({GL_FLOAT,3,0});
+        layout.Push({GL_FLOAT,3,(void *)offsetof(Vertex, normal)});
+        layout.Push({GL_FLOAT,2,(void *)offsetof(Vertex, texcoord)});
+        layout.stride = sizeof(Vertex);
+        layout.AddToVertexArray(va);
 
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, normal));
-
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)offsetof(Vertex, texcoord));
 
         Buffer::Unbind(GL_ARRAY_BUFFER);
         Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
@@ -71,40 +70,21 @@ namespace GL
     }
 
     //I keep this here in case the buffer class is insufficient
-    void Mesh::AddInstanceBuffer(const VertexBufferLayout &layout, u_int Buffer)
+    void Mesh::AddInstanceBuffer(VertexBufferLayout &layout, u_int Buffer)
     {
         va.Bind();
         glBindBuffer(GL_ARRAY_BUFFER, Buffer);
-        u_int attribute_index = 3;
-
-        for (auto &attrib : layout.attributes)
-        {
-            glEnableVertexAttribArray(attribute_index);
-            glVertexAttribPointer(attribute_index, attrib.count, attrib.type, false, layout.stride, attrib.offset);
-            glVertexAttribDivisor(attribute_index, 1);
-            attribute_index++;
-        }
+        layout.attribdivisor=1;
+        layout.AddToVertexArray(va);
         Buffer::Unbind(GL_ARRAY_BUFFER);
         VertexArray::Unbind();
     }
 
     ///This has the same purpose as the above function, but uses the buffer class. Both work exactly the same as 
     ///the Buffer class will be cast to an uint implicitly.
-    void Mesh::AddInstanceBuffer(const VertexBufferLayout &layout, Buffer &Buffer)
+    void Mesh::AddInstanceBuffer(VertexBufferLayout &layout, Buffer &Buffer)
     {
-        va.Bind();
-        Buffer.Bind(GL_ARRAY_BUFFER);
-        u_int attribute_index = 3;
-
-        for (auto &attrib : layout.attributes)
-        {
-            glEnableVertexAttribArray(attribute_index);
-            glVertexAttribPointer(attribute_index, attrib.count, attrib.type, false, layout.stride, attrib.offset);
-            glVertexAttribDivisor(attribute_index, 1);
-            attribute_index++;
-        }
-        Buffer::Unbind(GL_ARRAY_BUFFER);
-        VertexArray::Unbind();
+        AddInstanceBuffer(layout, static_cast<u_int>(Buffer));
     }
 
     void Mesh::Draw(Shader &shader, uint count)

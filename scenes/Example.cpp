@@ -51,9 +51,9 @@ public:
         //Fill the buffer with the 3 vertices
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), 0); //We only have x and y coordinates, so we use 2 as a size
-
+        VertexBufferLayout layout;
+        layout.Push({GL_FLOAT, 2, 0}); //We only have x and y coordinates, so we use 2 as a size
+        layout.AddToVertexArray(VAO);
         shader.Bind();
 
         //Set the color to pink

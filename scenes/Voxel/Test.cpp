@@ -228,8 +228,9 @@ public:
 
         vao.Bind();
         vbo.Bind(GL_ARRAY_BUFFER);
-        glVertexAttribPointer(0, 2, GL_FLOAT, 0, 2 * sizeof(float), 0);
-        glEnableVertexAttribArray(0);
+        GL::VertexBufferLayout ui_layout;
+        ui_layout.Push({GL_FLOAT,2,0});
+        ui_layout.AddToVertexArray(vao);
         glBufferData(GL_ARRAY_BUFFER, sizeof(crosshair), crosshair, GL_STATIC_DRAW);
 
         ibo.Bind(GL_ELEMENT_ARRAY_BUFFER);
