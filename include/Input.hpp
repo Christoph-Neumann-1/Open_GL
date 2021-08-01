@@ -8,6 +8,7 @@
 namespace GL
 {
     //TODO: allow for text input
+    //TODO: mouse modifiers
     ///@attention Only create one instance per window.
     class InputHandler
     {
@@ -109,9 +110,10 @@ namespace GL
         uint current_id = 1;
 
         //This function is called every time something happens with a key. It then decides if a callback should be called.
-        void KeyCallbackFunc(int code, int action)
+        void KeyCallbackFunc(int code, int action, int mods)
         {
             //TODO  allow removing while called
+            current_modifiers = mods;
             std::scoped_lock lk(mutex);
             if (callbacks.contains(code))
             {
@@ -129,6 +131,9 @@ namespace GL
                 mousecallbacks[button].Call(action);
             }
         }
+
+        //When a key is pressed, the currently active modifiers are stored here.
+        int current_modifiers;
 
     public:
         //These values will be updated every frame, use them if you need the mouse position in other threads.
@@ -365,6 +370,20 @@ namespace GL
             cbl.funcs.erase(std::find(cbl.funcs.begin(), cbl.funcs.end(), id));
         }
 
+        /**
+         * @brief Return the currently active modifiers. See glfws documentation for more information.
+         * 
+         * This should only be called from the render thread and from the callback functions.
+         * I only started using modifiers after creating this class and didn't want to change everything again,
+         * so I added this function to return the modifiers stored by the last key press.
+         * 
+         * @return int 
+         */
+        int GetModifiers()
+        {
+            return current_modifiers;
+        }
+
         /** @brief This will bind the glfw key callback functions as well as set a value in the window class. 
          * 
          * That value is neccesary, because glfw only allows setting one user pointer so some class needs to store all 
@@ -373,9 +392,9 @@ namespace GL
         InputHandler(Window &w, CallbackList &rendercbs) : mrendercbs(rendercbs), window(w)
         {
 
-            glfwSetKeyCallback(w, [](GLFWwindow *ww, int, int code, int action, int)
+            glfwSetKeyCallback(w, [](GLFWwindow *ww, int, int code, int action, int mods)
                                { ((Window *)glfwGetWindowUserPointer(ww))
-                                     ->inputptr->KeyCallbackFunc(code, action); });
+                                     ->inputptr->KeyCallbackFunc(code, action, mods); });
             glfwSetMouseButtonCallback(w, [](GLFWwindow *ww, int button, int action, int)
                                        { ((Window *)glfwGetWindowUserPointer(ww))
                                              ->inputptr->MouseCallbackFunc(button, action); });

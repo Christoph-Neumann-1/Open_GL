@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     //If that fails, try the parent directory.
     if (ROOT_Directory.empty())
     {
-        ROOT_Directory=std::filesystem::path(std::string(argv[0])).parent_path().string();
+        ROOT_Directory = std::filesystem::path(std::string(argv[0])).parent_path().string();
         if (!std::filesystem::exists(ROOT_Directory + "/res") && std::filesystem::exists(ROOT_Directory + "/../res"))
             ROOT_Directory = std::filesystem::path(ROOT_Directory + "/.."); // Needed to run it from build directory.
     }
@@ -180,8 +180,15 @@ int main(int argc, char **argv)
         }
 
         Window window(_window, cbh.GetList(cbt::OnWindowResize));
-        InputHandler handler(window,cbh.GetList(cbt::Render));
+        InputHandler handler(window, cbh.GetList(cbt::Render));
         window.inputptr = &handler;
+        //This helps with closing the program if it doesn't use the menu scene.
+        InputHandler::KeyCallback exitOnCtrlQ(handler, glfwGetKeyScancode(GLFW_KEY_Q), InputHandler::Action::Press, [&](int)
+                                              {
+                                                  int mods = handler.GetModifiers();
+                                                  if (mods & GLFW_MOD_CONTROL)
+                                                      glfwSetWindowShouldClose(window, 3);
+                                              });
 
         glfwMakeContextCurrent(window);
 
@@ -198,9 +205,9 @@ int main(int argc, char **argv)
 
         glViewport(0, 0, window.GetWidth(), window.GetHeigth());
 
-        glEnable(GL_DEBUG_OUTPUT);//Errors
+        glEnable(GL_DEBUG_OUTPUT); //Errors
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_MULTISAMPLE);//Anti-aliasing
+        glEnable(GL_MULTISAMPLE); //Anti-aliasing
         glEnable(GL_CULL_FACE);
         glDebugMessageCallback(ErrorCallback, 0);
 
@@ -221,8 +228,8 @@ int main(int argc, char **argv)
         //Imgui boilerplate.
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO();//I dont't know if this is necessary, but it works.
-        (void)io;//I dont't know why this is here, but the example has it too.
+        ImGuiIO &io = ImGui::GetIO(); //I dont't know if this is necessary, but it works.
+        (void)io;                     //I dont't know why this is here, but the example has it too.
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 450");
         ImGui::StyleColorsDark();
@@ -239,7 +246,7 @@ int main(int argc, char **argv)
                            });
 
         //The menu allows for the selection of a scene by default it stays visible, but can be hidden by the scene.
-        loader.Load(ROOT_Directory + "/scenes/bin/"+startscene+".scene");
+        loader.Load(ROOT_Directory + "/scenes/bin/" + startscene + ".scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);
@@ -252,7 +259,7 @@ int main(int argc, char **argv)
         std::atomic_bool should_sync = false;
         std::atomic_bool is_synced = false;
 
-        timeinfo.SetUpdateInterval(1/500.0f);
+        timeinfo.SetUpdateInterval(1 / 500.0f);
 
         //Start the update thread.
         std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),

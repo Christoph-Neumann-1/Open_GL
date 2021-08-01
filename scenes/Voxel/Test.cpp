@@ -34,9 +34,9 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::TexConfig blockTextures{ROOT_Directory + "/res/Textures/block.cfg"};
     GL::Voxel::ChunkManager chunks{blockTextures, loader->GetCallback()};
 
-    GL::InputHandler::MouseCallback leftButton{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_LEFT, GL::InputHandler::Action::Press, &Voxel_t::Mine, this},
-        right_button{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_RIGHT, GL::InputHandler::Action::Press, &Voxel_t::Place, this},
-        middle_button{*loader->GetWindow().inputptr, GLFW_MOUSE_BUTTON_MIDDLE, GL::InputHandler::Action::Press, &Voxel_t::Pick, this};
+    GL::InputHandler::MouseCallback leftButton{GetInputHandler(), GLFW_MOUSE_BUTTON_LEFT, GL::InputHandler::Action::Press, &Voxel_t::Mine, this},
+        right_button{GetInputHandler(), GLFW_MOUSE_BUTTON_RIGHT, GL::InputHandler::Action::Press, &Voxel_t::Place, this},
+        middle_button{GetInputHandler(), GLFW_MOUSE_BUTTON_MIDDLE, GL::InputHandler::Action::Press, &Voxel_t::Pick, this};
 
     float crosshair[8]{0.005, 0.005, -0.005, 0.005, -0.005, -0.005, 0.005, -0.005};
     GL::Buffer vbo, ibo;
@@ -48,7 +48,7 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::FileLayout file{ROOT_Directory + "/res/world/PLAYER"};
 
     //This key regenerates the world
-    GL::InputHandler::KeyCallback r_key{*loader->GetWindow().inputptr};
+    GL::InputHandler::KeyCallback r_key{GetInputHandler()};
 
     ///@brief Ray plane intersect. Used to determine which side of a block the player is looking at.
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
@@ -229,7 +229,7 @@ public:
         vao.Bind();
         vbo.Bind(GL_ARRAY_BUFFER);
         GL::VertexBufferLayout ui_layout;
-        ui_layout.Push({GL_FLOAT,2,0});
+        ui_layout.Push({GL_FLOAT, 2, 0});
         ui_layout.AddToVertexArray(vao);
         glBufferData(GL_ARRAY_BUFFER, sizeof(crosshair), crosshair, GL_STATIC_DRAW);
 

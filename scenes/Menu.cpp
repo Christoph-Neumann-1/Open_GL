@@ -24,7 +24,7 @@ class SceneMenu final : public Scene
         {"Gas", "Gas"},
         {"Stars", "Stars"}};
 
-    InputHandler::KeyCallback escape{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)
+    InputHandler::KeyCallback escape{GetInputHandler(), glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)
                                                     {
                                                         if (scene.HasScene())
                                                             scene.UnLoad();

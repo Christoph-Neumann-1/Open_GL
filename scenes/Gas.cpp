@@ -39,7 +39,7 @@ class AtomsSim : public Scene
             camera.UnlockMouse(loader->GetWindow());
     }
 
-    InputHandler::KeyCallback mouse_capture_m{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_M), InputHandler::Action::Press, &AtomsSim::MouseCapture, this};
+    InputHandler::KeyCallback mouse_capture_m{GetInputHandler(), glfwGetKeyScancode(GLFW_KEY_M), InputHandler::Action::Press, &AtomsSim::MouseCapture, this};
 
     std::atomic_bool should_wait = 0;
     std::atomic_bool is_waiting = 0;
@@ -259,8 +259,8 @@ class AtomsSim : public Scene
         }
     }
 
-    InputHandler::KeyCallback pluskey{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_KP_ADD), InputHandler::Action::Press, &AtomsSim::ModifyVelocity, this, 1.1f};
-    InputHandler::KeyCallback minuskey{*loader->GetWindow().inputptr, glfwGetKeyScancode(GLFW_KEY_KP_SUBTRACT), InputHandler::Action::Press, &AtomsSim::ModifyVelocity, this, 0.9f};
+    InputHandler::KeyCallback pluskey{GetInputHandler(), glfwGetKeyScancode(GLFW_KEY_KP_ADD), InputHandler::Action::Press, &AtomsSim::ModifyVelocity, this, 1.1f};
+    InputHandler::KeyCallback minuskey{GetInputHandler(), glfwGetKeyScancode(GLFW_KEY_KP_SUBTRACT), InputHandler::Action::Press, &AtomsSim::ModifyVelocity, this, 0.9f};
 
     void ModifyVelocity(float change_percent, int)
     {

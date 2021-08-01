@@ -41,12 +41,12 @@ namespace GL
         {
             return loader->GetCallback().GetList(cbt).Add(func, callback_id);
         }
-    
+
         ///@overload
         template <typename F, typename... Args>
         CallbackId RegisterFunc(CallbackType cbt, F &&func, Args... args)
         {
-            return loader->GetCallback().GetList(cbt).Add(func,callback_id,args...);
+            return loader->GetCallback().GetList(cbt).Add(func, callback_id, args...);
         }
 
         ///@brief Remove all callback register to this class.
@@ -60,6 +60,9 @@ namespace GL
         {
             return loader->GetFlag(name);
         };
+
+        ///@brief Also just for convienience and to make the lines shorter.
+        InputHandler &GetInputHandler() { return *loader->GetWindow().inputptr; }
 
     public:
         explicit Scene(SceneLoader *_loader) : loader(_loader)
