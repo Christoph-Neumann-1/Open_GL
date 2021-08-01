@@ -17,7 +17,7 @@
 using namespace GL;
 using cbt = CallbackType;
 
-static std::string startscene = "scenes/bin/Menu.scene";
+static std::string startscene = "Menu";
 
 ///This function schedules a function to be called once both threads are ready. This may be useful for unloading or loading scenes.
 static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syncs, const std::function<void()> &func)
@@ -239,7 +239,7 @@ int main(int argc, char **argv)
                            });
 
         //The menu allows for the selection of a scene by default it stays visible, but can be hidden by the scene.
-        loader.Load(ROOT_Directory + "/"+startscene);
+        loader.Load(ROOT_Directory + "/scenes/bin/"+startscene+".scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);

@@ -5,7 +5,6 @@
 namespace GL
 {
     class VertexArray;
-    //TODO: add a function that adds this buffer to a vertex array
     //TODO: auto stride and offset use template to switch between manual and automatic
     struct VertexBufferLayout
     {
@@ -40,8 +39,6 @@ namespace GL
         void BindAndAddToVertexArray(VertexArray &array, Buffer &buffer);
     };
 
-    //TODO: add functions to add buffers and set vertex attribs
-    //TODO: keep track of the current vertex attribs
     /**
     * @brief Handles creating and destroying vertex array objects.
     * 
