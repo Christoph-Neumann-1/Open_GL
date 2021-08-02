@@ -13,6 +13,7 @@
 #include <condition_variable>
 #include <Data.hpp>
 #include <Input.hpp>
+#include <iostream>
 
 using namespace GL;
 using cbt = CallbackType;
@@ -347,6 +348,7 @@ int main(int argc, char **argv)
             break;
         }
         log.print();
+        std::cout.flush();
 
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();

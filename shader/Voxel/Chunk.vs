@@ -4,7 +4,6 @@ layout(location=0) in vec3 position;
 layout(location=1) in vec3 texc;
 uniform mat4 u_MVP;
 
-uniform float tex_size;
 uniform vec2 u_player_pos;
 uniform float u_view_dist;
 

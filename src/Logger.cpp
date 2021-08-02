@@ -8,7 +8,6 @@ void GL::Logger::print(bool newline)
     std::lock_guard lock(mutex);
 
     std::cout << stream.str() << (newline ? "\n" :"");
-    std::cout.flush();
 
     stream.str(""); 
 }

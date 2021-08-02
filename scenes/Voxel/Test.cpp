@@ -18,6 +18,8 @@ const double raydist = 8;   //How far the player can mine/place blocks
 const double raysteps = 32; //How often the ray should be sampled
 class Voxel_t final : public GL::Scene
 {
+
+#pragma region Variables
     //The handle for the texture atlas
     uint tex_id;
 
@@ -49,6 +51,8 @@ class Voxel_t final : public GL::Scene
 
     //This key regenerates the world
     GL::InputHandler::KeyCallback r_key{GetInputHandler()};
+
+#pragma endregion Variables
 
     ///@brief Ray plane intersect. Used to determine which side of a block the player is looking at.
     glm::vec3 intersectPoint(glm::vec3 rayVector, glm::vec3 rayPoint, glm::vec3 planeNormal, glm::vec3 planePoint)
@@ -246,7 +250,6 @@ public:
         glm::mat4 mat;
 
         auto &window = loader->GetWindow();
-
         //This makes sure the the square always looks the same.
         if (window.GetWidth() > window.GetHeigth())
         {
