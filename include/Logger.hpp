@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 
 #ifndef NDEBUG
-#define DEBUG_LOG
+#define DEBUG_LOG //Use this to enable and disable debug messages
 #endif
 
 namespace GL
@@ -19,7 +19,7 @@ namespace GL
     {
 
         std::stringstream stream;
-        static std::mutex mutex;
+        static std::mutex mutex;//Makes sure only one thread can print at a time.
 
     public:
         /**
@@ -65,6 +65,7 @@ namespace GL
         }
 
         /// @brief Logs a vector of any size and type.
+        /// I got the idea from the length function in glm. It works pretty well so far.
         template <glm::length_t L, typename T, glm::qualifier Q>
         Logger &operator<<(glm::vec<L, T, Q> const &v)
         {
@@ -77,9 +78,8 @@ namespace GL
         }
 
         /**
-         * @brief Log output directly.
+         * @brief Clears the stream, and prints the message followed by a newline.
          * 
-         * @tparam T 
          * @param message 
          */
         template <typename T>

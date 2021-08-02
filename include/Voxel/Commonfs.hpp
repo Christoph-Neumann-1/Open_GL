@@ -14,6 +14,8 @@ namespace GL::Voxel
 {
     /**
      * @brief This class describes what data is stored in a file.
+     * 
+     * It also reads and writes the data from the disk. I created this to store the player and chunk data in my voxel game.
      */
     class FileLayout
     {
