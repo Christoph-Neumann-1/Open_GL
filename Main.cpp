@@ -45,18 +45,21 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
     auto &postupdatecb = cbh.GetList(cbt::PostUpdate);
     const float &interval = ti.UpdateInterval();
 
+#pragma region DegugInfo
 #ifdef DEBUG_LOG
     log << "Update thread ready starting callbacks.";
     log.print();
 #endif
 
 //This code counts how many times loop is run every second. I use this for proffiling.
-#define UPDATE_COUNT
-#ifdef UPDATE_COUNT
+#define COUNT_UPDATES
+#ifdef COUNT_UPDATES
     int second = 0;
     int count = 0;
-    auto fs = std::chrono::steady_clock::now();
+    auto thread_begin = std::chrono::steady_clock::now();
 #endif
+
+#pragma endregion DebugInfo
 
     while (!close)
     {
@@ -64,16 +67,17 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
         std::chrono::nanoseconds Interval((int)(powf(10, 9) * interval));
         auto begin = std::chrono::steady_clock::now();
 
-#ifdef UPDATE_COUNT
+#ifdef COUNT_UPDATES
 
-        if (floor((begin - fs).count() / powf(10, 9)) == second)
+        
+        if (floor((begin - thread_begin).count() / powf(10, 9)) == second)
         {
             count++;
         }
         else
         {
             log(count);
-            second = floor((begin - fs).count() / powf(10, 9));
+            second = floor((begin - thread_begin).count() / powf(10, 9));
             count = 0;
         }
 #endif
@@ -82,6 +86,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
         updatecb();
         postupdatecb();
 
+        //The update thread stops for things like loading scenes. I have tried it without stoping the thread, but the solution was ugly.
         if (should_sync)
         {
             is_synced = true;
@@ -91,8 +96,11 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 
         auto end = std::chrono::steady_clock::now();
         auto time = Interval - (end - begin);
+        //This function first sleeps then spinlocks, which improves the accuracy drastically. Especially when the os is switching between tasks.
         PreciseSleep(time);
     }
+
+#pragma region DebugInfo
 #ifdef DEBUG_LOG
     log << "Update thread starting cleanup.";
     log.print();
@@ -102,6 +110,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
     log << "Update thread finished cleanup.";
     log.print();
 #endif
+#pragma endregion DebugInfo
     close = false;
     cv.notify_one();
 }
@@ -150,7 +159,7 @@ int main(int argc, char **argv)
         CallbackHandler cbh(std::bind(AddToSync, std::ref(mutex), std::ref(syncfunctions), std::placeholders::_1));
         TimeInfo timeinfo(cbh);
 
-#pragma region
+#pragma region WindowSetup
 
         glfwSetErrorCallback(glfw_error_callback);
         //There is no point trying to continue if the GLFW initialization fails.
@@ -234,7 +243,7 @@ int main(int argc, char **argv)
         ImGui_ImplOpenGL3_Init("#version 450");
         ImGui::StyleColorsDark();
 
-#pragma endregion
+#pragma endregion WindowSetup
 
         SceneLoader loader(window, cbh, timeinfo);
 
@@ -254,12 +263,15 @@ int main(int argc, char **argv)
 
         auto &imguirendercb = cbh.GetList(cbt::ImGuiRender);
 
+        //I don't know why I used a condition variable here, but I also don't see any disadvantages, so it stays here until I finally rewrite this file.
         std::condition_variable cv;
+
+        //For communicating between the render thread and the update thread.
         std::atomic_bool should_close = false;
         std::atomic_bool should_sync = false;
         std::atomic_bool is_synced = false;
 
-        timeinfo.SetUpdateInterval(1 / 500.0f);
+        timeinfo.SetUpdateInterval();
 
         //Start the update thread.
         std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),
@@ -307,6 +319,8 @@ int main(int argc, char **argv)
             glfwPollEvents();
         }
 
+#pragma region StopThread
+
         //Try stopping the update thread, if it takes too long kill it.
         should_close = true;
         std::unique_lock lk(mutex);
@@ -337,6 +351,8 @@ int main(int argc, char **argv)
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+
+#pragma endregion StopThread
     }
     //This happens here because the destructors of the render classes will complain if the context no longer exists.
     glfwTerminate();
