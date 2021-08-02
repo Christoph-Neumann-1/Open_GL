@@ -13,6 +13,7 @@
 
 namespace GL
 {
+    //These exist to make searching easier.
     using CallbackId = uint;
     using CallbackGroupId = uint;
 
@@ -39,7 +40,7 @@ namespace GL
         struct Callback
         {
             CallbackId id;                  //Function id assigned by CallbackList
-            CallbackGroupId obj_id;                    //Id of object or group of functions. Lets you remove them together.
+            CallbackGroupId obj_id;         //Id of object or group of functions. Lets you remove them together.
             std::function<void()> function; //The function which gets called. NOTE please destroy before unloading the scene.
 
             void operator()() { function(); } //For convinience
@@ -102,6 +103,7 @@ namespace GL
         void Call()
         {
             std::lock_guard lock(mutex);
+            //It would probably be better to do this calling the functions, but the impact is really small.
             ProcessQueues();
             for (auto &func : functions)
             {
@@ -140,6 +142,9 @@ namespace GL
             add_queue.emplace_back(current_id, caller_id, std::bind(function, args...));
             return current_id++;
         }
+
+        //The idea is that there is a seperate list of callbacks that need to be added and removed, which can be 
+        //accessed from every thread. Then when the callback loop is finished, it processes the new callbacks.
 
         ///@brief Removes a callback by its id. Gets applied during the next Call()
         void Remove(CallbackId id);
@@ -220,6 +225,7 @@ namespace GL
          * @brief Call function without worrying about threads.
          * 
          * Calls the function provided when creating object.
+         * I should probably move this somewhere else
          */
         void SynchronizedCall(const std::function<void()> &func)
         {
