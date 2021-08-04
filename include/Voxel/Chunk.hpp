@@ -80,7 +80,13 @@ namespace GL::Voxel
         VertexArray va, va_transparent;
         const TexConfig &config;
 
+        const std::function<uint *(int, int, int)> GetBlockOtherChunk;
+
         Face GenFace(glm::ivec3 pos, FaceIndices type);
+        glm::ivec3 ToWorldCoords(int x, int y, int z)
+        {
+            return {chunk_offset.x*16+x,y,chunk_offset.y*16+z};
+        }
 
     public:
         /**
@@ -106,7 +112,7 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid);
+        Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid, std::function<uint *(int, int, int)>);
 
         Chunk(const Chunk &) = delete;
         Chunk &operator=(const Chunk &) = delete;

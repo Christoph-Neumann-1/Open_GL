@@ -57,7 +57,8 @@ namespace GL::Voxel
         }
     }
 
-    Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid) : render_thread(cb), callback_id(cbid), config(cfg)
+    Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid, std::function<uint *(int, int, int)> GetBlockOtherChunk_)
+        : render_thread(cb), callback_id(cbid), config(cfg), GetBlockOtherChunk(GetBlockOtherChunk_)
     {
 
         lookup_cache = MakeBlockCache(config);
@@ -66,12 +67,12 @@ namespace GL::Voxel
 
         buffer.Bind(GL_ARRAY_BUFFER);
         VertexBufferLayout layout;
-        layout.stride = 6*sizeof(float);
-        layout.Push({GL_FLOAT,3,0});
-        layout.Push({GL_FLOAT,3,(void *)sizeof(glm::vec3)});
+        layout.stride = 6 * sizeof(float);
+        layout.Push({GL_FLOAT, 3, 0});
+        layout.Push({GL_FLOAT, 3, (void *)sizeof(glm::vec3)});
         layout.AddToVertexArray(va);
 
-        layout.BindAndAddToVertexArray(va_transparent,buffer_transparent);
+        layout.BindAndAddToVertexArray(va_transparent, buffer_transparent);
     }
 
     void Chunk::Load()
@@ -111,10 +112,12 @@ namespace GL::Voxel
 
     void Chunk::GenFaces()
     {
-        auto is_tp=[&](int x, int y, int z)->bool{return IsTransparent((BlockTypes)blocks[x][y][z]);};
+        auto is_tp = [&](int x, int y, int z) -> bool
+        { return IsTransparent((BlockTypes)blocks[x][y][z]); };
 
         faces.clear();
         faces_transparent.clear();
+
         for (int x = 0; x < 16; x++)
         {
             for (int y = 0; y < 64; y++)
