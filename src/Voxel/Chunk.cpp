@@ -95,6 +95,7 @@ namespace GL::Voxel
             fread(&blocks, sizeof(blocks), 1, file);
             fclose(file);
         }
+        isactive = false;
     }
 
     void Chunk::UnLoad()
@@ -107,13 +108,21 @@ namespace GL::Voxel
         }
         else
             perror("Unload Chunk");
-        isactive = false;
     }
 
+    //TODO: make sure the chunk stays valid while this is running. Look into destructor
     void Chunk::GenFaces()
     {
         auto is_tp = [&](int x, int y, int z) -> bool
         { return IsTransparent((BlockTypes)blocks[x][y][z]); };
+        auto is_tp_other = [&](int x, int y, int z) -> bool
+        {
+            auto coords = ToWorldCoords(x, y, z);
+            uint *block = GetBlockOtherChunk(coords.x, coords.y, coords.z); //Makes debugging easier
+            if (block)
+                return IsTransparent((BlockTypes)(*block));
+            return true;//TODO: make sure this isn't needed
+        };
 
         faces.clear();
         faces_transparent.clear();
@@ -127,29 +136,34 @@ namespace GL::Voxel
                     if (blocks[x][y][z] == BAir)
                         continue;
                     //If the block is on the edge of the chunk, it is treated differently. Right now this means the face is always drawn.
+                    //TODO: simplify this by adding a function which decides if the block is on the edge of the chunk and generates the faces
                     bool special = false;
 
                     if (!is_tp(x, y, z))
                     {
                         if (z == 15)
                         {
-                            faces.push_back(GenFace({x, y, z}, Front));
+                            if (is_tp_other(x, y, z + 1))
+                                faces.push_back(GenFace({x, y, z}, Front));
                             special = true;
                         }
                         else if (z == 0)
                         {
-                            faces.push_back(GenFace({x, y, z}, Back));
+                            if (is_tp_other(x, y, z - 1))
+                                faces.push_back(GenFace({x, y, z}, Back));
                             special = true;
                         }
 
                         if (x == 0)
                         {
-                            faces.push_back(GenFace({x, y, z}, Left));
+                            if (is_tp_other(x - 1, y, z))
+                                faces.push_back(GenFace({x, y, z}, Left));
                             special = true;
                         }
                         else if (x == 15)
                         {
-                            faces.push_back(GenFace({x, y, z}, Right));
+                            if (is_tp_other(x + 1, y, z))
+                                faces.push_back(GenFace({x, y, z}, Right));
                             special = true;
                         }
 
@@ -227,88 +241,6 @@ namespace GL::Voxel
                         faces_transparent.push_back(GenFace({x, y, z}, Top));
                         faces_transparent.push_back(GenFace({x, y, z}, Back));
                         faces_transparent.push_back(GenFace({x, y, z}, Front));
-
-                        if (z == 15)
-                        {
-                            faces_transparent.push_back(GenFace({x, y, z}, Front));
-                            special = true;
-                        }
-                        else if (z == 0)
-                        {
-                            faces_transparent.push_back(GenFace({x, y, z}, Back));
-                            special = true;
-                        }
-
-                        if (x == 0)
-                        {
-                            faces_transparent.push_back(GenFace({x, y, z}, Left));
-                            special = true;
-                        }
-                        else if (x == 15)
-                        {
-                            faces_transparent.push_back(GenFace({x, y, z}, Right));
-                            special = true;
-                        }
-
-                        if (y == 0)
-                        {
-                            faces_transparent.push_back(GenFace({x, y, z}, Bottom));
-                            special = true;
-                        }
-                        else if (y == 63)
-                        {
-                            faces_transparent.push_back(GenFace({x, y, z}, Top));
-                            special = true;
-                        }
-
-                        if (special)
-                        {
-                            if (x != 0)
-                            {
-                                if (blocks[x - 1][y][z] == 0)
-                                    faces_transparent.push_back(GenFace({x, y, z}, Left));
-                            }
-                            if (x != 15)
-                            {
-                                if (blocks[x + 1][y][z] == 0)
-                                    faces_transparent.push_back(GenFace({x, y, z}, Right));
-                            }
-                            if (y != 0)
-                            {
-                                if (blocks[x][y - 1][z] == 0)
-                                    faces_transparent.push_back(GenFace({x, y, z}, Bottom));
-                            }
-                            if (y != 63)
-                            {
-                                if (blocks[x][y + 1][z] == 0)
-                                    faces_transparent.push_back(GenFace({x, y, z}, Top));
-                            }
-                            if (z != 0)
-                            {
-                                if (blocks[x][y][z - 1] == 0)
-                                    faces_transparent.push_back(GenFace({x, y, z}, Back));
-                            }
-                            if (z != 15)
-                            {
-                                if (blocks[x][y][z + 1] == 0)
-                                    faces_transparent.push_back(GenFace({x, y, z}, Front));
-                            }
-                        }
-                        else
-                        {
-                            if (blocks[x - 1][y][z] == 0)
-                                faces_transparent.push_back(GenFace({x, y, z}, Left));
-                            if (blocks[x + 1][y][z] == 0)
-                                faces_transparent.push_back(GenFace({x, y, z}, Right));
-                            if (blocks[x][y - 1][z] == 0)
-                                faces_transparent.push_back(GenFace({x, y, z}, Bottom));
-                            if (blocks[x][y + 1][z] == 0)
-                                faces_transparent.push_back(GenFace({x, y, z}, Top));
-                            if (blocks[x][y - 1][z] == 0)
-                                faces_transparent.push_back(GenFace({x, y, z}, Back));
-                            if (blocks[x][y + 1][z] == 0)
-                                faces_transparent.push_back(GenFace({x, y, z}, Front));
-                        }
                     }
                 }
             }

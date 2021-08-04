@@ -33,7 +33,6 @@ namespace GL::Voxel
         static const int preLoaded = 1;
 
     private:
-        std::atomic_uint count = 0; //Number of chunks which meshes are being rebuilt.
 
         FileLayout file; //Stores the seed
 
@@ -45,7 +44,7 @@ namespace GL::Voxel
             Chunk *ptr;
             if (free.size() == 0)
             {
-                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), chunkCallbackId,std::bind(&ChunkManager::GetBlockAt,this,std::placeholders::_1,std::placeholders::_2,std::placeholders::_3));
+                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), chunkCallbackId, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                 chunks.push_back(ptr);
             }
             else
@@ -147,7 +146,7 @@ namespace GL::Voxel
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
             for (int i = 0; i < 2 * (renderdist + preMeshed + 1) * 2 * (renderdist + preMeshed + 1); i++)
             {
-                auto ptr = new Chunk(cfg, pre_render, chunkCallbackId,std::bind(&ChunkManager::GetBlockAt,this,std::placeholders::_1,std::placeholders::_2,std::placeholders::_3));
+                auto ptr = new Chunk(cfg, pre_render, chunkCallbackId, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }
@@ -229,22 +228,13 @@ namespace GL::Voxel
             for (auto &file_ : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
                 std::filesystem::remove(file_);
 
-            //Check if all chunks have finished rebuilding.
-            if (count > 0)
-                return;
             Chunk::NewSeed();
             file.Store();
-            count = loaded.size();
-            for (auto chunk : loaded)
-            {
-                pool.Add([&](Chunk *mchunk)
-                         {
-                             mchunk->Generate();
-                             mchunk->GenFaces();
-                             count--;
-                         },
-                         chunk);
-            }
+            free=chunks;
+            loaded.clear();
+            meshed_chunks.clear();
+            rendered.clear();
+            LoadChunks({0,0});
         }
 
         /**

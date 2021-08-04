@@ -13,6 +13,8 @@
 
 namespace GL::Voxel
 {
+
+    class ChunkManager;
     /**
      * @brief This class stores the 16*64*16 blocks.
      * 
@@ -20,7 +22,6 @@ namespace GL::Voxel
      */
     class Chunk
     {
-        bool isactive = false; //Prevents unneccesary mesh building.
         const static int sealevel = 8;
         CallbackId renderid;
 
@@ -36,6 +37,7 @@ namespace GL::Voxel
         CallbackGroupId callback_id;
 
     public:
+        bool isactive = false; //Prevents unneccesary mesh building.
         static int Seed;
         bool regen_mesh = false; //The mesh is rebuilt after rendering.
         static void NewSeed()
@@ -85,7 +87,7 @@ namespace GL::Voxel
         Face GenFace(glm::ivec3 pos, FaceIndices type);
         glm::ivec3 ToWorldCoords(int x, int y, int z)
         {
-            return {chunk_offset.x*16+x,y,chunk_offset.y*16+z};
+            return {chunk_offset.x * 16 + x, y, chunk_offset.y * 16 + z};
         }
 
     public:
@@ -167,4 +169,5 @@ namespace GL::Voxel
             return chunk_offset;
         }
     };
+
 }
