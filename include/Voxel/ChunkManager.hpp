@@ -15,26 +15,27 @@ namespace GL::Voxel
      */
     class ChunkManager
     {
-        std::vector<Chunk *> chunks;     //< A list of all chunks.
-        std::vector<Chunk *> free;       //< A list of unused chunks.
-        std::vector<Chunk *> loaded;     //< Chunks with meshes(renderdist+1).
-        std::vector<Chunk *> pre_loaded; //< Chunks where the data is loaded.
-        std::vector<Chunk *> rendered;   //< Chunks that are rendered.
+        std::vector<Chunk *> chunks;        //< A list of all chunks.
+        std::vector<Chunk *> free;          //< A list of unused chunks.
+        std::vector<Chunk *> loaded;        //< Chunks where the data is loaded. Necessary for mesh building.
+        std::vector<Chunk *> meshed_chunks; //< Chunks with meshes(renderdist+1).
+        std::vector<Chunk *> rendered;      //< Chunks that are currently rendered.
 
         TexConfig &config;
         ThreadPool pool; //Used for mesh building.
         CallbackHandler &cbh;
-        CallbackId cbid;
-        CallbackGroupId c_cbid = cbh.GenId();
+        CallbackId callbackId;
+        CallbackGroupId chunkCallbackId = cbh.GenId();
 
     public:
         static const int renderdist = 11; //How far the player can see
-        static const int preload = 1;     //How many chunk beyond mesh generation data is loades.
+        static const int preMeshed = 1;   //How many chunk beyond mesh generation data is loaded.
+        static const int preLoaded = 1;
 
     private:
         std::atomic_uint count = 0; //Number of chunks which meshes are being rebuilt.
 
-        FileLayout file;
+        FileLayout file; //Stores the seed
 
         /**
          * @brief Get a free chunk. If no chunks are free, make a new one.
@@ -44,7 +45,7 @@ namespace GL::Voxel
             Chunk *ptr;
             if (free.size() == 0)
             {
-                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), c_cbid);
+                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), chunkCallbackId);
                 chunks.push_back(ptr);
             }
             else
@@ -70,19 +71,22 @@ namespace GL::Voxel
         }
 
     public:
+        ///@brief Checks if the chunk should be drawn.
         bool IsRendered(glm::ivec2 chunk, glm::ivec2 pos)
         {
             return chunk.x >= pos.x - renderdist && chunk.x <= pos.x + renderdist && chunk.y >= pos.y - renderdist && chunk.y <= pos.y + renderdist;
         }
-        bool IsPreLoaded(glm::ivec2 chunk, glm::ivec2 pos)
+        ///@brief Checks if the Chunk should have a mesh.
+        bool IsMeshed(glm::ivec2 chunk, glm::ivec2 pos)
         {
-            return chunk.x >= pos.x - renderdist - preload && chunk.x <= pos.x + renderdist + preload &&
-                   chunk.y >= pos.y - renderdist - preload && chunk.y <= pos.y + renderdist + preload;
+            return chunk.x >= pos.x - renderdist - preMeshed && chunk.x <= pos.x + renderdist + preMeshed &&
+                   chunk.y >= pos.y - renderdist - preMeshed && chunk.y <= pos.y + renderdist + preMeshed;
         }
+        ///@brief Checks if the chunk should be in memory
         bool IsLoaded(glm::ivec2 chunk, glm::ivec2 pos)
         {
-            return chunk.x >= pos.x - renderdist - preload - 1 && chunk.x <= pos.x + renderdist + preload + 1 &&
-                   chunk.y >= pos.y - renderdist - preload - 1 && chunk.y <= pos.y + renderdist + preload + 1;
+            return chunk.x >= pos.x - renderdist - preMeshed - preLoaded && chunk.x <= pos.x + renderdist + preMeshed + preLoaded &&
+                   chunk.y >= pos.y - renderdist - preMeshed - preLoaded && chunk.y <= pos.y + renderdist + preMeshed + preLoaded;
         }
 
         /**
@@ -90,12 +94,12 @@ namespace GL::Voxel
          */
         void LoadChunks(glm::ivec2 pos)
         {
-            int xbegin = pos.x - (renderdist + preload + 1);
-            int xend = pos.x + (renderdist + preload + 1);
+            int xbegin = pos.x - (renderdist + preMeshed + preLoaded);
+            int xend = pos.x + (renderdist + preMeshed + preLoaded);
             for (int x = xbegin; x <= xend; x++)
             {
-                int zbegin = pos.y - (renderdist + preload + 1);
-                int zend = pos.y + (renderdist + preload + 1);
+                int zbegin = pos.y - (renderdist + preMeshed + preLoaded);
+                int zend = pos.y + (renderdist + preMeshed + preLoaded);
                 for (int z = zbegin; z <= zend; z++)
                 {
                     if (std::find_if(loaded.begin(), loaded.end(), [&](Chunk *chunk)
@@ -104,27 +108,21 @@ namespace GL::Voxel
                         auto ptr = GetFree();
                         loaded.push_back(ptr);
                         ptr->PreLoad({x, z});
-                        if (IsRendered({x, z}, pos))
-                        {
-                            rendered.push_back(ptr);
-                            ptr->Load();
-                        }
                     }
-                    else if (IsRendered({x, z}, pos) && std::find_if(rendered.begin(), rendered.end(), [&](Chunk *chunk)
-                                                                     { return chunk->GetPos() == glm::ivec2{x, z}; }) == rendered.end())
+                    if (IsMeshed({x, z}, pos) && std::find_if(meshed_chunks.begin(), meshed_chunks.end(), [&](Chunk *chunk)
+                                                              { return chunk->GetPos() == glm::ivec2{x, z}; }) == meshed_chunks.end())
+                    {
+                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *_chunk)
+                                                  { return _chunk->GetPos() == glm::ivec2{x, z}; });
+                        meshed_chunks.push_back(*chunk);
+                        (*chunk)->Load();
+                    }
+                    if (IsRendered({x, z}, pos) && std::find_if(rendered.begin(), rendered.end(), [&](Chunk *chunk)
+                                                                { return chunk->GetPos() == glm::ivec2{x, z}; }) == rendered.end())
                     {
                         auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *_chunk)
                                                   { return _chunk->GetPos() == glm::ivec2{x, z}; });
                         rendered.push_back(*chunk);
-                        (*chunk)->Load();
-                    }
-                    else if (IsPreLoaded({x, z}, pos) && std::find_if(pre_loaded.begin(), pre_loaded.end(), [&](Chunk *chunk)
-                                                                      { return chunk->GetPos() == glm::ivec2{x, z}; }) == pre_loaded.end())
-                    {
-                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *_chunk)
-                                                  { return _chunk->GetPos() == glm::ivec2{x, z}; });
-                        pre_loaded.push_back(*chunk);
-                        (*chunk)->Load();
                     }
                 }
             }
@@ -145,11 +143,11 @@ namespace GL::Voxel
         ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb),
                                                             file(ROOT_Directory + "/res/world/SEED")
         {
-            chunks.reserve(2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1)); //No more chunks should be needed.
+            chunks.reserve(2 * (renderdist + preMeshed + 1) * 2 * (renderdist + preMeshed + 1)); //No more chunks should be needed.
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
-            for (int i = 0; i < 2 * (renderdist + preload + 1) * 2 * (renderdist + preload + 1); i++)
+            for (int i = 0; i < 2 * (renderdist + preMeshed + 1) * 2 * (renderdist + preMeshed + 1); i++)
             {
-                auto ptr = new Chunk(cfg, pre_render, c_cbid);
+                auto ptr = new Chunk(cfg, pre_render, chunkCallbackId);
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }
@@ -159,17 +157,17 @@ namespace GL::Voxel
             SetSeed();
 
             //After rendering check if any chunks were modifiesd, if so, rebuild them.
-            cbid = cbh.GetList(CallbackType::PostRender).Add([&]()
-                                                             {
-                                                                 for (auto chunk : rendered)
-                                                                 {
-                                                                     if (chunk->regen_mesh)
-                                                                     {
-                                                                         chunk->regen_mesh = false;
-                                                                         pool.Add(&Chunk::GenFaces, chunk);
-                                                                     }
-                                                                 }
-                                                             });
+            callbackId = cbh.GetList(CallbackType::PostRender).Add([&]()
+                                                                   {
+                                                                       for (auto chunk : rendered)
+                                                                       {
+                                                                           if (chunk->regen_mesh)
+                                                                           {
+                                                                               chunk->regen_mesh = false;
+                                                                               pool.Add(&Chunk::GenFaces, chunk);
+                                                                           }
+                                                                       }
+                                                                   });
         };
 
         ~ChunkManager()
@@ -177,8 +175,8 @@ namespace GL::Voxel
             pool.Terminate();
             for (auto chunk : chunks)
                 delete chunk;
-            cbh.GetList(CallbackType::PostRender).Remove(cbid);
-            cbh.RemoveAll(c_cbid);
+            cbh.GetList(CallbackType::PostRender).Remove(callbackId);
+            cbh.RemoveAll(chunkCallbackId);
         }
 
         ChunkManager(const ChunkManager &) = delete;
@@ -273,11 +271,11 @@ namespace GL::Voxel
                         rendered.erase(chunk2);
                     }
                 }
-                if (!IsPreLoaded((*chunk)->GetPos(), pos))
+                if (!IsMeshed((*chunk)->GetPos(), pos))
                 {
                     if (auto chunk2 = std::find(rendered.begin(), rendered.end(), *chunk); !IsRendered((*chunk)->GetPos(), pos) && chunk2 != rendered.end())
                     {
-                        pre_loaded.erase(chunk2);
+                        meshed_chunks.erase(chunk2);
                     }
                 }
                 if (!IsLoaded((*chunk)->GetPos(), pos))
