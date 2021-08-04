@@ -120,7 +120,7 @@ namespace GL::Voxel
                     if (IsRendered({x, z}, pos) && std::find_if(rendered.begin(), rendered.end(), [&](Chunk *chunk)
                                                                 { return chunk->GetPos() == glm::ivec2{x, z}; }) == rendered.end())
                     {
-                        auto chunk = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *_chunk)
+                        auto chunk = std::find_if(meshed_chunks.begin(), meshed_chunks.end(), [&](Chunk *_chunk)
                                                   { return _chunk->GetPos() == glm::ivec2{x, z}; });
                         rendered.push_back(*chunk);
                     }
@@ -159,7 +159,7 @@ namespace GL::Voxel
             //After rendering check if any chunks were modifiesd, if so, rebuild them.
             callbackId = cbh.GetList(CallbackType::PostRender).Add([&]()
                                                                    {
-                                                                       for (auto chunk : rendered)
+                                                                       for (auto chunk : meshed_chunks)
                                                                        {
                                                                            if (chunk->regen_mesh)
                                                                            {
@@ -273,7 +273,7 @@ namespace GL::Voxel
                 }
                 if (!IsMeshed((*chunk)->GetPos(), pos))
                 {
-                    if (auto chunk2 = std::find(rendered.begin(), rendered.end(), *chunk); !IsRendered((*chunk)->GetPos(), pos) && chunk2 != rendered.end())
+                    if (auto chunk2 = std::find(meshed_chunks.begin(), meshed_chunks.end(), *chunk); !IsRendered((*chunk)->GetPos(), pos) && chunk2 != meshed_chunks.end())
                     {
                         meshed_chunks.erase(chunk2);
                     }
