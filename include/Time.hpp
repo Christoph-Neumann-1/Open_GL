@@ -14,9 +14,11 @@ namespace GL
     /**
      * @brief Sleeps until just before the end and the does busy waiting to ensure accuracy.
      * 
+     * Inline to prevent multiple definitions.
+     * 
      * @param time nanoseconds to sleep.
      */
-    void PreciseSleep(std::chrono::nanoseconds time)
+    inline void PreciseSleep(std::chrono::nanoseconds time)
     {
         auto exittime = std::chrono::steady_clock::now() + time;
         std::this_thread::sleep_for(time - std::chrono::nanoseconds(80000));

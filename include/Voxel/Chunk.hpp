@@ -11,7 +11,7 @@
 #include <Buffer.hpp>
 #include <VertexArray.hpp>
 
-//TODO: get rid of artefacts
+//TODO: Move ops to render thread. Limit chunk updates and check if the chunk is still needed
 namespace GL::Voxel
 {
 
