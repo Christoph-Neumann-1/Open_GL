@@ -166,6 +166,8 @@ namespace GL::Voxel
                                                                            if (chunk->regen_mesh)
                                                                            {
                                                                                chunk->regen_mesh = false;
+                                                                               //FIXME This needs to be done in the render thread, or have some sort of check.
+                                                                               //Can cause crash or worse because of invalid memory acess
                                                                                pool.Add(&Chunk::GenFaces, chunk);
                                                                            }
                                                                        }
