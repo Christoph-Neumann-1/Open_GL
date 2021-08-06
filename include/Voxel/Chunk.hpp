@@ -11,6 +11,7 @@
 #include <Buffer.hpp>
 #include <VertexArray.hpp>
 
+//TODO: get rid of artefacts
 namespace GL::Voxel
 {
 
@@ -85,12 +86,18 @@ namespace GL::Voxel
         const std::function<uint *(int, int, int)> GetBlockOtherChunk;
 
         Face GenFace(glm::ivec3 pos, FaceIndices type);
-        glm::ivec3 ToWorldCoords(int x, int y, int z)
+
+    public:
+        glm::ivec3 ToWorldCoords(int x, int y, int z) const
         {
             return {chunk_offset.x * 16 + x, y, chunk_offset.y * 16 + z};
         }
 
-    public:
+        glm::ivec3 ToLocalCoords(glm::ivec3 pos) const
+        {
+            return {pos.x - chunk_offset.x * 16, pos.y, pos.z - chunk_offset.y * 16};
+        }
+
         /**
          * @brief Generate new blocks using the seed.
          * 

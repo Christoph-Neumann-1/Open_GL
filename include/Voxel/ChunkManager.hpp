@@ -33,7 +33,6 @@ namespace GL::Voxel
         static const int preLoaded = 1;
 
     private:
-
         FileLayout file; //Stores the seed
 
         /**
@@ -230,11 +229,11 @@ namespace GL::Voxel
 
             Chunk::NewSeed();
             file.Store();
-            free=chunks;
+            free = chunks;
             loaded.clear();
             meshed_chunks.clear();
             rendered.clear();
-            LoadChunks({0,0});
+            LoadChunks({0, 0});
         }
 
         /**
@@ -288,6 +287,35 @@ namespace GL::Voxel
         {
             UnLoadChunks(position);
             LoadChunks(position);
+        }
+
+        /**
+         * @brief This function decides which meshes need to be rebuilt after a block change.
+         * 
+         * @param changed_block The modified block.
+         */
+        void RegenerateMeshes(glm::ivec3 changed_block)
+        {
+            auto chunk_pos = GetChunkPos(changed_block.x, changed_block.z);
+            auto chunk = GetChunk(chunk_pos);
+            chunk->regen_mesh = true;
+            auto local_pos = chunk->ToLocalCoords(changed_block);
+            if (local_pos.x == 0)
+            {
+                GetChunk(chunk_pos - glm::ivec2(1, 0))->regen_mesh = true;
+            }
+            else if (local_pos.x == 15)
+            {
+                GetChunk(chunk_pos + glm::ivec2(1, 0))->regen_mesh = true;
+            }
+            if (local_pos.z == 0)
+            {
+                GetChunk(chunk_pos - glm::ivec2(0, 1))->regen_mesh = true;
+            }
+            else if (local_pos.z == 15)
+            {
+                GetChunk(chunk_pos + glm::ivec2(0, 1))->regen_mesh = true;
+            }
         }
     };
 }

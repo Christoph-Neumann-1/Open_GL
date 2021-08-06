@@ -53,7 +53,6 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 #endif
 
 //This code counts how many times loop is run every second. I use this for proffiling.
-#define COUNT_UPDATES
 #ifdef COUNT_UPDATES
     int second = 0;
     int count = 0;

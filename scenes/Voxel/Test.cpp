@@ -85,8 +85,7 @@ class Voxel_t final : public GL::Scene
                     inventory.AddTo(*block);
                 }
                 *block = 0;
-                auto chunk = chunks.GetChunkPos(x, z);
-                chunks.GetChunk(chunk)->regen_mesh = true;
+                chunks.RegenerateMeshes({x, y, z});
                 return;
             }
         }
@@ -168,8 +167,7 @@ class Voxel_t final : public GL::Scene
                 if ((*block2 == GL::Voxel::BAir || *block2 == GL::Voxel::BWater) && inventory.GetCount() > 0)
                 {
                     *block2 = inventory.GetSelected();
-                    auto chunk = chunks.GetChunkPos(x + intersect_face.x, z + intersect_face.z);
-                    chunks.GetChunk(chunk)->regen_mesh = true;
+                    chunks.RegenerateMeshes({x + intersect_face.x, y + intersect_face.y, z + intersect_face.z});
                     inventory.Remove();
                 }
                 return;

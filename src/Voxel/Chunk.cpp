@@ -121,7 +121,7 @@ namespace GL::Voxel
             uint *block = GetBlockOtherChunk(coords.x, coords.y, coords.z); //Makes debugging easier
             if (block)
                 return IsTransparent((BlockTypes)(*block));
-            return true;//TODO: make sure this isn't needed
+            return true; //TODO: make sure this isn't needed
         };
 
         faces.clear();
@@ -245,7 +245,6 @@ namespace GL::Voxel
                 }
             }
         }
-
         //This function will probably be called in a seperate thread but Opengl only works in the render thread.
         renderid = render_thread.Add([&]()
                                      {
