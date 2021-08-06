@@ -27,6 +27,8 @@ namespace GL::Voxel
         CallbackId callbackId;
         CallbackGroupId chunkCallbackId = cbh.GenId();
 
+        glm::ivec2 LastPlayerChunk{0,0};
+
     public:
         static const int renderdist = 11; //How far the player can see
         static const int preMeshed = 1;   //How many chunk beyond mesh generation data is loaded.
@@ -136,7 +138,7 @@ namespace GL::Voxel
         {
             auto res = std::find_if(loaded.begin(), loaded.end(), [&](Chunk *ptr)
                                     { return ptr->GetPos() == pos; });
-            return res == rendered.end() ? nullptr : *res;
+            return res == loaded.end() ? nullptr : *res;
         }
 
         ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb),
@@ -194,9 +196,11 @@ namespace GL::Voxel
         ///@overload
         glm::ivec2 GetChunkPos(glm::ivec2 pos)
         {
-            return {ceil((pos.x + 1) / 16.0f) - 1, ceil((pos.y + 1) / 16.0f) - 1};
+            return {pos.x > 0 ? (pos.x / 16) : pos.x / 16 - 1, pos.y > 0 ? (pos.y / 16) : pos.y / 16 - 1};
         }
 
+        //TODO: I really need to find a solution to this
+        //When the mesh is rebuild, or you are moving fast, the chunk being accessed is no longer in memory
         /**
          * @brief First finds the coresponding chunk, then gets the block at that position.
          */
@@ -287,6 +291,7 @@ namespace GL::Voxel
          */
         void MoveChunk(glm::ivec2 position)
         {
+            LastPlayerChunk=position;
             UnLoadChunks(position);
             LoadChunks(position);
         }
