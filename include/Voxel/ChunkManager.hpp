@@ -43,6 +43,7 @@ namespace GL::Voxel
             Chunk *ptr;
             if (free.size() == 0)
             {
+                Logger()("Ran out of free chunks, allocating more memory");
                 ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), chunkCallbackId, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                 chunks.push_back(ptr);
             }
@@ -143,7 +144,8 @@ namespace GL::Voxel
         {
             chunks.reserve(2 * (renderdist + preMeshed + 1) * 2 * (renderdist + preMeshed + 1)); //No more chunks should be needed.
             auto &pre_render = cbh.GetList(CallbackType::PreRender);
-            for (int i = 0; i < 2 * (renderdist + preMeshed + 1) * 2 * (renderdist + preMeshed + 1); i++)
+            //Plus 1 because the chunk the player is standing in counts as well
+            for (int i = 0; i < (2 * (renderdist + preMeshed + preLoaded) + 1) * (2 * (renderdist + preMeshed + preLoaded) + 1); i++)
             {
                 auto ptr = new Chunk(cfg, pre_render, chunkCallbackId, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                 chunks.push_back(ptr);
