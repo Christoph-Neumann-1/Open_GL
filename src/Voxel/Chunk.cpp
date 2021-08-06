@@ -111,6 +111,7 @@ namespace GL::Voxel
     }
 
     //TODO: make sure the chunk stays valid while this is running. Look into destructor
+    //FIXME: Memory increases when moving, faces in chunks get created, it stabilizes after a while, but I should probably free it.
     void Chunk::GenFaces()
     {
         auto is_tp = [&](int x, int y, int z) -> bool
@@ -123,7 +124,6 @@ namespace GL::Voxel
                 return IsTransparent((BlockTypes)(*block));
             return true; //TODO: make sure this isn't needed
         };
-
         faces.clear();
         faces_transparent.clear();
 
