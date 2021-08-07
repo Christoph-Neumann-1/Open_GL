@@ -2,7 +2,6 @@
 #include <Voxel/Chunk.hpp>
 #include <vector>
 #include <glm/glm.hpp>
-#include <Threadpool.hpp>
 #include <filesystem>
 #include <Data.hpp>
 #include <Voxel/Commonfs.hpp>
@@ -22,12 +21,13 @@ namespace GL::Voxel
         std::vector<Chunk *> rendered;      //< Chunks that are currently rendered.
 
         TexConfig &config;
-        ThreadPool pool; //Used for mesh building.
         CallbackHandler &cbh;
         CallbackId callbackId;
-        CallbackGroupId chunkCallbackId = cbh.GenId();
 
         glm::ivec2 LastPlayerChunk{0,0};
+
+        std::vector<Chunk::Face> faces;
+        std::vector<Chunk::Face> faces_transparent;
 
     public:
         static const int renderdist = 11; //How far the player can see
@@ -46,7 +46,7 @@ namespace GL::Voxel
             if (free.size() == 0)
             {
                 Logger()("Ran out of free chunks, allocating more memory");
-                ptr = new Chunk(config, cbh.GetList(CallbackType::PreRender), chunkCallbackId, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                ptr = new Chunk(config, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                 chunks.push_back(ptr);
             }
             else
@@ -141,15 +141,14 @@ namespace GL::Voxel
             return res == loaded.end() ? nullptr : *res;
         }
 
-        ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), pool(2), cbh(cb),
+        ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), cbh(cb),
                                                             file(ROOT_Directory + "/res/world/SEED")
         {
             chunks.reserve(2 * (renderdist + preMeshed + 1) * 2 * (renderdist + preMeshed + 1)); //No more chunks should be needed.
-            auto &pre_render = cbh.GetList(CallbackType::PreRender);
             //Plus 1 because the chunk the player is standing in counts as well
             for (int i = 0; i < (2 * (renderdist + preMeshed + preLoaded) + 1) * (2 * (renderdist + preMeshed + preLoaded) + 1); i++)
             {
-                auto ptr = new Chunk(cfg, pre_render, chunkCallbackId, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                auto ptr = new Chunk(cfg, std::bind(&ChunkManager::GetBlockAt, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }
@@ -157,7 +156,8 @@ namespace GL::Voxel
             file.AddElement<int>(&Chunk::Seed);
 
             SetSeed();
-
+            faces.reserve(1024);
+            faces_transparent.reserve(512);
             //After rendering check if any chunks were modifiesd, if so, rebuild them.
             callbackId = cbh.GetList(CallbackType::PostRender).Add([&]()
                                                                    {
@@ -165,10 +165,15 @@ namespace GL::Voxel
                                                                        {
                                                                            if (chunk->regen_mesh)
                                                                            {
+                                                                               faces.clear();
+                                                                               faces_transparent.clear();
+                                                                               //TODO: Limit the number of meshes to be generated.
+                                                                               //TODO: Use worker threads if it takes too long,
+                                                                               //but wait for the worker threads to finish before continuing.
                                                                                chunk->regen_mesh = false;
                                                                                //FIXME This needs to be done in the render thread, or have some sort of check.
                                                                                //Can cause crash or worse because of invalid memory acess
-                                                                               pool.Add(&Chunk::GenFaces, chunk);
+                                                                               chunk->GenFaces(faces,faces_transparent);
                                                                            }
                                                                        }
                                                                    });
@@ -176,11 +181,9 @@ namespace GL::Voxel
 
         ~ChunkManager()
         {
-            pool.Terminate();
             for (auto chunk : chunks)
                 delete chunk;
             cbh.GetList(CallbackType::PostRender).Remove(callbackId);
-            cbh.RemoveAll(chunkCallbackId);
         }
 
         ChunkManager(const ChunkManager &) = delete;

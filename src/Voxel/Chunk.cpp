@@ -57,8 +57,8 @@ namespace GL::Voxel
         }
     }
 
-    Chunk::Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid, std::function<uint *(int, int, int)> GetBlockOtherChunk_)
-        : render_thread(cb), callback_id(cbid), config(cfg), GetBlockOtherChunk(GetBlockOtherChunk_)
+    Chunk::Chunk(const TexConfig &cfg, std::function<uint *(int, int, int)> GetBlockOtherChunk_)
+        : config(cfg), GetBlockOtherChunk(GetBlockOtherChunk_)
     {
 
         lookup_cache = MakeBlockCache(config);
@@ -100,6 +100,7 @@ namespace GL::Voxel
 
     void Chunk::UnLoad()
     {
+        //TODO: compress data
         auto file = fopen((ROOT_Directory + "/res/world/" + std::to_string(chunk_offset.x) + "__" + std::to_string(chunk_offset.y)).c_str(), "w");
         if (file)
         {
@@ -111,8 +112,14 @@ namespace GL::Voxel
     }
 
     //TODO: make sure the chunk stays valid while this is running. Look into destructor
+    //TODO: remove all the multithreading stuff
     //FIXME: Memory increases when moving, faces in chunks get created, it stabilizes after a while, but I should probably free it.
-    void Chunk::GenFaces()
+    //Sugestion: only have one buffer for the faces, since the meshing isn't supposed to be done multithreaded anymore.
+    //TODO: find a way to optimize this function even in debug mode
+    //TODO: There appears to be an issue with water, so far I haven't reproduced again. Maybe it has something to do with distance, or
+    //some memory is not initialized.
+    //TODO: greedy meshing
+    void Chunk::GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent)
     {
         auto is_tp = [&](int x, int y, int z) -> bool
         { return IsTransparent((BlockTypes)blocks[x][y][z]); };
@@ -124,8 +131,6 @@ namespace GL::Voxel
                 return IsTransparent((BlockTypes)(*block));
             return true; //TODO: make sure this isn't needed
         };
-        faces.clear();
-        faces_transparent.clear();
 
         for (int x = 0; x < 16; x++)
         {
@@ -245,16 +250,13 @@ namespace GL::Voxel
                 }
             }
         }
-        //This function will probably be called in a seperate thread but Opengl only works in the render thread.
-        renderid = render_thread.Add([&]()
-                                     {
-                                         buffer.Bind(GL_ARRAY_BUFFER);
-                                         glBufferData(GL_ARRAY_BUFFER, faces.size() * sizeof(Face), &faces[0], GL_STATIC_DRAW);
-                                         buffer_transparent.Bind(GL_ARRAY_BUFFER);
-                                         glBufferData(GL_ARRAY_BUFFER, faces_transparent.size() * sizeof(Face), &faces_transparent[0], GL_STATIC_DRAW);
-                                         Buffer::Unbind(GL_ARRAY_BUFFER);
-                                         render_thread.Remove(renderid);
-                                     },
-                                     callback_id);
+        nFacesTp = faces_transparent.size();
+        nFaces = faces.size();
+
+        buffer.Bind(GL_ARRAY_BUFFER);
+        glBufferData(GL_ARRAY_BUFFER, faces.size() * sizeof(Face), &faces[0], GL_STATIC_DRAW);
+        buffer_transparent.Bind(GL_ARRAY_BUFFER);
+        glBufferData(GL_ARRAY_BUFFER, faces_transparent.size() * sizeof(Face), &faces_transparent[0], GL_STATIC_DRAW);
+        Buffer::Unbind(GL_ARRAY_BUFFER);
     }
 }

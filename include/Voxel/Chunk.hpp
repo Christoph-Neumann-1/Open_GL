@@ -24,7 +24,6 @@ namespace GL::Voxel
     class Chunk
     {
         const static int sealevel = 8;
-        CallbackId renderid;
 
         /**
          * @brief Because the blocks are stored in an one dimensional array, I need an easy way to acess them.
@@ -33,9 +32,6 @@ namespace GL::Voxel
         {
             return blocks[pos.x][pos.y][pos.z];
         }
-
-        CallbackList &render_thread;
-        CallbackGroupId callback_id;
 
     public:
         bool isactive = false; //Prevents unneccesary mesh building.
@@ -48,9 +44,6 @@ namespace GL::Voxel
             Seed = rand();
         }
 
-    private:
-        std::array<uint, NBLOCKS> lookup_cache;
-
         struct Face
         {
             struct Vertex
@@ -60,6 +53,9 @@ namespace GL::Voxel
             };
             std::array<Vertex, 6> vertices;
         };
+
+    private:
+        std::array<uint, NBLOCKS> lookup_cache;
 
         /**
          * @brief Used to find the correct vertices in the array in the block file.
@@ -76,12 +72,11 @@ namespace GL::Voxel
         };
 
         glm::ivec2 chunk_offset; //Grid position of the chunk.
-        std::vector<Face> faces;
-        std::vector<Face> faces_transparent;
         std::array<std::array<std::array<uint, 16>, 64>, 16> blocks;
         Buffer buffer, buffer_transparent;
         VertexArray va, va_transparent;
         const TexConfig &config;
+        uint nFaces, nFacesTp;
 
         const std::function<uint *(int, int, int)> GetBlockOtherChunk;
 
@@ -107,7 +102,7 @@ namespace GL::Voxel
         /**
          * @brief Figures out which faces are visible and generates them.
          */
-        void GenFaces();
+        void GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent);
 
         /**
          * @brief For now trees are only a chunk of wood.
@@ -121,7 +116,7 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(const TexConfig &cfg, CallbackList &cb, CallbackGroupId cbid, std::function<uint *(int, int, int)>);
+        Chunk(const TexConfig &cfg, std::function<uint *(int, int, int)>);
 
         Chunk(const Chunk &) = delete;
         Chunk &operator=(const Chunk &) = delete;
@@ -153,14 +148,14 @@ namespace GL::Voxel
         void DrawOpaque()
         {
             va.Bind();
-            glDrawArrays(GL_TRIANGLES, 0, 6 * faces.size());
+            glDrawArrays(GL_TRIANGLES, 0, 6 * nFaces);
             VertexArray::Unbind();
         }
 
         void DrawTransparent()
         {
             va_transparent.Bind();
-            glDrawArrays(GL_TRIANGLES, 0, 6 * faces_transparent.size());
+            glDrawArrays(GL_TRIANGLES, 0, 6 * nFacesTp);
             VertexArray::Unbind();
         }
 
