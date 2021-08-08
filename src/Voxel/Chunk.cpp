@@ -1,5 +1,6 @@
 #include <Voxel/Chunk.hpp>
 #include <Data.hpp>
+#include <Time.hpp>
 
 namespace GL::Voxel
 {
@@ -111,14 +112,12 @@ namespace GL::Voxel
             perror("Unload Chunk");
     }
 
-    //TODO: make sure the chunk stays valid while this is running. Look into destructor
-    //TODO: remove all the multithreading stuff
-    //FIXME: Memory increases when moving, faces in chunks get created, it stabilizes after a while, but I should probably free it.
-    //Sugestion: only have one buffer for the faces, since the meshing isn't supposed to be done multithreaded anymore.
     //TODO: find a way to optimize this function even in debug mode
+    //TODO: optimize the whole function
     //TODO: There appears to be an issue with water, so far I haven't reproduced again. Maybe it has something to do with distance, or
     //some memory is not initialized.
     //TODO: greedy meshing
+    //TODO: fast and slow meshing
     void Chunk::GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent)
     {
         auto is_tp = [&](int x, int y, int z) -> bool
@@ -252,7 +251,6 @@ namespace GL::Voxel
         }
         nFacesTp = faces_transparent.size();
         nFaces = faces.size();
-
         buffer.Bind(GL_ARRAY_BUFFER);
         glBufferData(GL_ARRAY_BUFFER, faces.size() * sizeof(Face), &faces[0], GL_STATIC_DRAW);
         buffer_transparent.Bind(GL_ARRAY_BUFFER);

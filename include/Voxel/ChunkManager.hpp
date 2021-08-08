@@ -165,14 +165,13 @@ namespace GL::Voxel
                                                                        {
                                                                            if (chunk->regen_mesh)
                                                                            {
+                                                                               //I only use one vector for all chunks to reduce memory usage.
                                                                                faces.clear();
                                                                                faces_transparent.clear();
-                                                                               //TODO: Limit the number of meshes to be generated.
+                                                                               //TODO: Limit the number of meshes to be generated, if there are performace issues.
                                                                                //TODO: Use worker threads if it takes too long,
                                                                                //but wait for the worker threads to finish before continuing.
                                                                                chunk->regen_mesh = false;
-                                                                               //FIXME This needs to be done in the render thread, or have some sort of check.
-                                                                               //Can cause crash or worse because of invalid memory acess
                                                                                chunk->GenFaces(faces,faces_transparent);
                                                                            }
                                                                        }
@@ -204,8 +203,6 @@ namespace GL::Voxel
             return {pos.x > 0 ? (pos.x / 16) : pos.x / 16 - 1, pos.y > 0 ? (pos.y / 16) : pos.y / 16 - 1};
         }
 
-        //TODO: I really need to find a solution to this
-        //When the mesh is rebuild, or you are moving fast, the chunk being accessed is no longer in memory
         /**
          * @brief First finds the coresponding chunk, then gets the block at that position.
          */
