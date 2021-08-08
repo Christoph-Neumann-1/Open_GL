@@ -120,15 +120,14 @@ namespace GL::Voxel
     //TODO: fast and slow meshing
     void Chunk::GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent)
     {
+        PerformanceLoggerScoped log("Chunk::GenFaces");
         auto is_tp = [&](int x, int y, int z) -> bool
         { return IsTransparent((BlockTypes)blocks[x][y][z]); };
         auto is_tp_other = [&](int x, int y, int z) -> bool
         {
             auto coords = ToWorldCoords(x, y, z);
             uint *block = GetBlockOtherChunk(coords.x, coords.y, coords.z); //Makes debugging easier
-            if (block)
-                return IsTransparent((BlockTypes)(*block));
-            return true; //TODO: make sure this isn't needed
+            return IsTransparent((BlockTypes)(*block));
         };
 
         for (int x = 0; x < 16; x++)
@@ -139,10 +138,11 @@ namespace GL::Voxel
                 {
                     if (blocks[x][y][z] == BAir)
                         continue;
-                    if (!is_tp(x, y, z))
+                    if (!is_tp(x, y, z)) [[likely]]
                     {
                         //If the block is on the edge of the chunk, it is treated differently. Right now this means the face is always drawn.
-                        if (z == 0 || z == 15 || y == 0 || y == 63 || x == 0 || x == 15)
+
+                        if (z == 0 || z == 15 || y == 0 || y == 63 || x == 0 || x == 15) [[unlikely]]
                         {
                             if (x != 0)
                             {
@@ -203,7 +203,7 @@ namespace GL::Voxel
                                     faces.push_back(GenFace({x, y, z}, Front));
                             }
                         }
-                        else
+                        else[[likely]]
                         {
                             if (is_tp(x - 1, y, z))
                                 faces.push_back(GenFace({x, y, z}, Left));
