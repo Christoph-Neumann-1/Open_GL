@@ -139,54 +139,19 @@ namespace GL::Voxel
                 {
                     if (blocks[x][y][z] == BAir)
                         continue;
-                    //If the block is on the edge of the chunk, it is treated differently. Right now this means the face is always drawn.
-                    //TODO: simplify this by adding a function which decides if the block is on the edge of the chunk and generates the faces
-                    bool special = false;
-
                     if (!is_tp(x, y, z))
                     {
-                        if (z == 15)
-                        {
-                            if (is_tp_other(x, y, z + 1))
-                                faces.push_back(GenFace({x, y, z}, Front));
-                            special = true;
-                        }
-                        else if (z == 0)
-                        {
-                            if (is_tp_other(x, y, z - 1))
-                                faces.push_back(GenFace({x, y, z}, Back));
-                            special = true;
-                        }
-
-                        if (x == 0)
-                        {
-                            if (is_tp_other(x - 1, y, z))
-                                faces.push_back(GenFace({x, y, z}, Left));
-                            special = true;
-                        }
-                        else if (x == 15)
-                        {
-                            if (is_tp_other(x + 1, y, z))
-                                faces.push_back(GenFace({x, y, z}, Right));
-                            special = true;
-                        }
-
-                        if (y == 0)
-                        {
-                            faces.push_back(GenFace({x, y, z}, Bottom));
-                            special = true;
-                        }
-                        else if (y == 63)
-                        {
-                            faces.push_back(GenFace({x, y, z}, Top));
-                            special = true;
-                        }
-
-                        if (special)
+                        //If the block is on the edge of the chunk, it is treated differently. Right now this means the face is always drawn.
+                        if (z == 0 || z == 15 || y == 0 || y == 63 || x == 0 || x == 15)
                         {
                             if (x != 0)
                             {
                                 if (is_tp(x - 1, y, z))
+                                    faces.push_back(GenFace({x, y, z}, Left));
+                            }
+                            else
+                            {
+                                if (is_tp_other(x - 1, y, z))
                                     faces.push_back(GenFace({x, y, z}, Left));
                             }
                             if (x != 15)
@@ -194,24 +159,47 @@ namespace GL::Voxel
                                 if (is_tp(x + 1, y, z))
                                     faces.push_back(GenFace({x, y, z}, Right));
                             }
+                            else
+                            {
+                                if (is_tp_other(x + 1, y, z))
+                                    faces.push_back(GenFace({x, y, z}, Right));
+                            }
                             if (y != 0)
                             {
                                 if (is_tp(x, y - 1, z))
                                     faces.push_back(GenFace({x, y, z}, Bottom));
+                            }
+                            else
+                            {
+                                faces.push_back(GenFace({x, y, z}, Bottom));
                             }
                             if (y != 63)
                             {
                                 if (is_tp(x, y + 1, z))
                                     faces.push_back(GenFace({x, y, z}, Top));
                             }
+                            else
+                            {
+                                faces.push_back(GenFace({x, y, z}, Top));
+                            }
                             if (z != 0)
                             {
                                 if (is_tp(x, y, z - 1))
                                     faces.push_back(GenFace({x, y, z}, Back));
                             }
+                            else
+                            {
+                                if (is_tp_other(x, y, z - 1))
+                                    faces.push_back(GenFace({x, y, z}, Back));
+                            }
                             if (z != 15)
                             {
                                 if (is_tp(x, y, z + 1))
+                                    faces.push_back(GenFace({x, y, z}, Front));
+                            }
+                            else
+                            {
+                                if (is_tp_other(x, y, z + 1))
                                     faces.push_back(GenFace({x, y, z}, Front));
                             }
                         }
