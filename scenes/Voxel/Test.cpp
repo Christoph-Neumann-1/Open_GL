@@ -227,6 +227,7 @@ public:
         file.Load();
 
         chunks.LoadChunks(chunks.GetChunkPos(camera.position.x, camera.position.z));
+        chunks.GenMeshes();
 
         vao.Bind();
         vbo.Bind(GL_ARRAY_BUFFER);

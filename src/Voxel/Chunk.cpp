@@ -120,7 +120,6 @@ namespace GL::Voxel
     //TODO: fast and slow meshing
     void Chunk::GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent)
     {
-        PerformanceLoggerScoped log("Chunk::GenFaces");
         auto is_tp = [&](int x, int y, int z) -> bool
         { return IsTransparent((BlockTypes)blocks[x][y][z]); };
         auto is_tp_other = [&](int x, int y, int z) -> bool
@@ -203,7 +202,7 @@ namespace GL::Voxel
                                     faces.push_back(GenFace({x, y, z}, Front));
                             }
                         }
-                        else[[likely]]
+                        else [[likely]]
                         {
                             if (is_tp(x - 1, y, z))
                                 faces.push_back(GenFace({x, y, z}, Left));

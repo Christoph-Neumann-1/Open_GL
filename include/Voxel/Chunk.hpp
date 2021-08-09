@@ -75,7 +75,7 @@ namespace GL::Voxel
         Buffer buffer, buffer_transparent;
         VertexArray va, va_transparent;
         const TexConfig &config;
-        uint nFaces, nFacesTp;
+        uint nFaces=0, nFacesTp=0;
 
         const std::function<uint *(int, int, int)> GetBlockOtherChunk;
 
@@ -146,6 +146,8 @@ namespace GL::Voxel
 
         void DrawOpaque()
         {
+            if (nFaces == 0)
+                return;
             va.Bind();
             glDrawArrays(GL_TRIANGLES, 0, 6 * nFaces);
             VertexArray::Unbind();
@@ -153,6 +155,8 @@ namespace GL::Voxel
 
         void DrawTransparent()
         {
+            if (nFacesTp == 0)
+                return;
             va_transparent.Bind();
             glDrawArrays(GL_TRIANGLES, 0, 6 * nFacesTp);
             VertexArray::Unbind();

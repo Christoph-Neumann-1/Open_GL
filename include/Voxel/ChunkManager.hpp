@@ -24,7 +24,7 @@ namespace GL::Voxel
         CallbackHandler &cbh;
         CallbackId callbackId;
 
-        glm::ivec2 LastPlayerChunk{0,0};
+        glm::ivec2 LastPlayerChunk{0, 0};
 
         std::vector<Chunk::Face> faces;
         std::vector<Chunk::Face> faces_transparent;
@@ -141,6 +141,21 @@ namespace GL::Voxel
             return res == loaded.end() ? nullptr : *res;
         }
 
+        void GenMeshes()
+        {
+            for (auto chunk : meshed_chunks)
+            {
+                if (chunk->regen_mesh)
+                {
+                    //I only use one vector for all chunks to reduce memory usage.
+                    faces.clear();
+                    faces_transparent.clear();
+                    chunk->regen_mesh = false;
+                    chunk->GenFaces(faces, faces_transparent);
+                }
+            }
+        };
+
         ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), cbh(cb),
                                                             file(ROOT_Directory + "/res/world/SEED")
         {
@@ -159,20 +174,7 @@ namespace GL::Voxel
             faces.reserve(1024);
             faces_transparent.reserve(512);
             //After rendering check if any chunks were modifiesd, if so, rebuild them.
-            callbackId = cbh.GetList(CallbackType::PostRender).Add([&]()
-                                                                   {
-                                                                       for (auto chunk : meshed_chunks)
-                                                                       {
-                                                                           if (chunk->regen_mesh)
-                                                                           {
-                                                                               //I only use one vector for all chunks to reduce memory usage.
-                                                                               faces.clear();
-                                                                               faces_transparent.clear();
-                                                                               chunk->regen_mesh = false;
-                                                                               chunk->GenFaces(faces,faces_transparent);
-                                                                           }
-                                                                       }
-                                                                   });
+            callbackId = cbh.GetList(CallbackType::PostRender).Add(&ChunkManager::GenMeshes, 0, this);
         };
 
         ~ChunkManager()
@@ -290,7 +292,7 @@ namespace GL::Voxel
          */
         void MoveChunk(glm::ivec2 position)
         {
-            LastPlayerChunk=position;
+            LastPlayerChunk = position;
             UnLoadChunks(position);
             LoadChunks(position);
         }

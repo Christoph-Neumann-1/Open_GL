@@ -29,7 +29,7 @@ namespace GL
 
     struct s_Texture
     {
-        u_int id;
+        u_int id; //TODO: I need to delete this
         std::string type;
         std::string path;
     };
