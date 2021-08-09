@@ -168,9 +168,6 @@ namespace GL::Voxel
                                                                                //I only use one vector for all chunks to reduce memory usage.
                                                                                faces.clear();
                                                                                faces_transparent.clear();
-                                                                               //TODO: Limit the number of meshes to be generated, if there are performace issues.
-                                                                               //TODO: Use worker threads if it takes too long,
-                                                                               //but wait for the worker threads to finish before continuing.
                                                                                chunk->regen_mesh = false;
                                                                                chunk->GenFaces(faces,faces_transparent);
                                                                            }

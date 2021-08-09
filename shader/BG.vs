@@ -1,4 +1,4 @@
-#version 330 core //TODO Try 450 core
+#version 450 core
 layout (location = 0) in vec2 aPos;
 
 out vec2 TexCoords;
