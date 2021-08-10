@@ -141,6 +141,9 @@ namespace GL::Voxel
             return res == loaded.end() ? nullptr : *res;
         }
 
+        /**
+         * @brief This function checks if any chunks need new meshes and generates them.
+         */
         void GenMeshes()
         {
             for (auto chunk : meshed_chunks)
@@ -173,7 +176,8 @@ namespace GL::Voxel
             SetSeed();
             faces.reserve(1024);
             faces_transparent.reserve(512);
-            //After rendering check if any chunks were modifiesd, if so, rebuild them.
+            //After rendering check if any chunks were modified, if so, rebuild them.
+            //I tried building meshes in a separate thread, but it caused too many problems and the performance is still good enough.
             callbackId = cbh.GetList(CallbackType::PostRender).Add(&ChunkManager::GenMeshes, 0, this);
         };
 

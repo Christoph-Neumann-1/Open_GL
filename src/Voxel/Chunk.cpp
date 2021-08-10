@@ -80,6 +80,9 @@ namespace GL::Voxel
     {
         if (isactive)
             return;
+        //Prevents drawing in the first frame after loading
+        nFaces = 0;
+        nFacesTp = 0;
         regen_mesh = true;
         isactive = true;
     }
