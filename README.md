@@ -1,4 +1,5 @@
 [Link to assets:](https://drive.google.com/drive/folders/1tTzC-uJ3ZbW6bwRTZsTCnjj0dKDIWBQa?usp=sharing)
+I don't add them to git, because it takes up too much space.
 
 runtime dependencies: libassimp5, libglfw3
 This programm only works on linux.
