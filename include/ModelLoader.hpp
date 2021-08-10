@@ -93,6 +93,13 @@ namespace GL
         }
 
     public:
+        ~Model()
+        {
+            for (auto &tex : loaded)
+            {
+                glDeleteTextures(1, &tex.id);
+            }
+        }
         Model(const std::string &path);
 
         void AddInstanceBuffer(VertexBufferLayout &layout, u_int Buffer)
