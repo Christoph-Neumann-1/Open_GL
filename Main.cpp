@@ -74,7 +74,6 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 
 #ifdef COUNT_UPDATES
 
-        
         if (floor((begin - thread_begin).count() / powf(10, 9)) == second)
         {
             count++;
@@ -146,12 +145,13 @@ int main(int argc, char **argv)
 {
     PerformanceLoggerScoped plog("Program ran for");
     Logger log;
-    log<<"***********************************************************\n";
-    log<<"Copyright © 2021 Christoph Neumann\n";
-    log<<"This program comes with ABSOLUTELY NO WARRANTY.\n";
-    log<<"For more information look at the README file.\n";
-    log<<"Source code: https://github.com/Christoph-Neumann-1/Open_GL\n";
-    log<<"***********************************************************\n";
+    log << "***********************************************************\n"
+        << "Copyright © 2021 Christoph Neumann\n"
+        << "This program is available under the MIT License. See LICENSE for more information\n"
+        << "This program comes with ABSOLUTELY NO WARRANTY.\n"
+        << "For more information look at the README file.\n"
+        << "Source code: https://github.com/Christoph-Neumann-1/Open_GL\n"
+        << "***********************************************************\n";
     log.print();
 
     //First check for command line arguments.
