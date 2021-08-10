@@ -1,3 +1,9 @@
+/**
+ * @file Menu.cpp
+ * @brief Opens the other scenes.
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Scene.hpp>
 #include <imgui/imgui.h>
 #include <Data.hpp>
@@ -18,9 +24,7 @@ class SceneMenu final : public Scene
     std::vector<std::pair<std::string, std::string>> scenes{
         {"Example", "Example"},
         {"Breakout", "Breakout"},
-        {"Ball in Box", "BallInBox"},
         {"Voxel Test", "Voxel/Test"},
-        {"Model Test", "Model"},
         {"Gas", "Gas"},
         {"Stars", "Stars"}};
 

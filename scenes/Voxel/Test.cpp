@@ -1,3 +1,9 @@
+/**
+ * @file Test.cpp
+ * @brief A simple game like minecraft just without the fun and the game.
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Scene.hpp>
 #include <glm/glm.hpp>
 #include <Data.hpp>

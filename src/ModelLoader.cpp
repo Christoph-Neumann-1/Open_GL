@@ -1,3 +1,8 @@
+/**
+ * @file ModelLoader.cpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <ModelLoader.hpp>
 
 namespace GL

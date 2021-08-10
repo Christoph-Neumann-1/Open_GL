@@ -1,3 +1,8 @@
+/**
+ * @file Threadpool.hpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #pragma once
 
 #include <future>

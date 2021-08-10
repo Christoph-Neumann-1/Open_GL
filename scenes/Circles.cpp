@@ -1,3 +1,9 @@
+/**
+ * @file Circles.cpp
+ * @brief I checked if the Circle class is working.
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Scene.hpp>
 #include <Data.hpp>
 #include <glm/glm.hpp>

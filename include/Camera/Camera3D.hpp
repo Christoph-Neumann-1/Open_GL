@@ -1,3 +1,8 @@
+/**
+ * @file Camera3D.hpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #pragma once
 
 #include <glm/glm.hpp>

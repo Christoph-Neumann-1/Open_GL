@@ -1,3 +1,8 @@
+/**
+ * @file Window.cpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Window.hpp>
 
 GL::Window::Window(GLFWwindow *_window, CallbackList &callback) : window(_window), ResizeCallback(callback)

@@ -1,3 +1,9 @@
+/**
+ * @file ErrorOutput.hpp
+ * @brief Contains the error handling functions for opengl and glfw.
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #pragma once
 
 #include <Logger.hpp>

@@ -1,3 +1,8 @@
+/**
+ * @file Main.cpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <Scene.hpp>
@@ -141,6 +146,13 @@ int main(int argc, char **argv)
 {
     PerformanceLoggerScoped plog("Program ran for");
     Logger log;
+    log<<"***********************************************************\n";
+    log<<"Copyright © 2021 Christoph Neumann\n";
+    log<<"This program comes with ABSOLUTELY NO WARRANTY.\n";
+    log<<"For more information look at the README file.\n";
+    log<<"Source code: https://github.com/Christoph-Neumann-1/Open_GL\n";
+    log<<"***********************************************************\n";
+    log.print();
 
     //First check for command line arguments.
     ProcessArguments(argc, argv, startscene, ROOT_Directory);

@@ -1,8 +1,8 @@
 /**
- * @file
- * Contains the callback system.
+ * @file Callback.hpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
  */
-
 #pragma once
 
 #include <unordered_map>

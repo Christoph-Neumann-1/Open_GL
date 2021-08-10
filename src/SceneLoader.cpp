@@ -1,3 +1,8 @@
+/**
+ * @file SceneLoader.cpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <SceneLoader.hpp>
 #include <dlfcn.h>
 #include <string>

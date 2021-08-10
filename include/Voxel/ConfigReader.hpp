@@ -1,3 +1,8 @@
+/**
+ * @file ConfigReader.hpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #pragma once
 #include <fstream>
 #include <string>
@@ -30,7 +35,6 @@ namespace GL::Voxel
         mutable std::unordered_map<std::string, uint> elements_cache;
 
     public:
-
         /**
          * @brief This will load the config. The texture itself doesn't have to be loaded.
          */
@@ -38,7 +42,7 @@ namespace GL::Voxel
         {
             std::ifstream file(path);
             std::string line;
-            Element default_tex;//Will be used if a non-existing texture is requested. This should be the bottom-most texture in the image file.
+            Element default_tex; //Will be used if a non-existing texture is requested. This should be the bottom-most texture in the image file.
             default_tex.name = "default";
             for (uint i = 0; i < 6; i++)
             {
@@ -47,7 +51,7 @@ namespace GL::Voxel
             elements.push_back(default_tex);
 
             std::regex rgx("^\\w(\\d|\\w)*:(\\d+,){5}\\d+(\\s*#.*)*$");
-            std::regex ignore("^\\s*(#.*)?$");//Ignore comments
+            std::regex ignore("^\\s*(#.*)?$"); //Ignore comments
             std::regex name("^\\w(\\d|\\w)*:");
             while (std::getline(file, line))
             {
@@ -87,7 +91,8 @@ namespace GL::Voxel
         {
             if (auto it = elements_cache.find(name); it != elements_cache.end())
                 return it->second;
-            auto pos = std::find_if(elements.begin(), elements.end(), [&](const Element &e) -> bool { return e.name == name; });
+            auto pos = std::find_if(elements.begin(), elements.end(), [&](const Element &e) -> bool
+                                    { return e.name == name; });
             uint index;
             if (pos == elements.end())
             {
@@ -95,11 +100,11 @@ namespace GL::Voxel
                 log << "Block " << name << " not found. Using default";
                 log.print();
             }
-            else 
+            else
             {
-                index=pos - elements.begin();
+                index = pos - elements.begin();
             }
-            elements_cache[name]=index;
+            elements_cache[name] = index;
             return index;
         }
 
@@ -119,7 +124,7 @@ namespace GL::Voxel
             return elements[pos];
         }
 
-        TexConfig(const TexConfig &)=delete;
-        TexConfig& operator=(const TexConfig &)=delete;
+        TexConfig(const TexConfig &) = delete;
+        TexConfig &operator=(const TexConfig &) = delete;
     };
 } // namespace GL

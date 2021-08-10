@@ -1,3 +1,8 @@
+/**
+ * @file Callback.cpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Callback.hpp>
 #include <algorithm>
 namespace GL

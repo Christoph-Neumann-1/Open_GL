@@ -1,6 +1,8 @@
 /**
  * @file Example.cpp
  * @brief A short example showing the correct use of the scene system
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
  */
 
 #include <Scene.hpp> //This is the only import necessary  for a scene, the rest are for drawing stuff or debug output

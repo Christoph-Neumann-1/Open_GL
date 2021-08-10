@@ -1,3 +1,19 @@
+/**
+ * @file
+ * @brief Base file for all scenes.
+ * 
+ * @details A valid scene **must** have the following method: 
+ * 
+ * @code{.cpp}
+ * 
+ * //return a pointer to a new Scene instance.
+ * extern "C" Scene *_LOAD_(SceneLoader *loader);
+ * @endcode
+ * 
+ * I recommend just using the macro at the beginning of the file as the function will look the same for every file.
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #pragma once
 
 #include <Callback.hpp>
@@ -72,18 +88,3 @@ namespace GL
         virtual ~Scene() {}
     };
 }
-
-/**
- * @file
- * @brief Base file for all scenes.
- * 
- * @details A valid scene **must** have the following method: 
- * 
- * @code{.cpp}
- * 
- * //return a pointer to a new Scene instance.
- * extern "C" Scene *_LOAD_(SceneLoader *loader);
- * @endcode
- * 
- * I recommend just using the macro at the beginning of the file as the function will look the same for every file.
- */

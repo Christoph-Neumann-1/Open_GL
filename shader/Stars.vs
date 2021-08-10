@@ -1,3 +1,4 @@
+//Copyright © 2021 Christoph Neumann - MIT License
 #version 330 core
 layout (location = 0) in vec3 aPos;
 layout (location = 2) in vec2 aTexCoords;

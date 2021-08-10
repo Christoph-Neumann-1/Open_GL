@@ -1,3 +1,8 @@
+/**
+ * @file CameraController.hpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #pragma once
 #include <GLFW/glfw3.h>
 #include <Camera/Camera3D.hpp>
@@ -18,6 +23,7 @@ namespace GL
     public:
         /**
          * @brief Get user input and update camera position
+         * This should be called every frame.
          * 
          * @param deltatime in seconds
          */

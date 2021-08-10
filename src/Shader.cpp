@@ -1,3 +1,8 @@
+/**
+ * @file Shader.cpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <fstream>
 #include <glad/glad.h>
 

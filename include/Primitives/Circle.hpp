@@ -1,3 +1,9 @@
+/**
+ * @file Circle.hpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
+#pragma once
 #include <Shader.hpp>
 #include <Data.hpp>
 
@@ -9,6 +15,12 @@
 
 namespace GL
 {
+    /**
+     * @brief This class generates and draws a circle.
+     * 
+     * Not finished yet.
+     * 
+     */
     struct Circle
     {
         Buffer VBO;
@@ -22,16 +34,16 @@ namespace GL
             : shader(vshader, fshader)
         {
             VertexBufferLayout layout;
-            layout.stride=sizeof(glm::vec2);
-            layout.Push({GL_FLOAT,2,0});
-            layout.BindAndAddToVertexArray(VAO,VBO);
+            layout.stride = sizeof(glm::vec2);
+            layout.Push({GL_FLOAT, 2, 0});
+            layout.BindAndAddToVertexArray(VAO, VBO);
         }
 
         void ComputeVertices(float radius, uint segcount)
         {
             vcount = segcount + 2;
             VBO.Bind(GL_ARRAY_BUFFER);
-            glm::vec2 *vertices =new glm::vec2[vcount];
+            glm::vec2 *vertices = new glm::vec2[vcount];
             vertices[0] = {0, 0};
             for (uint i = 1; i <= segcount; i++)
             {
@@ -40,7 +52,7 @@ namespace GL
             }
             vertices[segcount + 1] = {radius * cos(2 * M_PI / segcount),
                                       radius * sin(2 * M_PI / segcount)};
-            glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2)*vcount, vertices, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * vcount, vertices, GL_STATIC_DRAW);
             Buffer::Unbind(GL_ARRAY_BUFFER);
             delete[] vertices;
         }

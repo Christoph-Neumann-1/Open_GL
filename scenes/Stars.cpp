@@ -1,3 +1,9 @@
+/**
+ * @file Stars.cpp
+ * @brief NBody simulation
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 //Please use fast math and o3
 
 #include <Scene.hpp>

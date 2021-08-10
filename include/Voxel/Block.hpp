@@ -1,3 +1,12 @@
+/**
+ * @file Block.hpp
+ * @brief This file contains basic information about blocks. Like what blocks exist, their properties, and their names.
+ * It also stores the vertices and normals for the faces.
+ * 
+ * This should probably be done differntly.
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #pragma once
 
 #include <glm/glm.hpp>
@@ -15,7 +24,7 @@ namespace GL::Voxel
     struct B_Vertex
     {
         glm::vec3 pos;
-        glm::vec2 tex;//<Normalized texture coordinates
+        glm::vec2 tex; //<Normalized texture coordinates
 
         constexpr B_Vertex(glm::vec3 p, glm::vec2 t) : pos(p), tex(t) {}
     };

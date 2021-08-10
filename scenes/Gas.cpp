@@ -1,3 +1,9 @@
+/**
+ * @file Gas.cpp
+ * @brief Gas simulation controlled by the plus and minus buttons.
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Scene.hpp>
 #include <ModelLoader.hpp>
 #include <Shader.hpp>

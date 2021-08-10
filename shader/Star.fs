@@ -1,3 +1,4 @@
+//Copyright © 2021 Christoph Neumann - MIT License
 #version 330 core
 out vec4 FragColor;
 

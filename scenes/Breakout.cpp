@@ -1,3 +1,9 @@
+/**
+ * @file Breakout.cpp
+ * @brief The ball bounces off the rectangle thing and destroys the bricks
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Scene.hpp>
 #include <Shader.hpp>
 #include <glm/gtc/matrix_transform.hpp>

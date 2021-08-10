@@ -1,3 +1,8 @@
+/**
+ * @file Chunk.cpp
+ * @author Christoph Neumann
+ * @copyright Copyright © 2021 Christoph Neumann - MIT License
+ */
 #include <Voxel/Chunk.hpp>
 #include <Data.hpp>
 #include <Time.hpp>
