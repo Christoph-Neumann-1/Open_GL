@@ -231,10 +231,7 @@ class AtomsSim : public Scene
         if (should_wait)
         {
             is_waiting = true;
-            //TODO use condition variable
-            while (should_wait)
-            {
-            }
+            while (should_wait);
         }
         static float dt = loader->GetTimeInfo().UpdateInterval() * dt_factor;
         CollideWithWalls();

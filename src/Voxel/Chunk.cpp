@@ -122,8 +122,6 @@ namespace GL::Voxel
 
     //TODO: find a way to optimize this function even in debug mode
     //TODO: optimize the whole function
-    //TODO: There appears to be an issue with water, so far I haven't reproduced again. Maybe it has something to do with distance, or
-    //some memory is not initialized.
     //TODO: greedy meshing
     //TODO: fast and slow meshing
     void Chunk::GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent)

@@ -79,7 +79,7 @@ namespace GL::Voxel
         Buffer buffer, buffer_transparent;
         VertexArray va, va_transparent;
         const TexConfig &config;
-        uint nFaces=0, nFacesTp=0;
+        uint nFaces = 0, nFacesTp = 0;
 
         const std::function<uint *(int, int, int)> GetBlockOtherChunk;
 
@@ -107,6 +107,7 @@ namespace GL::Voxel
          */
         void GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent);
 
+        //TODO: MAKE THIS WORK
         /**
          * @brief For now trees are only a chunk of wood.
          */

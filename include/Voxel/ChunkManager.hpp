@@ -43,7 +43,9 @@ namespace GL::Voxel
         FileLayout file; //Stores the seed
 
         /**
-         * @brief Get a free chunk. If no chunks are free, make a new one.
+         * @brief Get a pointer to a free chunk. If no chunks are free, make a new one.
+         * 
+         * You have to add it to loaded yourself.
          */
         Chunk *GetFree()
         {
