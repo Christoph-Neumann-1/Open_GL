@@ -181,11 +181,44 @@ class Voxel_t final : public GL::Scene
         }
     }
 
+    void Collide()
+    {
+        glm::ivec3 cam_block = glm::round(camera.position);
+        uint *block = chunks.GetBlockAt(cam_block);
+        uint *block_below = chunks.GetBlockAt(cam_block.x, cam_block.y - 1, cam_block.z);
+        if (block)
+        {
+            if (*block != GL::Voxel::BAir)
+            {
+                //TODO: Water
+                if (*block == GL::Voxel::BWater)
+                {
+                }
+                else
+                {
+                }
+            }
+        }
+        if (block_below)
+        {
+            if (*block_below != GL::Voxel::BAir)
+            {
+                if (*block_below == GL::Voxel::BWater)
+                {
+                }
+                else
+                {
+                }
+            }
+        }
+    }
+
     void Render()
     {
         auto dt = loader->GetTimeInfo().RenderDeltaTime();
         glm::ivec2 lastpos = {round(camera.position.x), round(camera.position.z)};
         cameraController.Update(dt);
+        Collide();
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D_ARRAY, tex_id);

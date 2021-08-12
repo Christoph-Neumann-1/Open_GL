@@ -108,6 +108,8 @@ namespace GL::Voxel
         void GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent);
 
         //TODO: MAKE THIS WORK
+        //I need to figure out when to call this function, as the terrain must be generated and it won't work on the edge of a chunk. 
+        //I also need to get the transparency thing working for the leaves.
         /**
          * @brief For now trees are only a chunk of wood.
          */
