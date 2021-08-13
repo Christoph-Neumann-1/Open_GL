@@ -181,6 +181,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
+    //I probaply need to save velocity somewhere for this to work.
     void Collide()
     {
         glm::ivec3 cam_block = glm::round(camera.position);
@@ -227,6 +228,14 @@ class Voxel_t final : public GL::Scene
         chunkShader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix());
         chunkShader.SetUniform2f("u_player_pos", {camera.position.x, camera.position.z});
         chunkShader.SetUniform1f("u_view_dist", GL::Voxel::ChunkManager::renderdist * 16);
+        if (*chunks.GetBlockAt(glm::round(camera.position)) == GL::Voxel::BWater)
+        {
+            chunkShader.SetUniform3f("u_Color", 0,0,0.2);
+        }
+        else
+        {
+            chunkShader.SetUniform3f("u_Color", 0,0,0);
+        }
 
         chunks.DrawChunks();
 
