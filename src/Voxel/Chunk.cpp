@@ -17,7 +17,7 @@ namespace GL::Voxel
         for (int i = 0; i < 6; i++)
         {
             auto vert = bvertices[i + type];
-            face.vertices[i].tex = {(vert.tex.x + 0.5) / 64.0, (vert.tex.y + 0.5) / 64.0, config[lookup_cache[(BlockTypes)At(pos)]].faces[type / 6]};
+            face.vertices[i].tex = {(vert.tex.x + 0.5) / 64.0, (vert.tex.y + 0.5) / 64.0, config[lookup_cache[At(pos)]].faces[type / 6]};
             face.vertices[i].pos = {vert.pos.x + 16 * chunk_offset.x + pos.x, vert.pos.y + pos.y, vert.pos.z + 16 * chunk_offset.y + pos.z};
         };
         return face;
@@ -63,8 +63,8 @@ namespace GL::Voxel
         }
     }
 
-    Chunk::Chunk(const TexConfig &cfg, std::function<uint *(int, int, int)> GetBlockOtherChunk_)
-        : config(cfg), GetBlockOtherChunk(GetBlockOtherChunk_)
+    Chunk::Chunk(const TexConfig &cfg, const std::function<Chunk *(int, int)> GetOtherChunk_)
+        : config(cfg), GetOtherChunk(GetOtherChunk_)
     {
 
         lookup_cache = MakeBlockCache(config);
@@ -126,14 +126,15 @@ namespace GL::Voxel
     //TODO: fast and slow meshing
     void Chunk::GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent)
     {
+        PerformanceLoggerScoped("Generating faces");
+        Chunk *left_chunk, *right_chunk, *front_chunk, *back_chunk;
+        left_chunk = GetOtherChunk(chunk_offset.x - 1, chunk_offset.y);
+        right_chunk = GetOtherChunk(chunk_offset.x + 1, chunk_offset.y);
+        front_chunk = GetOtherChunk(chunk_offset.x, chunk_offset.y - 1);
+        back_chunk = GetOtherChunk(chunk_offset.x, chunk_offset.y + 1);
+
         auto is_tp = [&](int x, int y, int z) -> bool
-        { return IsTransparent((BlockTypes)blocks[x][y][z]); };
-        auto is_tp_other = [&](int x, int y, int z) -> bool
-        {
-            auto coords = ToWorldCoords(x, y, z);
-            uint *block = GetBlockOtherChunk(coords.x, coords.y, coords.z); //Makes debugging easier
-            return IsTransparent((BlockTypes)(*block));
-        };
+        { return IsTransparent(blocks[x][y][z]); };
 
         for (int x = 0; x < 16; x++)
         {
@@ -156,7 +157,7 @@ namespace GL::Voxel
                             }
                             else
                             {
-                                if (is_tp_other(x - 1, y, z))
+                                if (IsTransparent(left_chunk->At(15, y, z)))
                                     faces.push_back(GenFace({x, y, z}, Left));
                             }
                             if (x != 15)
@@ -166,7 +167,7 @@ namespace GL::Voxel
                             }
                             else
                             {
-                                if (is_tp_other(x + 1, y, z))
+                                if (IsTransparent(right_chunk->At(0, y, z)))
                                     faces.push_back(GenFace({x, y, z}, Right));
                             }
                             if (y != 0)
@@ -194,7 +195,7 @@ namespace GL::Voxel
                             }
                             else
                             {
-                                if (is_tp_other(x, y, z - 1))
+                                if (IsTransparent(front_chunk->At(x, y, 15)))
                                     faces.push_back(GenFace({x, y, z}, Back));
                             }
                             if (z != 15)
@@ -204,7 +205,7 @@ namespace GL::Voxel
                             }
                             else
                             {
-                                if (is_tp_other(x, y, z + 1))
+                                if (IsTransparent(back_chunk->At(x, y, 0)))
                                     faces.push_back(GenFace({x, y, z}, Front));
                             }
                         }

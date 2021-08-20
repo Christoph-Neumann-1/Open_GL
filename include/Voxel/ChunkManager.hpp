@@ -53,7 +53,7 @@ namespace GL::Voxel
             if (free.size() == 0)
             {
                 Logger()("Ran out of free chunks, allocating more memory");
-                ptr = new Chunk(config, std::bind(static_cast<uint *(ChunkManager::*)(int, int, int)>(&ChunkManager::GetBlockAt), this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                ptr = new Chunk(config, std::bind(static_cast<Chunk *(ChunkManager::*)(int, int)>(&ChunkManager::GetChunk), this, std::placeholders::_1, std::placeholders::_2));
                 chunks.push_back(ptr);
             }
             else
@@ -148,6 +148,11 @@ namespace GL::Voxel
             return res == loaded.end() ? nullptr : *res;
         }
 
+        Chunk *GetChunk(int x, int z)
+        {
+            return GetChunk(glm::ivec2{x, z});
+        }
+
         /**
          * @brief This function checks if any chunks need new meshes and generates them.
          */
@@ -173,7 +178,7 @@ namespace GL::Voxel
             //Plus 1 because the chunk the player is standing in counts as well
             for (int i = 0; i < (2 * (renderdist + preMeshed + preLoaded) + 1) * (2 * (renderdist + preMeshed + preLoaded) + 1); i++)
             {
-                auto ptr = new Chunk(cfg, std::bind(static_cast<uint *(ChunkManager::*)(int, int, int)>(&ChunkManager::GetBlockAt), this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                auto ptr = new Chunk(cfg, std::bind(static_cast<Chunk *(ChunkManager::*)(int, int)>(&ChunkManager::GetChunk), this, std::placeholders::_1, std::placeholders::_2));
                 chunks.push_back(ptr);
                 free.push_back(ptr);
             }

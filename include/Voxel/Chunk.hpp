@@ -29,11 +29,16 @@ namespace GL::Voxel
         const static int sealevel = 8;
 
         /**
-         * @brief Because the blocks are stored in an one dimensional array, I need an easy way to acess them.
+         * @brief Just for convenience.
          */
         uint &At(glm::ivec3 pos)
         {
             return blocks[pos.x][pos.y][pos.z];
+        }
+
+        uint &At(int x, int y, int z)
+        {
+            return blocks[x][y][z];
         }
 
     public:
@@ -81,7 +86,7 @@ namespace GL::Voxel
         const TexConfig &config;
         uint nFaces = 0, nFacesTp = 0;
 
-        const std::function<uint *(int, int, int)> GetBlockOtherChunk;
+        const std::function<Chunk *(int, int)> GetOtherChunk;
 
         Face GenFace(glm::ivec3 pos, FaceIndices type);
 
@@ -108,7 +113,7 @@ namespace GL::Voxel
         void GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent);
 
         //TODO: MAKE THIS WORK
-        //I need to figure out when to call this function, as the terrain must be generated and it won't work on the edge of a chunk. 
+        //I need to figure out when to call this function, as the terrain must be generated and it won't work on the edge of a chunk.
         //I also need to get the transparency thing working for the leaves.
         /**
          * @brief For now trees are only a chunk of wood.
@@ -122,7 +127,7 @@ namespace GL::Voxel
             }
         }
 
-        Chunk(const TexConfig &cfg, std::function<uint *(int, int, int)>);
+        Chunk(const TexConfig &cfg, const std::function<Chunk *(int, int)>);
 
         Chunk(const Chunk &) = delete;
         Chunk &operator=(const Chunk &) = delete;

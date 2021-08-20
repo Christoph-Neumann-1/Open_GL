@@ -104,7 +104,7 @@ namespace GL
 
     public:
         ///@brief Outputs the string followed by " ", the time, and "seconds"
-        PerformanceLoggerScoped(std::string message = std::string()) : m_message(message), use_callback(false)
+        PerformanceLoggerScoped(const std::string &message = std::string()) : m_message(message), use_callback(false)
         {
             begin = std::chrono::steady_clock::now();
         }

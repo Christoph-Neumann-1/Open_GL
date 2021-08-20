@@ -62,6 +62,11 @@ namespace GL::Voxel
         }
     }
 
+    bool IsTransparent(uint t)
+    {
+        return IsTransparent(static_cast<BlockTypes>(t));
+    }
+
     /**
      * @brief If a specific block should not be picked up, specify it here.
      */
