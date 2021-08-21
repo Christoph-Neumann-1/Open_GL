@@ -126,7 +126,6 @@ namespace GL::Voxel
     //TODO: fast and slow meshing
     void Chunk::GenFaces(std::vector<Face> &faces, std::vector<Face> &faces_transparent)
     {
-        PerformanceLoggerScoped("Generating faces");
         Chunk *left_chunk, *right_chunk, *front_chunk, *back_chunk;
         left_chunk = GetOtherChunk(chunk_offset.x - 1, chunk_offset.y);
         right_chunk = GetOtherChunk(chunk_offset.x + 1, chunk_offset.y);
