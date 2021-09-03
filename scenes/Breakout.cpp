@@ -298,7 +298,7 @@ public:
         vb.Bind(GL_ARRAY_BUFFER);
 
         VertexBufferLayout layout;
-        layout.Push({GL_FLOAT,2,0});
+        layout.Push(GL_FLOAT,2,0);
         layout.AddToVertexArray(va);
 
         ComputeVertices();
@@ -313,8 +313,8 @@ public:
 
         VertexBufferLayout instance_layout;
         instance_layout.stride = sizeof(BufferElement);
-        instance_layout.Push({GL_FLOAT, 2, 0});
-        instance_layout.Push({GL_FLOAT, 4, (void *)sizeof(glm::vec2)});
+        instance_layout.Push(GL_FLOAT, 2, 0);
+        instance_layout.Push(GL_FLOAT, 4, sizeof(glm::vec2));
         instance_layout.attribdivisor = 1;
         instance_layout.AddToVertexArray(va);
 

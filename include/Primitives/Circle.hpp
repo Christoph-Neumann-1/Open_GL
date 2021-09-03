@@ -35,7 +35,7 @@ namespace GL
         {
             VertexBufferLayout layout;
             layout.stride = sizeof(glm::vec2);
-            layout.Push({GL_FLOAT, 2, 0});
+            layout.Push(GL_FLOAT, 2, 0);
             layout.BindAndAddToVertexArray(VAO, VBO);
         }
 

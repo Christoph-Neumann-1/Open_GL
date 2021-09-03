@@ -18,6 +18,8 @@ include_directories(Libs/imgui/backends)
 include_directories(Libs/imgui)
 include_directories(Libs/glad/include)
 
+#TODO use submodules
+
 add_subdirectory(Libs/glad)
 add_subdirectory(Libs/imgui)
 add_subdirectory(Libs/glm)

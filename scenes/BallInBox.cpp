@@ -13,6 +13,7 @@
 #include <Camera/Fplocked.hpp>
 #include <Buffer.hpp>
 #include <VertexArray.hpp>
+#include <TrailRenderer.hpp>
 
 using namespace GL;
 
@@ -20,9 +21,10 @@ class BallInBox : public Scene
 {
     Model ball{ROOT_Directory + "/res/Models/sphere.obj"};
     Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
-
+    TrailRenderer trail{240,0.03,{0.5,0.5,0,0.5}};
     Buffer vb;
     VertexArray va;
+    
 
     Camera3D camera{{0, 0, 1}};
     Fplocked fplocked{camera, loader->GetWindow()};
@@ -74,9 +76,9 @@ class BallInBox : public Scene
 
         shader.SetUniform4f("u_Color", b_color);
         shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix() * glm::scale(glm::translate(glm::mat4(1),b_pos), {bradius, bradius, bradius}));
-
         ball.Draw(shader);
-        shader.UnBind();
+        trail.NextPoint(b_pos);
+        trail.Render(camera.ComputeMatrix(),proj);
     }
 
     void CollideWithWalls()
@@ -101,11 +103,12 @@ class BallInBox : public Scene
 public:
     BallInBox(SceneLoader *_loader) : Scene(_loader)
     {
+        camera.UnlockMouse(loader->GetWindow());
         va.Bind();
         vb.Bind(GL_ARRAY_BUFFER);
         VertexBufferLayout layout;
         layout.stride=sizeof(glm::vec3);
-        layout.Push({GL_FLOAT, 3, 0});
+        layout.Push(GL_FLOAT, 3, 0);
         layout.AddToVertexArray(va);
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(sides), &sides, GL_STATIC_DRAW);

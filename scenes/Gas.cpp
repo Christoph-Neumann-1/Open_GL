@@ -296,7 +296,7 @@ public:
         va.Bind();
         vb.Bind(GL_ARRAY_BUFFER);
         VertexBufferLayout layout;
-        layout.Push({GL_FLOAT,3,0});
+        layout.Push(GL_FLOAT,3,0);
         layout.AddToVertexArray(va);
 
         glBufferData(GL_ARRAY_BUFFER, sizeof(sides) + sizeof(bar), nullptr, GL_DYNAMIC_DRAW);
@@ -309,7 +309,7 @@ public:
         glBufferData(GL_ARRAY_BUFFER, natoms * sizeof(glm::vec3), nullptr, GL_DYNAMIC_DRAW);
         VertexBufferLayout instance_layout;
         instance_layout.stride = sizeof(glm::vec3);
-        instance_layout.Push({GL_FLOAT, 3, 0});
+        instance_layout.Push(GL_FLOAT, 3, 0);
         atom_model.AddInstanceBuffer(instance_layout, offsets);
         Buffer::Unbind(GL_ARRAY_BUFFER);
 

@@ -3,6 +3,7 @@
  * @author Christoph Neumann
  * @copyright Copyright © 2021 Christoph Neumann - MIT License
  */
+
 #pragma once
 #include <glad/glad.h>
 #include <Buffer.hpp>
@@ -22,7 +23,7 @@ namespace GL
             ///If you store more than one value in the buffer, you need to specify where the attribute begins.
             void *offset;
 
-            Attribute(GLenum type_, uint count_, void *offset_) : type(type_), count(count_), offset(offset_) {}
+            Attribute(GLenum type_, uint count_, size_t offset_) : type(type_), count(count_), offset((void *)offset_) {}
         };
 
         ///Whether the attribute is per vertex or per instance.
@@ -34,9 +35,9 @@ namespace GL
         u_int stride{0};
         std::vector<Attribute> attributes;
 
-        void Push(Attribute attrib)
+        void Push(GLenum type, uint count, size_t offset)
         {
-            attributes.push_back(attrib);
+            attributes.emplace_back(type, count, offset);
         }
 
         void AddToVertexArray(VertexArray &array);

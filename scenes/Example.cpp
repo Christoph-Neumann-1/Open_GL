@@ -54,7 +54,7 @@ public:
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
         VertexBufferLayout layout;
-        layout.Push({GL_FLOAT, 2, 0}); //We only have x and y coordinates, so we use 2 as a size
+        layout.Push(GL_FLOAT, 2, 0); //We only have x and y coordinates, so we use 2 as a size
         layout.AddToVertexArray(VAO);
         shader.Bind();
 

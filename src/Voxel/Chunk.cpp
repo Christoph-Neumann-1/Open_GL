@@ -74,8 +74,8 @@ namespace GL::Voxel
         buffer.Bind(GL_ARRAY_BUFFER);
         VertexBufferLayout layout;
         layout.stride = 6 * sizeof(float);
-        layout.Push({GL_FLOAT, 3, 0});
-        layout.Push({GL_FLOAT, 3, (void *)sizeof(glm::vec3)});
+        layout.Push(GL_FLOAT, 3, 0);
+        layout.Push(GL_FLOAT, 3, sizeof(glm::vec3));
         layout.AddToVertexArray(va);
 
         layout.BindAndAddToVertexArray(va_transparent, buffer_transparent);

@@ -62,12 +62,11 @@ namespace GL
         va.Bind();
 
         VertexBufferLayout layout;
-        layout.Push({GL_FLOAT,3,0});
-        layout.Push({GL_FLOAT,3,(void *)offsetof(Vertex, normal)});
-        layout.Push({GL_FLOAT,2,(void *)offsetof(Vertex, texcoord)});
+        layout.Push(GL_FLOAT, 3, 0);
+        layout.Push(GL_FLOAT, 3, offsetof(Vertex, normal));
+        layout.Push(GL_FLOAT, 2, offsetof(Vertex, texcoord));
         layout.stride = sizeof(Vertex);
         layout.AddToVertexArray(va);
-
 
         Buffer::Unbind(GL_ARRAY_BUFFER);
         Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
@@ -79,13 +78,13 @@ namespace GL
     {
         va.Bind();
         glBindBuffer(GL_ARRAY_BUFFER, Buffer);
-        layout.attribdivisor=1;
+        layout.attribdivisor = 1;
         layout.AddToVertexArray(va);
         Buffer::Unbind(GL_ARRAY_BUFFER);
         VertexArray::Unbind();
     }
 
-    ///This has the same purpose as the above function, but uses the buffer class. Both work exactly the same as 
+    ///This has the same purpose as the above function, but uses the buffer class. Both work exactly the same as
     ///the Buffer class will be cast to an uint implicitly.
     void Mesh::AddInstanceBuffer(VertexBufferLayout &layout, Buffer &Buffer)
     {

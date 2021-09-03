@@ -128,8 +128,8 @@ public:
 
         VertexBufferLayout layout;
         layout.stride = 7 * sizeof(float);
-        layout.Push({GL_FLOAT, 3, 0});
-        layout.Push({GL_FLOAT, 1, (void *)sizeof(glm::vec3)});
+        layout.Push(GL_FLOAT, 3, 0);
+        layout.Push(GL_FLOAT, 1, sizeof(glm::vec3));
         model.AddInstanceBuffer(layout, instance_info);
 
         Buffer::Unbind(GL_ARRAY_BUFFER);
