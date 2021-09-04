@@ -172,7 +172,7 @@ namespace GL::Voxel
         };
 
         ChunkManager(TexConfig &cfg, CallbackHandler &cb) : config(cfg), cbh(cb),
-                                                            file(ROOT_Directory + "/res/world/SEED")
+                                                            file("res/world/SEED")
         {
             chunks.reserve(2 * (renderdist + preMeshed + 1) * 2 * (renderdist + preMeshed + 1)); //No more chunks should be needed.
             //Plus 1 because the chunk the player is standing in counts as well
@@ -251,8 +251,7 @@ namespace GL::Voxel
          */
         void Regenerate()
         {
-
-            for (auto &file_ : std::filesystem::directory_iterator(ROOT_Directory + "/res/world"))
+            for (auto &file_ : std::filesystem::directory_iterator("res/world"))
                 std::filesystem::remove(file_);
 
             Chunk::NewSeed();

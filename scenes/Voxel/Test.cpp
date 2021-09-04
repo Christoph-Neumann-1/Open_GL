@@ -29,17 +29,17 @@ class Voxel_t final : public GL::Scene
     //The handle for the texture atlas
     uint tex_id;
 
-    GL::Shader chunkShader{ROOT_Directory + "/shader/Voxel/Chunk.vs", ROOT_Directory + "/shader/Voxel/Block.fs"};
+    GL::Shader chunkShader{"shader/Voxel/Chunk.vs", "shader/Voxel/Block.fs"};
 
     //Shader for ui. Right now this means the square acting as the crosshair
-    GL::Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
+    GL::Shader shader{"shader/Default.vs", "shader/Default.fs"};
 
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
     GL::Camera3D camera{{0, 30, 0}};
     ///This camera controller does not allow roll or looking more than 90 degrees up.
     GL::Fplocked cameraController{camera, loader->GetWindow(), 22};
-    GL::Voxel::TexConfig blockTextures{ROOT_Directory + "/res/Textures/block.cfg"};
+    GL::Voxel::TexConfig blockTextures{"res/Textures/block.cfg"};
     GL::Voxel::ChunkManager chunks{blockTextures, loader->GetCallback()};
 
     GL::InputHandler::MouseCallback leftButton{GetInputHandler(), GLFW_MOUSE_BUTTON_LEFT, GL::InputHandler::Action::Press, &Voxel_t::Mine, this},
@@ -53,7 +53,7 @@ class Voxel_t final : public GL::Scene
     GL::Voxel::Inventory inventory;
 
     //Player data
-    GL::Voxel::FileLayout file{ROOT_Directory + "/res/world/PLAYER"};
+    GL::Voxel::FileLayout file{"res/world/PLAYER"};
 
     //This key regenerates the world
     GL::InputHandler::KeyCallback r_key{GetInputHandler()};
@@ -346,7 +346,7 @@ void Voxel_t::TexSetup()
 {
     stbi_set_flip_vertically_on_load(1);
     int w, h, bpp;
-    auto local_buffer = stbi_load((ROOT_Directory + "/res/Textures/block.png").c_str(), &w, &h, &bpp, 4);
+    auto local_buffer = stbi_load("res/Textures/block.png", &w, &h, &bpp, 4);
 
     glGenTextures(1, &tex_id);
     glBindTexture(GL_TEXTURE_2D_ARRAY, tex_id);

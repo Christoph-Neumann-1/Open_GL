@@ -14,7 +14,7 @@ using namespace GL;
 
 class CircleScene final : public Scene
 {
-    Circle circle{ROOT_Directory+"/shader/Default.vs", ROOT_Directory+"/shader/Default.fs"};
+    Circle circle{"shader/Default.vs", "/shader/Default.fs"};
     void Render()
     {
         circle.shader.Bind();

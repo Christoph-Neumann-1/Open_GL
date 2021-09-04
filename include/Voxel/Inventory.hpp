@@ -23,13 +23,13 @@ namespace GL::Voxel
         uint nBlocks;
 
     public:
-        Inventory() : file(ROOT_Directory + "/res/world/Inventory")
+        Inventory() : file("res/world/Inventory")
         {
             file.AddElement<uint>(&nBlocks);
             file.AddElement<BlockTypes>(&block);
-            file.AddElement<uint>(&blocks[0],&nBlocks);
+            file.AddElement<uint>(&blocks[0], &nBlocks);
         }
-///@brief First set everything to 0, then try loading the data from the disk.
+        ///@brief First set everything to 0, then try loading the data from the disk.
         void Load()
         {
             blocks.fill(0);
@@ -42,8 +42,8 @@ namespace GL::Voxel
          */
         void Store()
         {
-            nBlocks=NBLOCKS;
-            if(!file.Store())
+            nBlocks = NBLOCKS;
+            if (!file.Store())
             {
                 Logger()("Failed to write inventory.");
             }
@@ -80,7 +80,7 @@ namespace GL::Voxel
         }
         BlockTypes GetSelected() { return block; }
 
-        Inventory(const Inventory&)=delete;
-        Inventory& operator=(const Inventory&)=delete;
+        Inventory(const Inventory &) = delete;
+        Inventory &operator=(const Inventory &) = delete;
     };
 }

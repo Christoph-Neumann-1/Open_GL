@@ -19,12 +19,11 @@ using namespace GL;
 
 class BallInBox : public Scene
 {
-    Model ball{ROOT_Directory + "/res/Models/sphere.obj"};
-    Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
-    TrailRenderer trail{240,0.03,{0.5,0.5,0,0.5}};
+    Model ball{"res/Models/sphere.obj"};
+    Shader shader{"shader/Default.vs", "shader/Default.fs"};
+    TrailRenderer trail{240, 0.03, {0.5, 0.5, 0, 0.5}};
     Buffer vb;
     VertexArray va;
-    
 
     Camera3D camera{{0, 0, 1}};
     Fplocked fplocked{camera, loader->GetWindow()};
@@ -75,10 +74,10 @@ class BallInBox : public Scene
         RenderBox();
 
         shader.SetUniform4f("u_Color", b_color);
-        shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix() * glm::scale(glm::translate(glm::mat4(1),b_pos), {bradius, bradius, bradius}));
+        shader.SetUniformMat4f("u_MVP", proj * camera.ComputeMatrix() * glm::scale(glm::translate(glm::mat4(1), b_pos), {bradius, bradius, bradius}));
         ball.Draw(shader);
         trail.NextPoint(b_pos);
-        trail.Render(camera.ComputeMatrix(),proj);
+        trail.Render(camera.ComputeMatrix(), proj);
     }
 
     void CollideWithWalls()
@@ -107,7 +106,7 @@ public:
         va.Bind();
         vb.Bind(GL_ARRAY_BUFFER);
         VertexBufferLayout layout;
-        layout.stride=sizeof(glm::vec3);
+        layout.stride = sizeof(glm::vec3);
         layout.Push(GL_FLOAT, 3, 0);
         layout.AddToVertexArray(va);
 

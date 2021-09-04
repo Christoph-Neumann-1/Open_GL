@@ -9,7 +9,7 @@
 namespace GL
 {
     TrailRenderer::TrailRenderer(uint nPoints, float lineWidth, glm::vec4 color)
-        : m_shader(ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"), m_nPoints(nPoints), m_lineWidth(lineWidth), m_color(color)
+        : m_shader("shader/Default.vs", "shader/Default.fs"), m_nPoints(nPoints), m_lineWidth(lineWidth), m_color(color)
     {
         m_points = new glm::vec3[m_nPoints];
         m_segments = new Segment[m_nPoints - 1];

@@ -21,7 +21,7 @@ class Example final : public Scene
 {
     Buffer VBO;
     VertexArray VAO;
-    Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
+    Shader shader{"shader/Default.vs", "shader/Default.fs"};
 
     //A triangle
     float vertices[6] = {-0.5, -0.5,

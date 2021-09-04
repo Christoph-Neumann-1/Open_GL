@@ -96,7 +96,7 @@ namespace GL::Voxel
     {
         chunk_offset = position;
 
-        auto file = fopen((ROOT_Directory + "/res/world/" + std::to_string(position.x) + "__" + std::to_string(position.y)).c_str(), "r");
+        auto file = fopen(("res/world/" + std::to_string(position.x) + "__" + std::to_string(position.y)).c_str(), "r");
         if (!file)
             Generate();
         else
@@ -110,7 +110,7 @@ namespace GL::Voxel
     void Chunk::UnLoad()
     {
         //TODO: compress data
-        auto file = fopen((ROOT_Directory + "/res/world/" + std::to_string(chunk_offset.x) + "__" + std::to_string(chunk_offset.y)).c_str(), "w");
+        auto file = fopen(("res/world/" + std::to_string(chunk_offset.x) + "__" + std::to_string(chunk_offset.y)).c_str(), "w");
         if (file)
         {
             fwrite(&blocks, sizeof(blocks), 1, file);

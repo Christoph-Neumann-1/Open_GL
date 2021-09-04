@@ -23,8 +23,8 @@ using namespace GL;
 class Breakout : public Scene
 {
 #pragma region Variables
-    Shader shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
-    Shader bshader{ROOT_Directory + "/shader/Boxes.vs", ROOT_Directory + "/shader/Boxes.fs"};
+    Shader shader{"shader/Default.vs", "shader/Default.fs"};
+    Shader bshader{"shader/Boxes.vs", "shader/Boxes.fs"};
 
     VertexArray va;
     Buffer vb;
@@ -75,7 +75,7 @@ class Breakout : public Scene
     const glm::vec2 box_size{2.0f / cols, 1.0f / rows};
 
     uint BG;
-    Shader bgshader{ROOT_Directory + "/shader/BG.vs", ROOT_Directory + "/shader/BG.fs"};
+    Shader bgshader{"shader/BG.vs", "shader/BG.fs"};
 
 #pragma endregion
 
@@ -274,7 +274,7 @@ class Breakout : public Scene
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         int width, height, channels;
-        void *data = stbi_load((ROOT_Directory + "/res/Textures/background.png").c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        void *data = stbi_load("res/Textures/background.png", &width, &height, &channels, STBI_rgb_alpha);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
         stbi_image_free(data);
@@ -298,7 +298,7 @@ public:
         vb.Bind(GL_ARRAY_BUFFER);
 
         VertexBufferLayout layout;
-        layout.Push(GL_FLOAT,2,0);
+        layout.Push(GL_FLOAT, 2, 0);
         layout.AddToVertexArray(va);
 
         ComputeVertices();

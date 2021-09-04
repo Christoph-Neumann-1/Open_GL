@@ -21,6 +21,7 @@ class SceneMenu final : public Scene
     void ImGui();
 
     std::string path;
+    //The first entry is the name shown, the second one the file path relative to the scenes binary directory without the .scene extension
     std::vector<std::pair<std::string, std::string>> scenes{
         {"Example", "Example"},
         {"Breakout", "Breakout"},
@@ -75,7 +76,7 @@ void SceneMenu::ImGui()
         {
             if (ImGui::Button(scenes[i].first.c_str()))
             {
-                path = ROOT_Directory + "/scenes/bin/" + scenes[i].second + ".scene";
+                path = "scenes/bin/" + scenes[i].second + ".scene";
                 scene.Load(path);
             }
         }

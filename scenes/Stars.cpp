@@ -40,8 +40,8 @@ struct Star
 
 class Stars : public Scene
 {
-    Shader shader{ROOT_Directory + "/shader/Stars.vs", ROOT_Directory + "/shader/Star.fs"};
-    Model model{ROOT_Directory + "/res/Models/star.obj"};
+    Shader shader{"shader/Stars.vs", "shader/Star.fs"};
+    Model model{"res/Models/star.obj"};
     Buffer instance_info;
     Logger log;
 

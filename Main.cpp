@@ -155,15 +155,16 @@ int main(int argc, char **argv)
     log.print();
 
     //First check for command line arguments.
-    ProcessArguments(argc, argv, startscene, ROOT_Directory);
+    ProcessArguments(argc, argv, startscene, RootDirectory);
     //If no root directory was provided, try the directory of the executable.
     //If that fails, try the parent directory.
-    if (ROOT_Directory.empty())
+    if (RootDirectory.empty())
     {
-        ROOT_Directory = std::filesystem::path(std::string(argv[0])).parent_path().string();
-        if (!std::filesystem::exists(ROOT_Directory + "/res") && std::filesystem::exists(ROOT_Directory + "/../res"))
-            ROOT_Directory = std::filesystem::path(ROOT_Directory + "/.."); // Needed to run it from build directory.
+        RootDirectory = std::filesystem::path(std::string(argv[0])).parent_path().string();
+        if (!std::filesystem::exists(RootDirectory + "/res") && std::filesystem::exists(RootDirectory + "/../res"))
+            RootDirectory = std::filesystem::path(RootDirectory + "/.."); // Needed to run it from build directory.
     }
+    std::filesystem::current_path(RootDirectory);
 
     {
         std::mutex mutex;
@@ -267,7 +268,7 @@ int main(int argc, char **argv)
                            });
 
         //The menu allows for the selection of a scene by default it stays visible, but can be hidden by the scene.
-        loader.Load(ROOT_Directory + "/scenes/bin/" + startscene + ".scene");
+        loader.Load("scenes/bin/" + startscene + ".scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
         auto &prerendercb = cbh.GetList(cbt::PreRender);

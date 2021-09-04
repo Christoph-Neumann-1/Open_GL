@@ -30,9 +30,9 @@ const float G = 0.2f;
 
 class AtomsSim : public Scene
 {
-    Model atom_model{ROOT_Directory + "/res/Models/sphere.obj"};
-    Shader shader{ROOT_Directory + "/shader/Atoms.vs", ROOT_Directory + "/shader/Atoms.fs"};
-    Shader wall_shader{ROOT_Directory + "/shader/Default.vs", ROOT_Directory + "/shader/Default.fs"};
+    Model atom_model{"res/Models/sphere.obj"};
+    Shader shader{"shader/Atoms.vs", "shader/Atoms.fs"};
+    Shader wall_shader{"shader/Default.vs", "shader/Default.fs"};
 
     bool mouse_captured{true};
 

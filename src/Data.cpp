@@ -5,4 +5,4 @@
  */
 #include <Data.hpp>
 
-std::string ROOT_Directory;
+std::string RootDirectory;

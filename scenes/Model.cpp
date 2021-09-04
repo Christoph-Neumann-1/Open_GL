@@ -20,8 +20,8 @@ using namespace GL;
 class Star final : public Scene
 {
 
-    Shader shader{ROOT_Directory + "/shader/Star.vs", ROOT_Directory + "/shader/Star.fs"};
-    Model model{ROOT_Directory + "/res/Models/star.obj"};
+    Shader shader{"shader/Star.vs", "shader/Star.fs"};
+    Model model{"res/Models/star.obj"};
     Buffer buff; //A buffer holding offsets for multiple instances of the model
 
     //Standard projection matrix
