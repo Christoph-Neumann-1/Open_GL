@@ -7,6 +7,7 @@
 #include <dlfcn.h>
 #include <string>
 #include <Scene.hpp>
+#include <filesystem>
 namespace GL
 {
     void SceneLoader::load_func(const std::string &str)
@@ -31,6 +32,10 @@ namespace GL
 
     void SceneLoader::Load(const std::string &path)
     {
+        //For some reason gdb fails to find the library when using relative paths. This is really annoying because it
+        //makes the debugger useless. Therefore this ugly hack is used. It should be unnecessary as dlopen handles relative paths anyway.
+        //I can't think of a reason why this doesn't work.
+        auto absolutepath = std::filesystem::absolute(path);
         bool t = true, f = false;
         if (!is_loading_or_unloading.compare_exchange_weak(f, t))
             return;
@@ -46,21 +51,21 @@ namespace GL
                     dlclose(loaded);
                     loaded = nullptr;
                     flags.clear();
-                    if (OnLoad(this, path))
+                    if (OnLoad(this, _path))
                         load_func(_path);
                 }
                 is_loading_or_unloading = false;
             },
-                                           path));
+                                           absolutepath));
         }
         else
         {
             cbh.SynchronizedCall(std::bind([&](std::string _path) {
-                if (OnLoad(this, path))
+                if (OnLoad(this, _path))
                     load_func(_path);
                 is_loading_or_unloading = false;
             },
-                                           path));
+                                           absolutepath));
         }
     }
 
