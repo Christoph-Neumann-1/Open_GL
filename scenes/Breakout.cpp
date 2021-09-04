@@ -350,7 +350,6 @@ public:
     }
     ~Breakout()
     {
-        RemoveFunctions();
         loader->GetWindow().bgcolor = Window::defaultbg;
     }
 };

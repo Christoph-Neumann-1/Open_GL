@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file ModelLoader.hpp
  * @author Christoph Neumann
  * @copyright Copyright © 2021 Christoph Neumann - MIT License
  */

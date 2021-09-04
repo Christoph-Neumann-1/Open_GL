@@ -70,12 +70,6 @@ public:
         //Sets a value in the loader, the menu checks this value to decide if it needs to be visible.
         GetFlag("hide_menu")= true;
     }
-
-    //The threads will be synchronized here as well
-    ~Star()
-    {
-        RemoveFunctions();//Remove all callbacks created by this class
-    }
 };
 
 // Calls the constructor of Star

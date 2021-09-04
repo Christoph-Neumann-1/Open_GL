@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file Scene.hpp
  * @brief Base file for all scenes.
  * 
  * @details A valid scene **must** have the following method: 
@@ -85,6 +85,9 @@ namespace GL
         {
         }
 
-        virtual ~Scene() {}
+        //Just so I can't forget to remove callbacks.
+        virtual ~Scene() {
+            RemoveFunctions();  
+        }
     };
 }

@@ -345,7 +345,6 @@ public:
     }
     ~AtomsSim()
     {
-        RemoveFunctions();
         loader->GetTimeInfo().SetUpdateInterval();
     }
 };

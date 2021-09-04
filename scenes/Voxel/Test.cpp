@@ -335,7 +335,6 @@ public:
     }
     ~Voxel_t()
     {
-        RemoveFunctions();
         file.Store();
         inventory.Store();
     }

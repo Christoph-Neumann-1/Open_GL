@@ -35,10 +35,6 @@ public:
 
         RegisterFunc(CallbackType::Render, &CircleScene::Render, this);
     }
-    ~CircleScene()
-    {
-        RemoveFunctions();
-    }
 };
 
 SCENE_LOAD_FUNC(CircleScene)

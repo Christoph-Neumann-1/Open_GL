@@ -72,12 +72,6 @@ public:
         Buffer::Unbind(GL_ARRAY_BUFFER);
         shader.UnBind();
     }
-
-    //The threads will be synchronized here as well
-    ~Example()
-    {
-        RemoveFunctions(); //Remove callbacks before closing scene
-    }
 };
 
 // Calls the constructor of Example and returns a pointer to it.

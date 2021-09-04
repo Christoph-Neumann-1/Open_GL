@@ -40,7 +40,6 @@ class SceneMenu final : public Scene
 
 public:
     explicit SceneMenu(SceneLoader *_loader);
-    ~SceneMenu();
 };
 
 SceneMenu::SceneMenu(SceneLoader *_loader) : Scene(_loader)
@@ -59,11 +58,6 @@ SceneMenu::SceneMenu(SceneLoader *_loader) : Scene(_loader)
                           }
                           return true;
                       });
-}
-
-SceneMenu::~SceneMenu()
-{
-    RemoveFunctions();
 }
 
 void SceneMenu::ImGui()

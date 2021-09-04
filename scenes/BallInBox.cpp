@@ -120,10 +120,6 @@ public:
 
         GetFlag("hide_menu") = true;
     }
-    ~BallInBox()
-    {
-        RemoveFunctions();
-    }
 };
 
 SCENE_LOAD_FUNC(BallInBox)

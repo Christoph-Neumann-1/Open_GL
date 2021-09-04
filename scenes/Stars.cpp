@@ -145,7 +145,6 @@ public:
 
     ~Stars()
     {
-        RemoveFunctions();
         loader->GetTimeInfo().SetUpdateInterval();
         loader->GetWindow().bgcolor=Window::defaultbg;
     }
