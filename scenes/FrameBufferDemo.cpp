@@ -21,7 +21,7 @@ class FrameBufferDemo : public Scene
     {
         auto oldbg = loader->GetWindow().bgcolor;
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         vao.Bind();
         indexBuffer.Bind(GL_ELEMENT_ARRAY_BUFFER);
@@ -33,6 +33,7 @@ class FrameBufferDemo : public Scene
         vao2.Bind();
         indexBuffer2.Bind(GL_ELEMENT_ARRAY_BUFFER);
         secondShader.Bind();
+        secondShader.SetUniform1i("blur",glfwGetKey(loader->GetWindow(), GLFW_KEY_B));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -102,6 +103,7 @@ public:
 
         secondShader.Bind();
         secondShader.SetUniform1i("u_Texture", 0);
+        secondShader.SetUniform2f("u_texSize", loader->GetWindow().GetWidth(), loader->GetWindow().GetHeigth());
         secondShader.UnBind();
 
         vertexBuffer2.Bind(GL_ARRAY_BUFFER);
