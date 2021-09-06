@@ -129,6 +129,12 @@ unsigned int Shader::CreateShader(const std::string &vsrc, const std::string &fs
 std::string Shader::ParseShader(const std::string &src)
 {
     std::ifstream file(src);
+    if(!file.is_open())
+    {
+        logger << "Shader file not found: " << src;
+        logger.print();
+        return "";
+    }
     std::string line;
     std::stringstream ss;
     while (getline(file, line))

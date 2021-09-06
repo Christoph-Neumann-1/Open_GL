@@ -35,7 +35,7 @@ namespace GL
         u_int stride{0};
         std::vector<Attribute> attributes;
 
-        void Push(GLenum type, uint count, size_t offset)
+        void Push(GLenum type, uint count, size_t offset=0)
         {
             attributes.emplace_back(type, count, offset);
         }

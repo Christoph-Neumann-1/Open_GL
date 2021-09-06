@@ -27,6 +27,7 @@ class SceneMenu final : public Scene
         {"Breakout", "Breakout"},
         {"Voxel Test", "Voxel/Test"},
         {"Gas", "Gas"},
+        {"FBO","FrameBufferDemo"},
         {"Ball", "BallInBox"},
         {"Stars", "Stars"}};
 
