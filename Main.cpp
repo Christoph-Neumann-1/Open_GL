@@ -156,13 +156,33 @@ int main(int argc, char **argv)
 
     //First check for command line arguments.
     ProcessArguments(argc, argv, startscene, RootDirectory);
-    //If no root directory was provided, try the directory of the executable.
-    //If that fails, try the parent directory.
     if (RootDirectory.empty())
     {
-        RootDirectory = std::filesystem::path(std::string(argv[0])).parent_path().string();
-        if (!std::filesystem::exists(RootDirectory + "/res") && std::filesystem::exists(RootDirectory + "/../res"))
-            RootDirectory = std::filesystem::path(RootDirectory + "/.."); // Needed to run it from build directory.
+        //If no directory is specified, try the current directory.
+        if (std::filesystem::exists("res/"))
+        {
+            RootDirectory = ".";
+        }
+        else
+        {
+            std::string executableLocation = std::filesystem::path(std::string(argv[0])).parent_path().string();
+            //Check the location of the executable.
+            if (std::filesystem::exists(executableLocation+"/res/"))
+            {
+                RootDirectory = executableLocation;
+            }
+            //Last try the parent directory. This is needed when running from the build directory.
+            else if (auto path= std::filesystem::path(executableLocation).parent_path(); std::filesystem::exists(path))
+            {
+                RootDirectory = path.string();
+            }
+            else
+            {
+                log << "Could not find assets. Terminating program";
+                log.print();
+                return 1;
+            }
+        }
     }
     std::filesystem::current_path(RootDirectory);
 
