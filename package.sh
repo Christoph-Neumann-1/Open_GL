@@ -21,13 +21,10 @@ fi
 
 tar cf - pkg | xz -6 > pkg.tar.xz
 
-if [ $# -gt 0 ] && [[ $1 != "-y" ]]
-then
 read -p "Sign Data ?" answer
 if [ "$answer" != "y" ] && [ "$answer" != "yes" ]
 then
 exit
-fi
 fi
 
 echo Please touch key
