@@ -46,16 +46,43 @@ namespace GL
         Segment *m_segments;
 
     public:
+        /**
+         * @brief Generates a new TrailRenderer.
+         * 
+         * @param nPoints How many points should be stored before overwriting the oldest points.
+         * @param lineWidth How far the line should extend from the center
+         * @param color RGBA color of the line
+         */
         TrailRenderer(uint nPoints, float lineWidth, glm::vec4 color);
         ~TrailRenderer()
         {
             delete[] m_points;
             delete[] m_segments;
         }
+        /**
+         * @brief This function should be called once per frame. 
+         * 
+         * It computes the current vertices and renders them.
+         * 
+         * @param view //A matrix that transforms the input coordinates so that the camera is at 0,0,0
+         * @param projection //The matrix that transforms the camera coordinates to the screen coordinates
+         */
         void Render(glm::mat4 view, glm::mat4 projection);
+
+        /**
+         * @brief This function adds a new point to the trail.
+         * 
+         * After the number of points specified in the constructor, the oldest points are overwritten.
+         * Ideally this function should be called at regular intervals.
+         * 
+         * It is NOT thread safe. There won't be a crash or anything, but there will most likely be glitches.
+         * 
+         * @param point 
+         */
         void NextPoint(glm::vec3 point)
         {
-            if (currentPoint > 0 ? point == m_points[currentPoint - 1] : nRenderedPoints?point==m_points[m_nPoints-1]:false)
+            if (currentPoint > 0 ? point == m_points[currentPoint - 1] : nRenderedPoints ? point == m_points[m_nPoints - 1]
+                                                                                         : false)
                 return;
             if (currentPoint == m_nPoints)
                 currentPoint = 0;
@@ -63,6 +90,10 @@ namespace GL
             if (nRenderedPoints < m_nPoints)
                 nRenderedPoints++;
         }
+
+        /**
+         * @brief Stop rendering the points.
+         */
         void Clear()
         {
             nRenderedPoints = 0;
@@ -72,6 +103,11 @@ namespace GL
         {
             m_color = color;
         }
+        /**
+         * @brief How far the trail extends from the center of the trail.
+         * 
+         * @param lineWidth 
+         */
         void SetLineWidth(float lineWidth)
         {
             m_lineWidth = lineWidth;

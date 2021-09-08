@@ -33,7 +33,7 @@ class FrameBufferDemo : public Scene
         vao2.Bind();
         indexBuffer2.Bind(GL_ELEMENT_ARRAY_BUFFER);
         secondShader.Bind();
-        secondShader.SetUniform1i("blur",glfwGetKey(loader->GetWindow(), GLFW_KEY_B));
+        secondShader.SetUniform1i("blur", glfwGetKey(loader->GetWindow(), GLFW_KEY_B));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -58,6 +58,8 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, loader->GetWindow().GetWidth(), loader->GetWindow().GetHeigth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
 
         glGenRenderbuffers(1, &rbo);
@@ -65,9 +67,9 @@ public:
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, loader->GetWindow().GetWidth(), loader->GetWindow().GetHeigth());
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        if (auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER); status != GL_FRAMEBUFFER_COMPLETE)
         {
-            Logger()("Error framebuffer incomplete");
+            Logger()("Error framebuffer incomplete "+std::to_string(status));
             loader->UnLoad();
         }
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -108,16 +110,16 @@ public:
 
         vertexBuffer2.Bind(GL_ARRAY_BUFFER);
         glm::vec4 vertices2[] = {
-            glm::vec4(-1.0f, -1.0f, 0.0f,0.0f),
-            glm::vec4(1.0f, -1.0f,1.0f,0.0f),
-            glm::vec4(1.0f, 1.0f,1.0f,1.0f),
-            glm::vec4(-1.0f, 1.0f,0.0f,1.0f),
+            glm::vec4(-1.0f, -1.0f, 0.0f, 0.0f),
+            glm::vec4(1.0f, -1.0f, 1.0f, 0.0f),
+            glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
+            glm::vec4(-1.0f, 1.0f, 0.0f, 1.0f),
         };
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
         VertexBufferLayout layout2;
         layout2.Push(GL_FLOAT, 2);
-        layout2.Push(GL_FLOAT, 2,2*sizeof(float));
-        layout2.stride=4*sizeof(float);
+        layout2.Push(GL_FLOAT, 2, 2 * sizeof(float));
+        layout2.stride = 4 * sizeof(float);
         vao2.Bind();
         layout2.AddToVertexArray(vao2);
         Buffer::Unbind(GL_ARRAY_BUFFER);
@@ -125,8 +127,7 @@ public:
         indexBuffer2.Bind(GL_ELEMENT_ARRAY_BUFFER);
         uint indices2[] = {
             0, 1, 2,
-            0, 2, 3
-        };
+            0, 2, 3};
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2, GL_STATIC_DRAW);
         Buffer::Unbind(GL_ELEMENT_ARRAY_BUFFER);
     }

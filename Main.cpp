@@ -178,6 +178,7 @@ int main(int argc, char **argv)
             }
             else
             {
+                //The program would crash anyway when trying to load the first scene, so just exit.
                 log << "Could not find assets. Terminating program";
                 log.print();
                 return 1;
