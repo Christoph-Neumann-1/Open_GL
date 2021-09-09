@@ -80,13 +80,14 @@ class Breakout : public Scene
     Shader bgshader{"shader/BG.vs", "shader/BG.fs"};
 
     ParticleContainer2D particles{200};
-    const float particle_z_offset = 0.01f;
+    const float particle_z_offset = 0.0f;
     const float particle_size = 20.0f;
-    const float particle_size_variance = 8.0f;
-    const float particle_speed_avg = 0.5f;
-    const float particle_speed_dev = 0.1f;
-    const float particle_lifetime = 1.5f;
-    int spawncounter, spawnrate = 5;
+    const float particle_size_variance = 3.0f;
+    const float particle_speed_avg = 0.1f;
+    const float particle_speed_dev = 0.08f;
+    const float particle_lifetime = 5.0f;
+    const float G = 0.2f;
+    int spawncounter, spawnrate = 10;
 #pragma endregion
 
     void ComputeVertices()
@@ -119,6 +120,13 @@ class Breakout : public Scene
         Buffer::Unbind(GL_ARRAY_BUFFER);
     }
 
+    void KillParticles(Particle2D &p)
+    {
+        p.life*=p.position.y> -1.0f;
+    }
+
+    std::function<void(Particle2D&)> BoundKillParticles = std::bind(&Breakout::KillParticles, this, std::placeholders::_1);
+
     void Render()
     {
         DragMouse();
@@ -135,13 +143,13 @@ class Breakout : public Scene
         glDrawArrays(GL_TRIANGLE_FAN, 0, 32 + 2);
 
         shader.SetUniform4f("u_Color", glm::vec4(1, 1, 1, 1));
-        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0)), glm::vec3(bar_size, 0)));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0.01)), glm::vec3(bar_size, 0)));
 
         glDrawArrays(GL_TRIANGLES, 34, 6);
 
         shader.SetUniform4f("u_Color", {1, 0, 0, 1});
         //Needed because opengl seems to draw only once if something already is at this z value
-        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0.001)), glm::vec3(centerLineWidth, bar_size.y, 0)));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0.1)), glm::vec3(centerLineWidth, bar_size.y, 0)));
         glDrawArrays(GL_TRIANGLES, 34, 6);
 
         bshader.Bind();
@@ -159,10 +167,17 @@ class Breakout : public Scene
 
         bgshader.UnBind();
 
-        particles.Render(loader->GetTimeInfo().RenderDeltaTime(), ortho);
+        particles.FindAliveParticles();
+        particles.UpdateParticles(loader->GetTimeInfo().RenderDeltaTime());
+        particles.ApplyFunction([this](Particle2D &p)
+                                { p.velocity.y -= G * loader->GetTimeInfo().RenderDeltaTime(); });
+        particles.ApplyFunction(BoundKillParticles);
+        particles.Render(ortho);
+
+
         if (spawncounter++ % spawnrate == 0)
             particles.Emit({b_pos, particle_z_offset},
-                           particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
+                           (particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1)) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
                            b_color, particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1), particle_lifetime);
     }
 

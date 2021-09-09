@@ -13,6 +13,9 @@
 
 namespace GL
 {
+    //TODO: allow for collisions with world and forces
+    //IDEA: apply custom functions to active particles for gravity and collisions
+    //TODO: make thread safe
     struct Particle2D
     {
         //vec3 because of depth testing
@@ -32,6 +35,7 @@ namespace GL
         Buffer buffer;
         const uint maxParticles = 0;
         uint activeParticles = 0;
+        std::vector<Particle2D*> aliveParticles;
 
         Particle2D &getFreeParticle();
 
@@ -45,8 +49,12 @@ namespace GL
 
     public:
         ParticleContainer2D(const uint _maxParticles);
-        void Render(const float deltaTime, const glm::mat4 &mvp);
+        void RenderDirect(const float deltaTime, const glm::mat4 &mvp);
         void Emit(const glm::vec3 &position, const glm::vec2 &velocity, const glm::vec4 &color, const float size, const float life);
         void Clear();
+        void FindAliveParticles();
+        void UpdateParticles(const float deltaTime);
+        void ApplyFunction(const std::function<void(Particle2D&)> &function);
+        void Render(const glm::mat4 &mvp);
     };
 }

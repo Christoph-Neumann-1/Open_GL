@@ -15,43 +15,22 @@ namespace GL
         glBufferData(GL_ARRAY_BUFFER, maxParticles * sizeof(ParticleVertex2D), nullptr, GL_DYNAMIC_DRAW);
         VertexBufferLayout layout;
         layout.Push(GL_FLOAT, 3);
-        layout.Push(GL_FLOAT, 4,offsetof(ParticleVertex2D, color));
-        layout.Push(GL_FLOAT, 1,offsetof(ParticleVertex2D, size));
+        layout.Push(GL_FLOAT, 4, offsetof(ParticleVertex2D, color));
+        layout.Push(GL_FLOAT, 1, offsetof(ParticleVertex2D, size));
         layout.stride = sizeof(ParticleVertex2D);
         layout.AddToVertexArray(vao);
         vao.Unbind();
         buffer.Unbind(GL_ARRAY_BUFFER);
 
         particles.reserve(maxParticles);
+        aliveParticles.reserve(maxParticles);
     }
 
-    void ParticleContainer2D::Render(const float deltaTime, const glm::mat4 &mvp)
+    void ParticleContainer2D::RenderDirect(const float deltaTime, const glm::mat4 &mvp)
     {
-        buffer.Bind(GL_ARRAY_BUFFER);
-        auto nRendered = 0;
-        for (auto &p : particles)
-        {
-            if (p.life != 0.0f)
-            {
-                p.life = std::clamp(p.life - deltaTime, 0.0f, MAXFLOAT);
-                p.position += glm::vec3(p.velocity * deltaTime, 0.0f);
-                ParticleVertex2D vertex(p);
-                glBufferSubData(GL_ARRAY_BUFFER, nRendered++ * sizeof(ParticleVertex2D), sizeof(ParticleVertex2D), &vertex);
-            }
-        }
-        buffer.Unbind(GL_ARRAY_BUFFER);
-
-        auto points = glIsEnabled(GL_PROGRAM_POINT_SIZE);
-        if (!points)
-            glEnable(GL_PROGRAM_POINT_SIZE);
-        vao.Bind();
-        shader.Bind();
-        shader.SetUniformMat4f("u_MVP", mvp);
-        glDrawArrays(GL_POINTS, 0, nRendered);
-        vao.Unbind();
-        shader.UnBind();
-        if (!points)
-            glDisable(GL_PROGRAM_POINT_SIZE);
+        FindAliveParticles();
+        UpdateParticles(deltaTime);
+        Render(mvp);
     }
 
     void ParticleContainer2D::Emit(const glm::vec3 &position, const glm::vec2 &velocity, const glm::vec4 &color, const float size, const float life)
@@ -111,4 +90,53 @@ namespace GL
         }
     }
 
+    void ParticleContainer2D::FindAliveParticles()
+    {
+        aliveParticles.clear();
+        for (auto &p : particles)
+        {
+            if (p.life > 0.0f)
+                aliveParticles.emplace_back(&p);
+        }
+    }
+
+    void ParticleContainer2D::UpdateParticles(const float deltaTime)
+    {
+        for (auto p : aliveParticles)
+        {
+            p->life = std::clamp(p->life - deltaTime, 0.0f, MAXFLOAT);
+            p->position += glm::vec3(p->velocity * deltaTime, 0.0f);
+        }
+    }
+
+    void ParticleContainer2D::ApplyFunction(const std::function<void(Particle2D &)> &function)
+    {
+        for (auto p : aliveParticles)
+        {
+            function(*p);
+        }
+    }
+
+    void ParticleContainer2D::Render(const glm::mat4 &mvp)
+    {
+        buffer.Bind(GL_ARRAY_BUFFER);
+        for (uint i = 0; i < aliveParticles.size(); i++)
+        {
+            ParticleVertex2D vertex(*aliveParticles[i]);
+            glBufferSubData(GL_ARRAY_BUFFER, i * sizeof(ParticleVertex2D), sizeof(ParticleVertex2D), &vertex);
+        }
+        buffer.Unbind(GL_ARRAY_BUFFER);
+
+        auto points = glIsEnabled(GL_PROGRAM_POINT_SIZE);
+        if (!points)
+            glEnable(GL_PROGRAM_POINT_SIZE);
+        vao.Bind();
+        shader.Bind();
+        shader.SetUniformMat4f("u_MVP", mvp);
+        glDrawArrays(GL_POINTS, 0, aliveParticles.size());
+        vao.Unbind();
+        shader.UnBind();
+        if (!points)
+            glDisable(GL_PROGRAM_POINT_SIZE);
+    }
 }
