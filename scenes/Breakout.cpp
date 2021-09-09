@@ -15,8 +15,10 @@
 #include <Image/stb_image.h>
 #include <Buffer.hpp>
 #include <VertexArray.hpp>
+#include <Particle.hpp>
 
 //TODO: postprocessing
+//TODO: particles collide with boxes
 
 using namespace GL;
 
@@ -77,6 +79,14 @@ class Breakout : public Scene
     uint BG;
     Shader bgshader{"shader/BG.vs", "shader/BG.fs"};
 
+    ParticleContainer2D particles{200};
+    const float particle_z_offset = 0.01f;
+    const float particle_size = 20.0f;
+    const float particle_size_variance = 8.0f;
+    const float particle_speed_avg = 0.5f;
+    const float particle_speed_dev = 0.1f;
+    const float particle_lifetime = 1.5f;
+    int spawncounter, spawnrate = 5;
 #pragma endregion
 
     void ComputeVertices()
@@ -118,7 +128,7 @@ class Breakout : public Scene
         shader.Bind();
 
         shader.SetUniform4f("u_Color", b_color);
-        shader.SetUniformMat4f("u_MVP", ortho * glm::translate(glm::vec3(b_pos, 0)));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::translate(glm::vec3(b_pos, 0.2)));
 
         va.Bind();
 
@@ -137,7 +147,7 @@ class Breakout : public Scene
         bshader.Bind();
 
         bshader.SetUniformMat4f("u_MVP", ortho);
-        bshader.SetUniformMat4f("scale_mat", glm::scale(glm::vec3(0.5f * box_size, 0)));
+        bshader.SetUniformMat4f("scale_mat", glm::scale(glm::vec3(0.5f * box_size, -0.1f)));
 
         glDrawArraysInstanced(GL_TRIANGLES, 34, 6, boxes.size());
 
@@ -148,6 +158,12 @@ class Breakout : public Scene
         glDrawArrays(GL_TRIANGLES, 34, 6);
 
         bgshader.UnBind();
+
+        particles.Render(loader->GetTimeInfo().RenderDeltaTime(), ortho);
+        if (spawncounter++ % spawnrate == 0)
+            particles.Emit({b_pos, particle_z_offset},
+                           particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
+                           b_color, particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1), particle_lifetime);
     }
 
     void BounceWalls()
@@ -248,6 +264,7 @@ class Breakout : public Scene
 
     void Setup()
     {
+        particles.Clear();
         uint seed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
         srand(seed);
         boxes.clear();
