@@ -18,7 +18,8 @@
 #include <Particle.hpp>
 
 //TODO: postprocessing
-//TODO: particles collide with boxes
+//TODO: slight variation in color of particles
+//TODO: particles when breaking bricks
 
 using namespace GL;
 
@@ -80,14 +81,19 @@ class Breakout : public Scene
     Shader bgshader{"shader/BG.vs", "shader/BG.fs"};
 
     ParticleContainer2D particles{200};
-    const float particle_z_offset = 0.0f;
     const float particle_size = 20.0f;
     const float particle_size_variance = 3.0f;
     const float particle_speed_avg = 0.1f;
     const float particle_speed_dev = 0.08f;
     const float particle_lifetime = 5.0f;
     const float G = 0.2f;
-    int spawncounter, spawnrate = 10;
+    int spawncounter, spawnrate = 10; //todo make independent of framerate
+
+    ParticleContainer2D particlesBrick{200};
+    const float particle_brick_lifetime = 2.0f;
+    const float particle_brick_lifetime_variance = 0.5f;
+    const float nBrickParticles = 20;
+
 #pragma endregion
 
     void ComputeVertices()
@@ -120,6 +126,8 @@ class Breakout : public Scene
         Buffer::Unbind(GL_ARRAY_BUFFER);
     }
 
+    //Possible optimization: store rows in the buffer and compute final position in shader
+    //I could also try computing collisions in the shader, but that could cause threading issues
     void KillParticles(Particle2D &p)
     {
         p.life *= p.position.y > -1.0f;
@@ -190,8 +198,15 @@ class Breakout : public Scene
         particles.ApplyFunction(BoundKillParticles);
         particles.Render(ortho);
 
+        particlesBrick.FindAliveParticles();
+        particlesBrick.UpdateParticles(loader->GetTimeInfo().RenderDeltaTime());
+        particlesBrick.ApplyFunction([this](Particle2D &p)
+                                     { p.velocity.y -= G * loader->GetTimeInfo().RenderDeltaTime(); });
+        particlesBrick.ApplyFunction(BoundKillParticles);
+        particlesBrick.Render(ortho);
+
         if (spawncounter++ % spawnrate == 0)
-            particles.Emit({b_pos, particle_z_offset},
+            particles.Emit({b_pos, 0},
                            (particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1)) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
                            b_color, particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1), particle_lifetime);
     }
@@ -274,6 +289,14 @@ class Breakout : public Scene
                     {
                         b_vel[i] = -b_vel[i];
                     }
+                }
+                //This works, but I really need to make the particles thread safe
+                for (uint i = 0; i < nBrickParticles; i++)
+                {
+                    particles.Emit({box.pos, 0},
+                                   (particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1)) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
+                                   box.color, particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1),
+                                   particle_brick_lifetime + particle_brick_lifetime_variance * (rand() / (float)RAND_MAX * 2 - 1));
                 }
                 boxes.erase(boxes.begin() + j);
             }
