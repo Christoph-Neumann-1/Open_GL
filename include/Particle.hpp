@@ -10,6 +10,7 @@
 #include <vector>
 #include <Shader.hpp>
 #include <VertexArray.hpp>
+#include <memory>
 
 namespace GL
 {
@@ -28,14 +29,15 @@ namespace GL
 
     class ParticleContainer2D
     {
-        std::vector<Particle2D> particles;
+        std::unique_ptr<Particle2D[]> particles;
         uint lastDeadParticle = 0;
         Shader shader{"shader/Particle.vs", "shader/Particle.fs"};
         VertexArray vao;
         Buffer buffer;
         const uint maxParticles = 0;
         uint activeParticles = 0;
-        std::vector<Particle2D*> aliveParticles;
+        std::unique_ptr<uint[]> aliveParticles;
+        uint nAliveParticles=0;
 
         Particle2D &getFreeParticle();
 
@@ -54,7 +56,7 @@ namespace GL
         void Clear();
         void FindAliveParticles();
         void UpdateParticles(const float deltaTime);
-        void ApplyFunction(const std::function<void(Particle2D&)> &function);
+        void ApplyFunction(const std::function<void(Particle2D &)> &function);
         void Render(const glm::mat4 &mvp);
     };
 }

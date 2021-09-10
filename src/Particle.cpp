@@ -8,7 +8,8 @@
 
 namespace GL
 {
-    ParticleContainer2D::ParticleContainer2D(const uint _maxParticles) : maxParticles(_maxParticles)
+    ParticleContainer2D::ParticleContainer2D(const uint _maxParticles)
+        : particles(std::make_unique<Particle2D[]>(_maxParticles)), maxParticles(_maxParticles), aliveParticles(std::make_unique<uint[]>(_maxParticles))
     {
         vao.Bind();
         buffer.Bind(GL_ARRAY_BUFFER);
@@ -21,9 +22,6 @@ namespace GL
         layout.AddToVertexArray(vao);
         vao.Unbind();
         buffer.Unbind(GL_ARRAY_BUFFER);
-
-        particles.reserve(maxParticles);
-        aliveParticles.reserve(maxParticles);
     }
 
     void ParticleContainer2D::RenderDirect(const float deltaTime, const glm::mat4 &mvp)
@@ -46,15 +44,13 @@ namespace GL
     void ParticleContainer2D::Clear()
     {
         activeParticles = 0;
-        particles.clear();
     }
 
     Particle2D &ParticleContainer2D::getFreeParticle()
     {
         if (activeParticles < maxParticles)
         {
-            activeParticles++;
-            return particles.emplace_back();
+            return particles[activeParticles++];
         }
         else
         {
@@ -92,37 +88,38 @@ namespace GL
 
     void ParticleContainer2D::FindAliveParticles()
     {
-        aliveParticles.clear();
-        for (auto &p : particles)
+        nAliveParticles = 0;
+        for (uint i = 0; i < activeParticles; i++)
         {
-            if (p.life > 0.0f)
-                aliveParticles.emplace_back(&p);
+            if (particles[i].life > 0.0f)
+                aliveParticles[nAliveParticles++] = i;
         }
     }
 
     void ParticleContainer2D::UpdateParticles(const float deltaTime)
     {
-        for (auto p : aliveParticles)
+        for (uint i = 0; i < nAliveParticles; i++)
         {
-            p->life = std::clamp(p->life - deltaTime, 0.0f, MAXFLOAT);
-            p->position += glm::vec3(p->velocity * deltaTime, 0.0f);
+            auto &p = particles[aliveParticles[i]];
+            p.life = std::clamp(p.life - deltaTime, 0.0f, MAXFLOAT);
+            p.position += glm::vec3(p.velocity * deltaTime, 0.0f);
         }
     }
 
     void ParticleContainer2D::ApplyFunction(const std::function<void(Particle2D &)> &function)
     {
-        for (auto p : aliveParticles)
+        for (uint i = 0; i < nAliveParticles; i++)
         {
-            function(*p);
+            function(particles[aliveParticles[i]]);
         }
     }
 
     void ParticleContainer2D::Render(const glm::mat4 &mvp)
     {
         buffer.Bind(GL_ARRAY_BUFFER);
-        for (uint i = 0; i < aliveParticles.size(); i++)
+        for (uint i = 0; i < nAliveParticles; i++)
         {
-            ParticleVertex2D vertex(*aliveParticles[i]);
+            ParticleVertex2D vertex(particles[aliveParticles[i]]);
             glBufferSubData(GL_ARRAY_BUFFER, i * sizeof(ParticleVertex2D), sizeof(ParticleVertex2D), &vertex);
         }
         buffer.Unbind(GL_ARRAY_BUFFER);
@@ -133,7 +130,7 @@ namespace GL
         vao.Bind();
         shader.Bind();
         shader.SetUniformMat4f("u_MVP", mvp);
-        glDrawArrays(GL_POINTS, 0, aliveParticles.size());
+        glDrawArrays(GL_POINTS, 0, nAliveParticles);
         vao.Unbind();
         shader.UnBind();
         if (!points)
