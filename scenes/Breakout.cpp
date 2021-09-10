@@ -122,10 +122,26 @@ class Breakout : public Scene
 
     void KillParticles(Particle2D &p)
     {
-        p.life*=p.position.y> -1.0f;
+        p.life *= p.position.y > -1.0f;
+        //Figure out which box the particle is in
+        float collumn = roundf((p.position.x + 1.0f - box_size.x / 2.0f) / box_size.x);
+        float row = roundf((p.position.y - box_size.y / 2.0f) / box_size.y);
+        if (row >= 0 && row < rows && collumn >= 0 && collumn < cols)
+        {
+            for (auto &b : boxes)
+            {
+                float bcol = roundf((b.pos.x + 1.0f - box_size.x / 2.0f) / box_size.x);
+                float brow = roundf((b.pos.y - box_size.y / 2.0f) / box_size.y);
+                if (bcol == collumn && brow == row)
+                {
+                    p.life = 0;
+                    break;
+                }
+            }
+        }
     }
 
-    std::function<void(Particle2D&)> BoundKillParticles = std::bind(&Breakout::KillParticles, this, std::placeholders::_1);
+    std::function<void(Particle2D &)> BoundKillParticles = std::bind(&Breakout::KillParticles, this, std::placeholders::_1);
 
     void Render()
     {
@@ -173,7 +189,6 @@ class Breakout : public Scene
                                 { p.velocity.y -= G * loader->GetTimeInfo().RenderDeltaTime(); });
         particles.ApplyFunction(BoundKillParticles);
         particles.Render(ortho);
-
 
         if (spawncounter++ % spawnrate == 0)
             particles.Emit({b_pos, particle_z_offset},
