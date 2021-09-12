@@ -39,7 +39,7 @@ namespace GL
         ///@brief activate the shader
         void Bind() const;
         ///@brief bind shader 0
-        void UnBind() const;
+        static void UnBind();
 
         //The following functions allow for setting uniform values. There are multiple ways to set some uniforms, for example the
         //4f uniforms can be set using individual values or an array. The array make sense if you store colors in a vec4 for example.
@@ -60,5 +60,7 @@ namespace GL
         void SetUniform4f(const std::string &name, const glm::vec4 values);
 
         void SetUniformMat4f(const std::string &name, const glm::mat4 &matrix);
+
+        void SetUniform1fv(const std::string &name, const float *values, int count);
     };
 }

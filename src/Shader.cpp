@@ -28,7 +28,7 @@ void Shader::Bind() const
     glUseProgram(id);
 }
 
-void Shader::UnBind() const
+void Shader::UnBind()
 {
     glUseProgram(0);
 }
@@ -109,6 +109,11 @@ void Shader::SetUniformMat4f(const std::string &name, const glm::mat4 &matrix)
     glUniformMatrix4fv(GetUniformLocation(name), 1, false, &matrix[0][0]);
 }
 
+void Shader::SetUniform1fv(const std::string &name, const float *values, int count)
+{
+    glUniform1fv(GetUniformLocation(name), count, values);
+}
+
 unsigned int Shader::CreateShader(const std::string &vsrc, const std::string &fsrc)
 {
     unsigned int program = glCreateProgram();
@@ -129,7 +134,7 @@ unsigned int Shader::CreateShader(const std::string &vsrc, const std::string &fs
 std::string Shader::ParseShader(const std::string &src)
 {
     std::ifstream file(src);
-    if(!file.is_open())
+    if (!file.is_open())
     {
         logger << "Shader file not found: " << src;
         logger.print();

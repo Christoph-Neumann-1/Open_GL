@@ -17,9 +17,7 @@
 #include <VertexArray.hpp>
 #include <Particle.hpp>
 
-//TODO: postprocessing
 //TODO: slight variation in color of particles
-//TODO: particles when breaking bricks
 
 using namespace GL;
 
@@ -86,6 +84,8 @@ class Breakout : public Scene
     const float particle_speed_avg = 0.1f;
     const float particle_speed_dev = 0.08f;
     const float particle_lifetime = 5.0f;
+    const float particle_lifetime_variance = 1.0f;
+    const float particle_color_variance = 0.08f;
     const float G = 0.2f;
     int spawncounter, spawnrate = 10; //todo make independent of framerate
 
@@ -208,7 +208,8 @@ class Breakout : public Scene
         if (spawncounter++ % spawnrate == 0)
             particles.Emit({b_pos, 0},
                            (particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1)) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
-                           b_color, particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1), particle_lifetime);
+                           b_color + particle_color_variance * glm::vec4(glm::normalize(glm::vec3(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)), 1.0f),
+                           particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1), particle_lifetime + particle_lifetime_variance * (rand() / (float)RAND_MAX * 2 - 1));
     }
 
     void BounceWalls()
@@ -295,7 +296,8 @@ class Breakout : public Scene
                 {
                     particles.Emit({box.pos, 0},
                                    (particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1)) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
-                                   box.color, particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1),
+                                   box.color + particle_color_variance * glm::vec4(glm::normalize(glm::vec3(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)), 1.0f),
+                                   particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1),
                                    particle_brick_lifetime + particle_brick_lifetime_variance * (rand() / (float)RAND_MAX * 2 - 1));
                 }
                 boxes.erase(boxes.begin() + j);
