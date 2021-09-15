@@ -94,6 +94,13 @@ class Breakout : public Scene
     const float particle_brick_lifetime_variance = 0.5f;
     const float nBrickParticles = 20;
 
+    //For post processing
+    uint framebuffers[2];
+    uint colorTextures[2];
+
+    Shader blurShader{"shader/PostProcess.vs", "shader/Blur.fs"};
+    Shader textureDraw{"shader/PostProcess.vs", "shader/PostProcessRenderToScreen.fs"};
+
 #pragma endregion
 
     void ComputeVertices()
@@ -151,6 +158,61 @@ class Breakout : public Scene
 
     std::function<void(Particle2D &)> BoundKillParticles = std::bind(&Breakout::KillParticles, this, std::placeholders::_1);
 
+    void RenderParticles()
+    {
+        particles.FindAliveParticles();
+        particles.UpdateParticles(loader->GetTimeInfo().RenderDeltaTime());
+        particles.ApplyFunction([this](Particle2D &p)
+                                { p.velocity.y -= G * loader->GetTimeInfo().RenderDeltaTime(); });
+        particles.ApplyFunction(BoundKillParticles);
+
+        particlesBrick.FindAliveParticles();
+        particlesBrick.UpdateParticles(loader->GetTimeInfo().RenderDeltaTime());
+        particlesBrick.ApplyFunction([this](Particle2D &p)
+                                     { p.velocity.y -= G * loader->GetTimeInfo().RenderDeltaTime(); });
+        particlesBrick.ApplyFunction(BoundKillParticles);
+
+        if (spawncounter++ % spawnrate == 0)
+            particles.Emit({b_pos, 0},
+                           (particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1)) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
+                           b_color + particle_color_variance * glm::vec4(glm::normalize(glm::vec3(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)), 1.0f),
+                           particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1), particle_lifetime + particle_lifetime_variance * (rand() / (float)RAND_MAX * 2 - 1));
+
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[0]);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        particles.Render(ortho);
+        particlesBrick.Render(ortho);
+        
+        //Now render the particles to the screen as is.
+        //I did not want to modify the particle shader to output to different buffers, so I just draw this texture before post processing
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        va.Bind();
+        glBindTexture(GL_TEXTURE_2D, colorTextures[0]);
+        textureDraw.Bind();
+        glDrawArrays(GL_TRIANGLES, 34, 6);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[1]);
+        glClear(GL_COLOR_BUFFER_BIT);
+        va.Bind();
+        glBindTexture(GL_TEXTURE_2D, colorTextures[0]);
+        blurShader.Bind();
+        blurShader.SetUniform1i("u_vertical", 0);
+        //Note to future self. DO NOT forget the .0f it took me 5 days to find this error and I really started to question my sanity
+        blurShader.SetUniform1f("u_offset", 1.0 / loader->GetWindow().GetWidth());
+        glDrawArrays(GL_TRIANGLES, 34, 6);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindTexture(GL_TEXTURE_2D, colorTextures[1]);
+        blurShader.SetUniform1i("u_vertical", 1);
+        blurShader.SetUniform1f("u_offset", 1.0 / loader->GetWindow().GetHeigth());
+        glDrawArrays(GL_TRIANGLES, 34, 6);
+
+        auto &color = loader->GetWindow().bgcolor;
+
+        glClearColor(color.r, color.g, color.b, color.a);
+    }
+
     void Render()
     {
         DragMouse();
@@ -166,14 +228,14 @@ class Breakout : public Scene
 
         glDrawArrays(GL_TRIANGLE_FAN, 0, 32 + 2);
 
-        shader.SetUniform4f("u_Color", glm::vec4(1, 1, 1, 1));
-        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0.01)), glm::vec3(bar_size, 0)));
-
-        glDrawArrays(GL_TRIANGLES, 34, 6);
-
         shader.SetUniform4f("u_Color", {1, 0, 0, 1});
         //Needed because opengl seems to draw only once if something already is at this z value
         shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0.1)), glm::vec3(centerLineWidth, bar_size.y, 0)));
+        glDrawArrays(GL_TRIANGLES, 34, 6);
+
+        shader.SetUniform4f("u_Color", glm::vec4(1, 1, 1, 1));
+        shader.SetUniformMat4f("u_MVP", ortho * glm::scale(glm::translate(glm::vec3(barx, bary, 0.01)), glm::vec3(bar_size, 0)));
+
         glDrawArrays(GL_TRIANGLES, 34, 6);
 
         bshader.Bind();
@@ -191,25 +253,10 @@ class Breakout : public Scene
 
         bgshader.UnBind();
 
-        particles.FindAliveParticles();
-        particles.UpdateParticles(loader->GetTimeInfo().RenderDeltaTime());
-        particles.ApplyFunction([this](Particle2D &p)
-                                { p.velocity.y -= G * loader->GetTimeInfo().RenderDeltaTime(); });
-        particles.ApplyFunction(BoundKillParticles);
-        particles.Render(ortho);
+        RenderParticles();
 
-        particlesBrick.FindAliveParticles();
-        particlesBrick.UpdateParticles(loader->GetTimeInfo().RenderDeltaTime());
-        particlesBrick.ApplyFunction([this](Particle2D &p)
-                                     { p.velocity.y -= G * loader->GetTimeInfo().RenderDeltaTime(); });
-        particlesBrick.ApplyFunction(BoundKillParticles);
-        particlesBrick.Render(ortho);
-
-        if (spawncounter++ % spawnrate == 0)
-            particles.Emit({b_pos, 0},
-                           (particle_speed_avg + particle_speed_dev * (rand() / (float)RAND_MAX * 2 - 1)) * glm::normalize(glm::vec2(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)),
-                           b_color + particle_color_variance * glm::vec4(glm::normalize(glm::vec3(rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1, rand() / (float)RAND_MAX * 2 - 1)), 1.0f),
-                           particle_size + particle_size_variance * (rand() / (float)RAND_MAX * 2 - 1), particle_lifetime + particle_lifetime_variance * (rand() / (float)RAND_MAX * 2 - 1));
+        Shader::UnBind();
+        va.Unbind();
     }
 
     void BounceWalls()
@@ -360,6 +407,55 @@ class Breakout : public Scene
         bgshader.SetUniformMat4f("u_MVP", scalemat);
     }
 
+    void ComputeKernel()
+    {
+        float sigma = 8.5f;
+        const uint kernelSize = 129;
+        float kernel[kernelSize];
+        float sum = 0;
+        for (int i = 0; i < kernelSize; i++)
+        {
+            int offset = abs(long(i - kernelSize / 2));
+            kernel[i] = exp(-offset * offset / (2 * sigma * sigma));
+            sum += kernel[i];
+        }
+        for (uint i = 0; i < kernelSize; i++)
+        {
+            kernel[i] /= sum;
+        }
+        blurShader.SetUniform1fv("u_kernel", kernel, kernelSize);
+    }
+
+    void SetupBlur()
+    {
+        glGenFramebuffers(2, framebuffers);
+        glGenTextures(2, colorTextures);
+
+        for (uint i = 0; i < 2; i++)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
+            glBindTexture(GL_TEXTURE_2D, colorTextures[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, loader->GetWindow().GetWidth(), loader->GetWindow().GetHeigth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTextures[i], 0);
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        blurShader.Bind();
+        blurShader.SetUniform1i("u_texture", 0);
+        ComputeKernel();
+
+        textureDraw.Bind();
+        textureDraw.SetUniform1f("u_zOffset",+0.008f);
+        textureDraw.SetUniform1i("u_texture", 0);
+
+        Shader::UnBind();
+    }
+
 public:
     Breakout(SceneLoader *_loader) : Scene(_loader)
     {
@@ -393,6 +489,8 @@ public:
         Buffer::Unbind(GL_ARRAY_BUFFER);
         VertexArray::Unbind();
 
+        SetupBlur();
+
 #pragma endregion
 
         Setup();
@@ -423,6 +521,8 @@ public:
     ~Breakout()
     {
         loader->GetWindow().bgcolor = Window::defaultbg;
+        glDeleteTextures(2, colorTextures);
+        glDeleteFramebuffers(2, framebuffers);
     }
 };
 
