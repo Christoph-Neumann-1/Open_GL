@@ -409,8 +409,8 @@ class Breakout : public Scene
 
     void ComputeKernel()
     {
-        float sigma = 8.5f;
-        const uint kernelSize = 129;
+        float sigma = 4.0f;
+        const uint kernelSize = 25;
         float kernel[kernelSize];
         float sum = 0;
         for (int i = 0; i < kernelSize; i++)
