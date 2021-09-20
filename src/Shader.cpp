@@ -114,6 +114,71 @@ void Shader::SetUniform1fv(const std::string &name, const float *values, int cou
     glUniform1fv(GetUniformLocation(name), count, values);
 }
 
+void Shader::SetUniform1i(const int uniform_id, int value)
+{
+    glUniform1i(uniform_id, value);
+}
+
+void Shader::SetUniform1f(const int uniform_id, float value)
+{
+    glUniform1f(uniform_id, value);
+}
+
+void Shader::SetUniform4f(const int uniform_id, float v0, float v1, float v2, float v3)
+{
+    glUniform4f(uniform_id, v0, v1, v2, v3);
+}
+
+void Shader::SetUniform4f(const int uniform_id, const float values[4])
+{
+    glUniform4f(uniform_id, values[0], values[1], values[2], values[3]);
+}
+
+void Shader::SetUniform4f(const int uniform_id, const glm::vec4 values)
+{
+    glUniform4f(uniform_id, values[0], values[1], values[2], values[3]);
+}
+
+void Shader::SetUniform3f(const int uniform_id, float v0, float v1, float v2)
+{
+    glUniform3f(uniform_id, v0, v1, v2);
+}
+
+void Shader::SetUniform3f(const int uniform_id, const float values[3])
+{
+    glUniform3f(uniform_id, values[0], values[1], values[2]);
+}
+
+void Shader::SetUniform3f(const int uniform_id, const glm::vec3 values)
+{
+    glUniform3f(uniform_id, values[0], values[1], values[2]);
+}
+
+void Shader::SetUniform2f(const int uniform_id, float v0, float v1)
+{
+    glUniform2f(uniform_id, v0, v1);
+}
+
+void Shader::SetUniform2f(const int uniform_id, const float values[2])
+{
+    glUniform2f(uniform_id, values[0], values[1]);
+}
+
+void Shader::SetUniform2f(const int uniform_id, const glm::vec2 values)
+{
+    glUniform2f(uniform_id, values[0], values[1]);
+}
+
+void Shader::SetUniformMat4f(const int uniform_id, const glm::mat4 &matrix)
+{
+    glUniformMatrix4fv(uniform_id, 1, false, &matrix[0][0]);
+}
+
+void Shader::SetUniform1fv(const int uniform_id, const float *values, int count)
+{
+    glUniform1fv(uniform_id, count, values);
+}
+
 unsigned int Shader::CreateShader(const std::string &vsrc, const std::string &fsrc)
 {
     unsigned int program = glCreateProgram();
