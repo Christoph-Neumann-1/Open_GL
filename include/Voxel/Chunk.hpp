@@ -125,6 +125,7 @@ namespace GL::Voxel
             {
                 blocks[x][i][z] = BWood;
             }
+            blocks[x][heigth+1][z] = BLeaves;
         }
 
         Chunk(const TexConfig &cfg, const std::function<Chunk *(int, int)>);

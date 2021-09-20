@@ -132,8 +132,34 @@ namespace GL::Voxel
         front_chunk = GetOtherChunk(chunk_offset.x, chunk_offset.y - 1);
         back_chunk = GetOtherChunk(chunk_offset.x, chunk_offset.y + 1);
 
-        auto is_tp = [&](int x, int y, int z) -> bool
-        { return IsTransparent(blocks[x][y][z]); };
+        auto ShouldGenFace = [&](int x, int y, int z) -> bool
+        {
+            return IsTransparent(blocks[x][y][z]) || HasSeeThrough(blocks[x][y][z]);
+        };
+
+        auto ShouldGenFaceLeft = [&](int x, int y, int z) -> bool
+        {
+            const auto block=left_chunk->At(x, y, z);
+            return IsTransparent(block) || HasSeeThrough(block);
+        };
+
+        auto ShouldGenFaceRight = [&](int x, int y, int z) -> bool
+        {
+            const auto block=right_chunk->At(x, y, z);
+            return IsTransparent(block) || HasSeeThrough(block);
+        };
+
+        auto ShouldGenFaceFront = [&](int x, int y, int z) -> bool
+        {
+            const auto block=front_chunk->At(x, y, z);
+            return IsTransparent(block) || HasSeeThrough(block);
+        };
+
+        auto ShouldGenFaceBack = [&](int x, int y, int z) -> bool
+        {
+            const auto block=back_chunk->At(x, y, z);
+            return IsTransparent(block) || HasSeeThrough(block);
+        };
 
         for (int x = 0; x < 16; x++)
         {
@@ -143,7 +169,7 @@ namespace GL::Voxel
                 {
                     if (blocks[x][y][z] == BAir)
                         continue;
-                    if (!is_tp(x, y, z)) [[likely]]
+                    if (!ShouldGenFace(x, y, z)) [[likely]]
                     {
                         //If the block is on the edge of the chunk, it is treated differently. Right now this means the face is always drawn.
 
@@ -151,27 +177,27 @@ namespace GL::Voxel
                         {
                             if (x != 0)
                             {
-                                if (is_tp(x - 1, y, z))
+                                if (ShouldGenFace(x - 1, y, z))
                                     faces.push_back(GenFace({x, y, z}, Left));
                             }
                             else
                             {
-                                if (IsTransparent(left_chunk->At(15, y, z)))
+                                if (ShouldGenFaceLeft(15, y, z))
                                     faces.push_back(GenFace({x, y, z}, Left));
                             }
                             if (x != 15)
                             {
-                                if (is_tp(x + 1, y, z))
+                                if (ShouldGenFace(x + 1, y, z))
                                     faces.push_back(GenFace({x, y, z}, Right));
                             }
                             else
                             {
-                                if (IsTransparent(right_chunk->At(0, y, z)))
+                                if (ShouldGenFaceRight(0, y, z))
                                     faces.push_back(GenFace({x, y, z}, Right));
                             }
                             if (y != 0)
                             {
-                                if (is_tp(x, y - 1, z))
+                                if (ShouldGenFace(x, y - 1, z))
                                     faces.push_back(GenFace({x, y, z}, Bottom));
                             }
                             else
@@ -180,7 +206,7 @@ namespace GL::Voxel
                             }
                             if (y != 63)
                             {
-                                if (is_tp(x, y + 1, z))
+                                if (ShouldGenFace(x, y + 1, z))
                                     faces.push_back(GenFace({x, y, z}, Top));
                             }
                             else
@@ -189,38 +215,38 @@ namespace GL::Voxel
                             }
                             if (z != 0)
                             {
-                                if (is_tp(x, y, z - 1))
+                                if (ShouldGenFace(x, y, z - 1))
                                     faces.push_back(GenFace({x, y, z}, Back));
                             }
                             else
                             {
-                                if (IsTransparent(front_chunk->At(x, y, 15)))
+                                if (ShouldGenFaceFront(x, y, 15))
                                     faces.push_back(GenFace({x, y, z}, Back));
                             }
                             if (z != 15)
                             {
-                                if (is_tp(x, y, z + 1))
+                                if (ShouldGenFace(x, y, z + 1))
                                     faces.push_back(GenFace({x, y, z}, Front));
                             }
                             else
                             {
-                                if (IsTransparent(back_chunk->At(x, y, 0)))
+                                if (ShouldGenFaceBack(x, y, 0))
                                     faces.push_back(GenFace({x, y, z}, Front));
                             }
                         }
                         else [[likely]]
                         {
-                            if (is_tp(x - 1, y, z))
+                            if (ShouldGenFace(x - 1, y, z))
                                 faces.push_back(GenFace({x, y, z}, Left));
-                            if (is_tp(x + 1, y, z))
+                            if (ShouldGenFace(x + 1, y, z))
                                 faces.push_back(GenFace({x, y, z}, Right));
-                            if (is_tp(x, y - 1, z))
+                            if (ShouldGenFace(x, y - 1, z))
                                 faces.push_back(GenFace({x, y, z}, Bottom));
-                            if (is_tp(x, y + 1, z))
+                            if (ShouldGenFace(x, y + 1, z))
                                 faces.push_back(GenFace({x, y, z}, Top));
-                            if (is_tp(x, y, z - 1))
+                            if (ShouldGenFace(x, y, z - 1))
                                 faces.push_back(GenFace({x, y, z}, Back));
-                            if (is_tp(x, y, z + 1))
+                            if (ShouldGenFace(x, y, z + 1))
                                 faces.push_back(GenFace({x, y, z}, Front));
                         }
                     }

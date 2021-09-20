@@ -55,11 +55,25 @@ namespace GL::Voxel
             return true;
         case BWater:
             return true;
+        default:
+            return false;
+        }
+    }
+
+    bool HasSeeThrough(BlockTypes t)
+    {
+        switch (t)
+        {
         case BLeaves:
             return true;
         default:
             return false;
         }
+    }
+
+    bool HasSeeThrough(uint t)
+    {
+        return HasSeeThrough(static_cast<BlockTypes>(t));
     }
 
     bool IsTransparent(uint t)

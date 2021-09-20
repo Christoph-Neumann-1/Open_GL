@@ -12,7 +12,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <Camera/Fplocked.hpp>
 #include <Image/stb_image.h>
-#include <Voxel/Chunk.hpp>
 #include <Voxel/ConfigReader.hpp>
 #include <Voxel/ChunkManager.hpp>
 #include <Voxel/Inventory.hpp>
@@ -214,6 +213,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
+    //TODO: Render back faces of partially transparent blocks like leaves.
     void Render()
     {
         auto dt = loader->GetTimeInfo().RenderDeltaTime();

@@ -13,5 +13,6 @@ in vec3 t_coord;
 void main()
 {
     vec4 tcol=texture(u_Texture,t_coord);
+    if (tcol.a<0.05) discard;
     color=vec4(tcol.rgb+u_Color,tcol.a*is_drawn);
 }
