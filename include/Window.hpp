@@ -46,7 +46,7 @@ namespace GL
         ~Window();
 
         uint GetWidth() const { return size_x; }
-        uint GetHeigth() const { return size_y; }
+        uint GetHeight() const { return size_y; }
 
         operator GLFWwindow *() const { return window; }
 

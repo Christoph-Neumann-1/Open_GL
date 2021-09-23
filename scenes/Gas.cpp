@@ -89,7 +89,7 @@ class AtomsSim : public Scene
     Camera3D camera{{0, 0, 1}};
     Fplocked fplocked{camera, loader->GetWindow(), 1};
 
-    const glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, 100.0f);
+    const glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeight(), 0.1f, 100.0f);
 
     const std::array<glm::vec3, 6 * 6> sides{
         glm::vec3(1, -1, -1), glm::vec3(1, 1, -1), glm::vec3(-1, 1, -1), glm::vec3(-1, 1, -1), glm::vec3(-1, -1, -1), glm::vec3(1, -1, -1), //back

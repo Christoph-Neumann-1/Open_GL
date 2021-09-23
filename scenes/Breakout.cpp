@@ -204,7 +204,7 @@ class Breakout : public Scene
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glBindTexture(GL_TEXTURE_2D, colorTextures[1]);
         blurShader.SetUniform1i("u_vertical", 1);
-        blurShader.SetUniform1f("u_offset", 1.0 / loader->GetWindow().GetHeigth());
+        blurShader.SetUniform1f("u_offset", 1.0 / loader->GetWindow().GetHeight());
         glDrawArrays(GL_TRIANGLES, 34, 6);
 
         auto &color = loader->GetWindow().bgcolor;
@@ -402,7 +402,7 @@ class Breakout : public Scene
         bgshader.SetUniform1f("u_zOffset", 0.01f);
         //TODO: use 3d matrices
         //TODO: fix rotation and size
-        glm::mat4 scalemat = glm::scale(glm::vec3(loader->GetWindow().GetWidth() / (float)width / 2, loader->GetWindow().GetHeigth() / (float)height / 2, 1));
+        glm::mat4 scalemat = glm::scale(glm::vec3(loader->GetWindow().GetWidth() / (float)width / 2, loader->GetWindow().GetHeight() / (float)height / 2, 1));
         bgshader.SetUniformMat4f("u_MVP", scalemat);
     }
 
@@ -434,7 +434,7 @@ class Breakout : public Scene
         {
             glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[i]);
             glBindTexture(GL_TEXTURE_2D, colorTextures[i]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, loader->GetWindow().GetWidth(), loader->GetWindow().GetHeigth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, loader->GetWindow().GetWidth(), loader->GetWindow().GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -499,17 +499,17 @@ public:
 
         auto &window = loader->GetWindow();
 
-        if (window.GetWidth() > window.GetHeigth())
+        if (window.GetWidth() > window.GetHeight())
         {
-            ortho = glm::ortho(-(float)window.GetWidth() / window.GetHeigth(), (float)window.GetWidth() / window.GetHeigth(), -1.0f, 1.0f);
-            bounds.x = (float)window.GetWidth() / window.GetHeigth();
+            ortho = glm::ortho(-(float)window.GetWidth() / window.GetHeight(), (float)window.GetWidth() / window.GetHeight(), -1.0f, 1.0f);
+            bounds.x = (float)window.GetWidth() / window.GetHeight();
             bounds.y = 1.0f;
         }
         else
         {
-            ortho = glm::ortho(-1.0f, 1.0f, -(float)window.GetHeigth() / window.GetWidth(), (float)window.GetHeigth() / window.GetWidth());
+            ortho = glm::ortho(-1.0f, 1.0f, -(float)window.GetHeight() / window.GetWidth(), (float)window.GetHeight() / window.GetWidth());
             bounds.x = 1.0f;
-            bounds.y = (float)window.GetHeigth() / window.GetWidth();
+            bounds.y = (float)window.GetHeight() / window.GetWidth();
         }
 
         GetFlag("hide_menu") = true;

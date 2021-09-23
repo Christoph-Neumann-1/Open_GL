@@ -45,7 +45,7 @@ class Stars : public Scene
     Buffer instance_info;
     Logger log;
 
-    glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeigth(), 0.1f, clipping_distance);
+    glm::mat4 proj = glm::perspective(glm::radians(FOV), (float)loader->GetWindow().GetWidth() / (float)loader->GetWindow().GetHeight(), 0.1f, clipping_distance);
     Camera3D cam;
     Flycam fc{cam, loader->GetWindow(), 100};
 

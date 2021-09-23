@@ -34,7 +34,7 @@ class Voxel_t final : public GL::Scene
     //Shader for ui. Right now this means the square acting as the crosshair
     GL::Shader shader{"shader/Default.vs", "shader/Default.fs"};
 
-    glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
+    glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeight(), 0.05f, 400.0f);
 
     GL::Camera3D camera{{0, 30, 0}};
     ///This camera controller does not allow roll or looking more than 90 degrees up.
@@ -307,13 +307,13 @@ public:
 
         auto &window = loader->GetWindow();
         //This makes sure the the square always looks the same.
-        if (window.GetWidth() > window.GetHeigth())
+        if (window.GetWidth() > window.GetHeight())
         {
-            mat = glm::ortho(-(float)window.GetWidth() / window.GetHeigth(), (float)window.GetWidth() / window.GetHeigth(), -1.0f, 1.0f);
+            mat = glm::ortho(-(float)window.GetWidth() / window.GetHeight(), (float)window.GetWidth() / window.GetHeight(), -1.0f, 1.0f);
         }
         else
         {
-            mat = glm::ortho(-1.0f, 1.0f, -(float)window.GetHeigth() / window.GetWidth(), (float)window.GetHeigth() / window.GetWidth());
+            mat = glm::ortho(-1.0f, 1.0f, -(float)window.GetHeight() / window.GetWidth(), (float)window.GetHeight() / window.GetWidth());
         }
 
         shader.SetUniformMat4f("u_MVP", mat);

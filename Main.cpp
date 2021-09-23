@@ -246,7 +246,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        glViewport(0, 0, window.GetWidth(), window.GetHeigth());
+        glViewport(0, 0, window.GetWidth(), window.GetHeight());
 
         glEnable(GL_DEBUG_OUTPUT); //Errors
         glEnable(GL_DEPTH_TEST);
