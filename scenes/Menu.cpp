@@ -29,6 +29,7 @@ class SceneMenu final : public Scene
         {"Gas", "Gas"},
         {"FBO","FrameBufferDemo"},
         {"Ball", "BallInBox"},
+        {"Transparency", "Transparency"},
         {"Stars", "Stars"}};
 
     InputHandler::KeyCallback escape{GetInputHandler(), glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)

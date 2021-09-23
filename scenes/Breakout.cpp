@@ -17,7 +17,6 @@
 #include <VertexArray.hpp>
 #include <Particle.hpp>
 
-//TODO: slight variation in color of particles
 
 using namespace GL;
 
