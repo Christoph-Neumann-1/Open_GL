@@ -22,23 +22,24 @@ class SceneMenu final : public Scene
 
     std::string path;
     //The first entry is the name shown, the second one the file path relative to the scenes binary directory without the .scene extension
-    std::vector<std::pair<std::string, std::string>> scenes{
-        {"Example", "Example"},
-        {"Breakout", "Breakout"},
-        {"Voxel Test", "Voxel/Test"},
-        {"Gas", "Gas"},
-        {"FBO","FrameBufferDemo"},
-        {"Ball", "BallInBox"},
-        {"Transparency", "Transparency"},
-        {"Stars", "Stars"}};
+    //The third is the name of the scene to load. Can be empty.
+    std::vector<std::array<std::string,3>> scenes{
+        {"Example", "Example", ""},
+        {"Breakout", "Breakout", ""},
+        {"Voxel Test", "Voxel/Test", ""},
+        {"Gas", "Gas", ""},
+        {"FBO", "FrameBufferDemo", ""},
+        {"Ball", "BallInBox", ""},
+        {"Transparency", "Transparency", ""},
+        {"Stars", "Stars", ""}};
 
     InputHandler::KeyCallback escape{GetInputHandler(), glfwGetKeyScancode(GLFW_KEY_ESCAPE), InputHandler::Action::Press, [&](int)
-                                                    {
-                                                        if (scene.HasScene())
-                                                            scene.UnLoad();
-                                                        else
-                                                            glfwSetWindowShouldClose(loader->GetWindow(), 2);
-                                                    }};
+                                     {
+                                         if (scene.HasScene())
+                                             scene.UnLoad();
+                                         else
+                                             glfwSetWindowShouldClose(loader->GetWindow(), 2);
+                                     }};
 
 public:
     explicit SceneMenu(SceneLoader *_loader);
@@ -68,12 +69,12 @@ void SceneMenu::ImGui()
     {
         ImGui::Begin("Scenes");
 
-        for (unsigned int i = 0; i < scenes.size(); i++)
+        for (auto &s : scenes)
         {
-            if (ImGui::Button(scenes[i].first.c_str()))
+            if (ImGui::Button(s[0].c_str()))
             {
-                path = "scenes/bin/" + scenes[i].second + ".scene";
-                scene.Load(path);
+                path = "scenes/bin/" + s[1] + ".scene";
+                scene.Load(path, s[2]);
             }
         }
         if (ImGui::Button("Close"))

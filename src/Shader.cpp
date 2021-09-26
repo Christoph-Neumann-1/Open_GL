@@ -114,6 +114,11 @@ void Shader::SetUniform1fv(const std::string &name, const float *values, int cou
     glUniform1fv(GetUniformLocation(name), count, values);
 }
 
+void Shader::SetUniform1iv(const std::string &name, const int *values, int count)
+{
+    glUniform1iv(GetUniformLocation(name), count, values);
+}
+
 void Shader::SetUniform1i(const int uniform_id, int value)
 {
     glUniform1i(uniform_id, value);
@@ -177,6 +182,11 @@ void Shader::SetUniformMat4f(const int uniform_id, const glm::mat4 &matrix)
 void Shader::SetUniform1fv(const int uniform_id, const float *values, int count)
 {
     glUniform1fv(uniform_id, count, values);
+}
+
+void Shader::SetUniform1iv(const int uniform_id, const int *values, int count)
+{
+    glUniform1iv(uniform_id, count, values);
 }
 
 unsigned int Shader::CreateShader(const std::string &vsrc, const std::string &fsrc)

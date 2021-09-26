@@ -67,7 +67,7 @@ namespace GL
             }
             else
             {
-                ///-1 Prevents weird issue where it stays full screen.
+                ///-1 Prevents weird issue where it stays full screen. Borderless window?
                 glfwSetWindowMonitor(window, nullptr, 0, 0, mode->width, mode->height - 1, 0);
             }
         }

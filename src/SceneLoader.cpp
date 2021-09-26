@@ -10,15 +10,15 @@
 #include <filesystem>
 namespace GL
 {
-    void SceneLoader::load_func(const std::string &str)
+    void SceneLoader::load_func(const std::string &path,const std::string &name)
     {
-        loaded = dlopen(str.c_str(), RTLD_LAZY);
+        loaded = dlopen(path.c_str(), RTLD_LAZY);
         if (!loaded)
         {
             const char *error = dlerror();
             throw InvalidScene(std::string("Could not load Scene. Error: ") + (error ? error : ""));
         }
-        auto init_func = reinterpret_cast<Scene *(*)(SceneLoader *)>(dlsym(loaded, "_LOAD_"));
+        auto init_func = reinterpret_cast<Scene *(*)(SceneLoader *)>(dlsym(loaded, (std::string("_LOAD_")+name).c_str()));
 
         if (!init_func)
         {
@@ -32,6 +32,11 @@ namespace GL
 
     void SceneLoader::Load(const std::string &path)
     {
+        Load(path,"");
+    }
+
+    void SceneLoader::Load(const std::string &path, const std::string &name)
+    {
         //For some reason gdb fails to find the library when using relative paths. This is really annoying because it
         //makes the debugger useless. Therefore this ugly hack is used. It should be unnecessary as dlopen handles relative paths anyway.
         //I can't think of a reason why this doesn't work.
@@ -42,7 +47,7 @@ namespace GL
 
         if (loaded)
         {
-            cbh.SynchronizedCall(std::bind([&](std::string _path) {
+            cbh.SynchronizedCall(std::bind([&](std::string _path, std::string _name) {
                 if (OnUnload(this))
                 {
                     delete s;
@@ -51,21 +56,21 @@ namespace GL
                     dlclose(loaded);
                     loaded = nullptr;
                     flags.clear();
-                    if (OnLoad(this, _path))
-                        load_func(_path);
+                    if (OnLoad(this, _path, _name))
+                        load_func(_path, _name);
                 }
                 is_loading_or_unloading = false;
             },
-                                           absolutepath));
+                                           absolutepath,name));
         }
         else
         {
-            cbh.SynchronizedCall(std::bind([&](std::string _path) {
-                if (OnLoad(this, _path))
-                    load_func(_path);
+            cbh.SynchronizedCall(std::bind([&](std::string _path, std::string _name) {
+                if (OnLoad(this, _path,_name))
+                    load_func(_path, _name);
                 is_loading_or_unloading = false;
             },
-                                           absolutepath));
+                                           absolutepath,name));
         }
     }
 

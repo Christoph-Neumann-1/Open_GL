@@ -26,6 +26,16 @@
  */
 #define SCENE_LOAD_FUNC(name) \
     extern "C" GL::Scene *_LOAD_(GL::SceneLoader *loader) { return new name(loader); }
+
+/**
+ * @brief Works the same way, but allows for multiple scenes per file.
+ * 
+ * Each scene must have one of these macros.
+ * 
+ */
+#define MULTI_SCENE_LOAD_FUNC(name) \
+    extern "C" GL::Scene *_LOAD_##name(GL::SceneLoader *loader) { return new name(loader); }
+
 namespace GL
 {
 
