@@ -214,7 +214,7 @@ int main(int argc, char **argv)
 
         //By default, the window is full screen.
         auto vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-        GLFWwindow *_window = glfwCreateWindow(vidmode->width, vidmode->height, "OpenGL", glfwGetPrimaryMonitor(), NULL);
+        GLFWwindow *_window = glfwCreateWindow(vidmode->width, vidmode->height, "OpenGL", NULL, NULL);
         if (!_window)
         {
             log << "Failed to create window";

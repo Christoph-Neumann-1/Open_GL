@@ -36,6 +36,8 @@
 #define MULTI_SCENE_LOAD_FUNC(name) \
     extern "C" GL::Scene *_LOAD_##name(GL::SceneLoader *loader) { return new name(loader); }
 
+//TODO: a way to query the library for available scenes+ descriptions
+    
 namespace GL
 {
 

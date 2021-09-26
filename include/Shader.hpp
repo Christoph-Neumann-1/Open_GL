@@ -63,6 +63,8 @@ namespace GL
 
         void SetUniform1fv(const std::string &name, const float *values, int count);
 
+        void SetUniform1iv(const std::string &name, const int *values, int count);
+
         //Same but with the location instead of the name.
         void SetUniform1i(const int uniform_id, int value);
         void SetUniform1f(const int uniform_id, float value);
@@ -82,5 +84,7 @@ namespace GL
         void SetUniformMat4f(const int uniform_id, const glm::mat4 &matrix);
 
         void SetUniform1fv(const int uniform_id, const float *values, int count);
+
+        void SetUniform1iv(const int uniform_id, const int *values, int count);
     };
 }
