@@ -108,22 +108,57 @@ namespace GL
             KeyCallbacks &operator=(const KeyCallbacks &) = delete;
         };
 
+        struct AnyKeyCallbacks
+        {
+            struct Element
+            {
+                std::function<void(int, int, int)> func;
+                uint id;
+                Action type;
+                bool operator==(uint idd)
+                {
+                    return idd == id;
+                }
+
+                Element(const std::function<void(int, int, int)> &f, uint idd, Action type_ = Action::Press) : func(f), id(idd), type(type_) {}
+                Element(std::function<void(int, int, int)> &&f, uint idd, Action type_ = Action::Press) : func(std::move(f)), id(idd), type(type_) {}
+            };
+            std::vector<Element> funcs;
+            void Call(int action, int key, int scancode)
+            {
+                for (auto &f : funcs)
+                {
+                    if (f.type != Action::All &&
+                        !(action == GLFW_RELEASE && (f.type == Action::ReleasePress || f.type == Action::Release)) &&
+                        !(action == GLFW_PRESS && (f.type == Action::ReleasePress || f.type == Action::Press || f.type == Action::PressRepeat)) &&
+                        !(action == GLFW_REPEAT && (f.type == Action::PressRepeat || f.type == Action::Repeat)))
+                    {
+                        continue;
+                    }
+                    f.func(action, key, scancode);
+                }
+            }
+
+            AnyKeyCallbacks() = default;
+            AnyKeyCallbacks(const AnyKeyCallbacks &) = delete;
+            AnyKeyCallbacks &operator=(const AnyKeyCallbacks &) = delete;
+        };
+
         GL::Window &window;
         std::unordered_map<int, KeyCallbacks> callbacks;
         std::unordered_map<int, MouseCallbacks> mousecallbacks;
+        AnyKeyCallbacks anyKeyCallback;
         std::mutex mutex;
         uint current_id = 1;
 
         //This function is called every time something happens with a key. It then decides if a callback should be called.
-        void KeyCallbackFunc(int code, int action, int mods)
+        void KeyCallbackFunc(int key, int code, int action, int mods)
         {
             //TODO  allow removing while called
             current_modifiers = mods;
             std::scoped_lock lk(mutex);
-            if (callbacks.contains(code))
-            {
-                callbacks[code].Call(action);
-            }
+            anyKeyCallback.Call(action, key, code);
+            callbacks[code].Call(action);
         }
 
         //Same for mouse buttons.
@@ -131,10 +166,7 @@ namespace GL
         {
             //TODO  allow removing while called
             std::scoped_lock lk(mutex);
-            if (mousecallbacks.contains(button))
-            {
-                mousecallbacks[button].Call(action);
-            }
+            mousecallbacks[button].Call(action);
         }
 
         //When a key is pressed, the currently active modifiers are stored here.
@@ -164,11 +196,11 @@ namespace GL
              * 
              * If a callback was bound before it will be removed.
              * The last parameter to the callback must be an integer. The integer is from glfw and represents the type of action.
-             * @tparam F any function or lambda
+             * @tparam F any function
              * @tparam arguments that need to be bound
              * @param code key scancode
              * @param type when the callback should be triggered
-             * @param func //The function that should be called
+             * @param func The function that should be called
              * @param args arguments that need to be bound
              */
             template <typename F, typename... Args>
@@ -229,6 +261,81 @@ namespace GL
 
             KeyCallback(const KeyCallback &) = delete;
             KeyCallback &operator=(const KeyCallback &) = delete;
+        };
+
+        class AnyKeyCallback
+        {
+            uint id = 0;
+            InputHandler &handle;
+
+        public:
+            /**
+             * @brief Bind a new function
+             * 
+             * If a callback was bound before it will be removed.
+             * The last parameters are the action,the key and its scancode
+             * @tparam F any function
+             * @tparam arguments that need to be bound
+             * @param type when the callback should be triggered
+             * @param func The function that should be called
+             * @param args arguments that need to be bound
+             */
+            template <typename F, typename... Args>
+            void Bind(Action type, F &&func, Args... args)
+            {
+                UnBind();
+                id = handle.AddAnyKeyCallback(type, std::move(func), args...);
+            }
+
+            ///@overload
+            template <typename F, typename... Args>
+            void Bind(Action type, const F &func, Args... args)
+            {
+                UnBind();
+                id = handle.AddAnyKeyCallback(type, func, args...);
+            }
+
+            ///@brief Disables the callback.
+            void UnBind()
+            {
+                if (id == 0)
+                    return;
+                handle.RemoveAnyKeyCallback(id);
+            }
+
+            /**
+             * @brief Construct a new Key Callback object but don't bind it to a key.
+             * 
+             * @param handler the input handler of the window
+             */
+            AnyKeyCallback(InputHandler &handler) : handle(handler) {}
+
+            /**
+             * @brief Construct a new Key Callback object and bind a callback directly
+             * 
+             * For more information see Bind()
+             */
+            template <typename F, typename... Args>
+            AnyKeyCallback(InputHandler &handler, Action type, F &&func, Args... args) : handle(handler)
+            {
+                Bind(type, std::move(func), args...);
+            }
+
+            ///@overload
+            template <typename F, typename... Args>
+            AnyKeyCallback(InputHandler &handler, Action type, const F &func, Args... args) : handle(handler)
+            {
+                Bind(type, func, args...);
+            }
+
+            ///Simply unbinds any bound callback.
+            ~AnyKeyCallback()
+            {
+                UnBind();
+            }
+
+            AnyKeyCallback(const AnyKeyCallback &) = delete;
+            AnyKeyCallback &operator=(const AnyKeyCallback &) = delete;
         };
 
         /**
@@ -346,6 +453,22 @@ namespace GL
         }
 
         template <typename F, typename... Args>
+        uint AddAnyKeyCallback(Action type, const F &func, Args... args)
+        {
+            std::scoped_lock mmutex(mutex);
+            anyKeyCallback.funcs.emplace_back(std::bind(func, args..., std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), current_id, type);
+            return current_id++;
+        }
+
+        template <typename F, typename... Args>
+        uint AddAnyKeyCallback(Action type, F &&func, Args... args)
+        {
+            std::scoped_lock mmutex(mutex);
+            anyKeyCallback.funcs.emplace_back(std::bind(std::move(func), args..., std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), current_id, type);
+            return current_id++;
+        }
+
+        template <typename F, typename... Args>
         uint AddMouseCallback(int button, Action type, const F &func, Args... args)
         {
             std::scoped_lock mmutex(mutex);
@@ -368,6 +491,14 @@ namespace GL
             std::scoped_lock mmutex(mutex);
             auto &cbl = callbacks[code];
             cbl.funcs.erase(std::find(cbl.funcs.begin(), cbl.funcs.end(), id));
+        }
+
+        void RemoveAnyKeyCallback(uint id)
+        {
+            if (id == 0)
+                return;
+            std::scoped_lock mmutex(mutex);
+            anyKeyCallback.funcs.erase(std::find(anyKeyCallback.funcs.begin(), anyKeyCallback.funcs.end(), id));
         }
 
         void RemoveMouseCallback(int button, uint id)
@@ -401,9 +532,9 @@ namespace GL
         InputHandler(Window &w, CallbackList &rendercbs) : mrendercbs(rendercbs), window(w)
         {
 
-            glfwSetKeyCallback(w, [](GLFWwindow *ww, int, int code, int action, int mods)
+            glfwSetKeyCallback(w, [](GLFWwindow *ww, int key, int code, int action, int mods)
                                { ((Window *)glfwGetWindowUserPointer(ww))
-                                     ->inputptr->KeyCallbackFunc(code, action, mods); });
+                                     ->inputptr->KeyCallbackFunc(key, code, action, mods); });
             glfwSetMouseButtonCallback(w, [](GLFWwindow *ww, int button, int action, int)
                                        { ((Window *)glfwGetWindowUserPointer(ww))
                                              ->inputptr->MouseCallbackFunc(button, action); });
