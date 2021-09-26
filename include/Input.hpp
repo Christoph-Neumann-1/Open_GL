@@ -244,12 +244,16 @@ namespace GL
             int scancode;
 
             int value = 0;
+            int mods = 0;
 
         public:
             KeyState(InputHandler &handler, int code) : handle(handler), scancode(code)
             {
                 id = handle.AddKeyCallback(scancode, Action::ReleasePress, [&](int action)
-                                           { value = action; });
+                                           {
+                                               value = action;
+                                               mods = handle.GetModifiers();
+                                           });
             }
             ~KeyState()
             {
