@@ -11,6 +11,7 @@ namespace GL
 {
 
     //TODO allow for copies
+    //TODO use string_view
     /**
      * @brief This class stores a single shader program and allows you to modify uniforms .
      */

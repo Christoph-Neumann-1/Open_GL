@@ -74,7 +74,7 @@ namespace GL
         std::vector<Mesh> meshes;
         std::vector<s_Texture> loaded;
 
-        std::vector<s_Texture> LoadTextures(aiMaterial *mat, aiTextureType type, std::string typeName);
+        std::vector<s_Texture> LoadTextures(aiMaterial *mat, aiTextureType type, std::string_view typeName);
 
         void ProcessMesh(aiMesh *mesh, const aiScene *scene);
 

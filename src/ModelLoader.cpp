@@ -7,9 +7,10 @@
 
 namespace GL
 {
-    static unsigned int LoadTextureFromFile(const char *path, const std::string &directory)
+    static unsigned int LoadTextureFromFile(std::string_view path, std::string_view directory)
     {
-        auto filename = directory + '/' + path;
+        std::string filename(directory);
+        filename.append("/").append(path);
 
         unsigned int textureID;
         glGenTextures(1, &textureID);
@@ -129,7 +130,7 @@ namespace GL
         VertexArray::Unbind();
     }
 
-    std::vector<s_Texture> Model::LoadTextures(aiMaterial *mat, aiTextureType type, std::string typeName)
+    std::vector<s_Texture> Model::LoadTextures(aiMaterial *mat, aiTextureType type, std::string_view typeName)
     {
         std::vector<s_Texture> textures;
 

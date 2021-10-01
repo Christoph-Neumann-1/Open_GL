@@ -30,7 +30,7 @@ namespace GL
 
         //TODO: use external shader and add support for instancing
         //TODO: allow for the vertices to be generated without creating buffers and such
-        Circle(std::string vshader, std::string fshader)
+        Circle(const std::string &vshader, const std::string &fshader)
             : shader(vshader, fshader)
         {
             VertexBufferLayout layout;

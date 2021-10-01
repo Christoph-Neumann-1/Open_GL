@@ -26,7 +26,7 @@ namespace GL
 
         public:
             const char *what() const _GLIBCXX_TXN_SAFE_DYN _GLIBCXX_NOTHROW override { return _what.c_str(); }
-            explicit InvalidScene(const std::string &reason) : _what(reason) {}
+            explicit InvalidScene(std::string_view reason) : _what(reason) {}
         };
 
     private:

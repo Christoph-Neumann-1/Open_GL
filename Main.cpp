@@ -129,7 +129,7 @@ void ProcessArguments(int argc, char **argv, std::string &scene, std::string &ro
 {
     for (int i = 1; i < argc; i += 2)
     {
-        std::string tmp = argv[i];
+        std::string_view tmp = argv[i];
         if (tmp == "-scene")
         {
             scene = argv[i + 1];
