@@ -414,7 +414,7 @@ class Breakout : public Scene
         float sum = 0;
         for (int i = 0; i < kernelSize; i++)
         {
-            int offset = abs(long(i - kernelSize / 2));
+            int offset = abs(int(i - kernelSize / 2));
             kernel[i] = exp(-offset * offset / (2 * sigma * sigma));
             sum += kernel[i];
         }
