@@ -1,3 +1,6 @@
+This is just a collection of short programs I created while learning Opengl. I am not planning to continue this project 
+in the near future.
+
 [Link to assets:](https://drive.google.com/drive/folders/1tTzC-uJ3ZbW6bwRTZsTCnjj0dKDIWBQa?usp=sharing)
 I don't add them to git, because it takes up too much space.
 
