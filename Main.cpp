@@ -25,7 +25,7 @@ using cbt = CallbackType;
 
 static std::string startscene = "Menu";
 
-///This function schedules a function to be called once both threads are ready. This may be useful for unloading or loading scenes.
+/// This function schedules a function to be called once both threads are ready. This may be useful for unloading or loading scenes.
 static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syncs, const std::function<void()> &func)
 {
     std::scoped_lock lk(mutex);
@@ -33,7 +33,7 @@ static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syn
 }
 /**
  * @brief This is the update thread intended for all operations not directly related to rendering.
- * 
+ *
  * @param cbh All relevant callbacks
  * @param ti Just for the update interval, this is not passed as a value as it may change.
  * @param close This is used to signal the thread to close, it also informs the main aka rendering thread that this therad is done.
@@ -44,7 +44,7 @@ static void AddToSync(std::mutex &mutex, std::vector<std::function<void()>> &syn
 static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &close, std::condition_variable &cv,
                        std::atomic_bool &should_sync, std::atomic_bool &is_synced)
 {
-    //TODO: better timing
+    // TODO: better timing
     Logger log;
     auto &updatecb = cbh.GetList(cbt::Update);
     auto &preupdatecb = cbh.GetList(cbt::PreUpdate);
@@ -57,7 +57,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
     log.print();
 #endif
 
-//This code counts how many times loop is run every second. I use this for proffiling.
+// This code counts how many times loop is run every second. I use this for proffiling.
 #ifdef COUNT_UPDATES
     int second = 0;
     int count = 0;
@@ -68,7 +68,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 
     while (!close)
     {
-        //Determine how long each iteration should take.
+        // Determine how long each iteration should take.
         std::chrono::nanoseconds Interval((int)(powf(10, 9) * interval));
         auto begin = std::chrono::steady_clock::now();
 
@@ -90,7 +90,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
         updatecb();
         postupdatecb();
 
-        //The update thread stops for things like loading scenes. I have tried it without stoping the thread, but the solution was ugly.
+        // The update thread stops for things like loading scenes. I have tried it without stoping the thread, but the solution was ugly.
         if (should_sync)
         {
             is_synced = true;
@@ -100,7 +100,7 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 
         auto end = std::chrono::steady_clock::now();
         auto time = Interval - (end - begin);
-        //This function first sleeps then spinlocks, which improves the accuracy drastically. Especially when the os is switching between tasks.
+        // This function first sleeps then spinlocks, which improves the accuracy drastically. Especially when the os is switching between tasks.
         PreciseSleep(time);
     }
 
@@ -120,12 +120,12 @@ static void UpdateLoop(CallbackHandler &cbh, TimeInfo &ti, std::atomic_bool &clo
 }
 
 /**
- * @brief This function checks for command line arguments. 
- * 
+ * @brief This function checks for command line arguments.
+ *
  * @param scene The first scene to be loaded. Relative to rootdir.
  * @param rootdir Where all files are located.
  */
-void ProcessArguments(int argc, char **argv, std::string &scene, std::string &rootdir)
+void ProcessArguments(int argc, char **argv, std::string &scene, std::string &rootdir, Logger &log)
 {
     for (int i = 1; i < argc; i += 2)
     {
@@ -137,6 +137,14 @@ void ProcessArguments(int argc, char **argv, std::string &scene, std::string &ro
         else if (tmp == "-rootdir")
         {
             rootdir = argv[i + 1];
+        }
+        else if (tmp == "-h" || tmp == "-help")
+        {
+            log << "Usage: " << argv[0] << " [-scene <scene>] [-rootdir <rootdir>] [-h|-help]\n";
+            log << "If the rootdirectory is omitted, the program attempts to find the res folder in the following order:\n";
+            log << "1. Working directory\n";
+            log << "2. Executable location\n";
+            log << "3. Parent path of executable location\n";
         }
     }
 }
@@ -154,11 +162,11 @@ int main(int argc, char **argv)
         << "***********************************************************\n";
     log.print();
 
-    //First check for command line arguments.
-    ProcessArguments(argc, argv, startscene, RootDirectory);
+    // First check for command line arguments.
+    ProcessArguments(argc, argv, startscene, RootDirectory, log);
     if (RootDirectory.empty())
     {
-        //If no directory is specified, try the current directory.
+        // If no directory is specified, try the current directory.
         if (std::filesystem::exists("res/"))
         {
             RootDirectory = ".";
@@ -166,19 +174,19 @@ int main(int argc, char **argv)
         else
         {
             std::string executableLocation = std::filesystem::path(std::string(argv[0])).parent_path().string();
-            //Check the location of the executable.
-            if (std::filesystem::exists(executableLocation+"/res/"))
+            // Check the location of the executable.
+            if (std::filesystem::exists(executableLocation + "/res/"))
             {
                 RootDirectory = executableLocation;
             }
-            //Last try the parent directory. This is needed when running from the build directory.
-            else if (auto path= std::filesystem::path(executableLocation).parent_path(); std::filesystem::exists(path))
+            // Last try the parent directory. This is needed when running from the build directory.
+            else if (auto path = std::filesystem::path(executableLocation).parent_path(); std::filesystem::exists(path))
             {
                 RootDirectory = path.string();
             }
             else
             {
-                //The program would crash anyway when trying to load the first scene, so just exit.
+                // The program would crash anyway when trying to load the first scene, so just exit.
                 log << "Could not find assets. Terminating program";
                 log.print();
                 return 1;
@@ -196,7 +204,7 @@ int main(int argc, char **argv)
 #pragma region WindowSetup
 
         glfwSetErrorCallback(glfw_error_callback);
-        //There is no point trying to continue if the GLFW initialization fails.
+        // There is no point trying to continue if the GLFW initialization fails.
         if (!glfwInit())
         {
             log << "Failed to initialize glfw";
@@ -204,7 +212,7 @@ int main(int argc, char **argv)
             return 1;
         }
 
-        //I chose this version because it worked in virtal box.
+        // I chose this version because it worked in virtal box.
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
         glfwWindowHint(GLFW_RESIZABLE, true);
@@ -212,7 +220,7 @@ int main(int argc, char **argv)
 
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        //By default, the window is full screen.
+        // By default, the window is full screen.
         auto vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
         GLFWwindow *_window = glfwCreateWindow(vidmode->width, vidmode->height, "OpenGL", glfwGetPrimaryMonitor(), NULL);
         if (!_window)
@@ -225,17 +233,16 @@ int main(int argc, char **argv)
         Window window(_window, cbh.GetList(cbt::OnWindowResize));
         InputHandler handler(window, cbh.GetList(cbt::Render));
         window.inputptr = &handler;
-        //This helps with closing the program if it doesn't use the menu scene.
+        // This helps with closing the program if it doesn't use the menu scene.
         InputHandler::KeyCallback exitOnCtrlQ(handler, glfwGetKeyScancode(GLFW_KEY_Q), InputHandler::Action::Press, [&](int)
                                               {
                                                   int mods = handler.GetModifiers();
                                                   if (mods & GLFW_MOD_CONTROL)
-                                                      glfwSetWindowShouldClose(window, 3);
-                                              });
+                                                      glfwSetWindowShouldClose(window, 3); });
 
         glfwMakeContextCurrent(window);
 
-        //Turns on VSync.
+        // Turns on VSync.
         glfwWindowHint(GLFW_REFRESH_RATE, vidmode->refreshRate);
         glfwSwapInterval(1);
 
@@ -248,16 +255,16 @@ int main(int argc, char **argv)
 
         glViewport(0, 0, window.GetWidth(), window.GetHeigth());
 
-        glEnable(GL_DEBUG_OUTPUT); //Errors
+        glEnable(GL_DEBUG_OUTPUT); // Errors
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_MULTISAMPLE); //Anti-aliasing
+        glEnable(GL_MULTISAMPLE); // Anti-aliasing
         glEnable(GL_CULL_FACE);
         glDebugMessageCallback(ErrorCallback, 0);
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
 
-        //Print version info and driver name.
+        // Print version info and driver name.
         {
             int major, minor;
             glGetIntegerv(GL_MAJOR_VERSION, &major);
@@ -268,11 +275,11 @@ int main(int argc, char **argv)
             log.print();
         }
 
-        //Imgui boilerplate.
+        // Imgui boilerplate.
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO &io = ImGui::GetIO(); //I dont't know if this is necessary, but it works.
-        (void)io;                     //I dont't know why this is here, but the example has it too.
+        ImGuiIO &io = ImGui::GetIO(); // I dont't know if this is necessary, but it works.
+        (void)io;                     // I dont't know why this is here, but the example has it too.
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 450");
         ImGui::StyleColorsDark();
@@ -281,14 +288,13 @@ int main(int argc, char **argv)
 
         SceneLoader loader(window, cbh, timeinfo);
 
-        //If the menu closes, stop the program.
+        // If the menu closes, stop the program.
         loader.SetUnloadCb([&](SceneLoader *)
                            {
                                glfwSetWindowShouldClose(window, 2);
-                               return true;
-                           });
+                               return true; });
 
-        //The menu allows for the selection of a scene by default it stays visible, but can be hidden by the scene.
+        // The menu allows for the selection of a scene by default it stays visible, but can be hidden by the scene.
         loader.Load("scenes/bin/" + startscene + ".scene");
 
         auto &rendercb = cbh.GetList(cbt::Render);
@@ -297,28 +303,28 @@ int main(int argc, char **argv)
 
         auto &imguirendercb = cbh.GetList(cbt::ImGuiRender);
 
-        //I don't know why I used a condition variable here, but I also don't see any disadvantages, so it stays here until I finally rewrite this file.
+        // I don't know why I used a condition variable here, but I also don't see any disadvantages, so it stays here until I finally rewrite this file.
         std::condition_variable cv;
 
-        //For communicating between the render thread and the update thread.
+        // For communicating between the render thread and the update thread.
         std::atomic_bool should_close = false;
         std::atomic_bool should_sync = false;
         std::atomic_bool is_synced = false;
 
         timeinfo.SetUpdateInterval();
 
-        //Start the update thread.
+        // Start the update thread.
         std::thread UpdateThread(std::ref(UpdateLoop), std::ref(cbh), std::ref(timeinfo), std::ref(should_close),
                                  std::ref(cv), std::ref(should_sync), std::ref(is_synced));
 
-        //The value will be non-zero if the window should close. The value can tell you how the window was closed.
+        // The value will be non-zero if the window should close. The value can tell you how the window was closed.
         while (!glfwWindowShouldClose(window))
         {
-            //Blue background.
+            // Blue background.
             glClearColor(window.bgcolor.r, window.bgcolor.g, window.bgcolor.b, window.bgcolor.a);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            //Draw normal stuff.
+            // Draw normal stuff.
             prerendercb();
             rendercb();
 
@@ -326,7 +332,7 @@ int main(int argc, char **argv)
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            //Interface
+            // Interface
             imguirendercb();
 
             ImGui::Render();
@@ -334,7 +340,7 @@ int main(int argc, char **argv)
 
             postrendercb();
 
-            //Check if the threads should synchronize, if so wait for the update thread to finish.
+            // Check if the threads should synchronize, if so wait for the update thread to finish.
             {
                 std::unique_lock lk(mutex);
                 if (syncfunctions.size())
@@ -355,7 +361,7 @@ int main(int argc, char **argv)
 
 #pragma region StopThread
 
-        //Try stopping the update thread, if it takes too long kill it.
+        // Try stopping the update thread, if it takes too long kill it.
         should_close = true;
         std::unique_lock lk(mutex);
         if (cv.wait_for(lk, std::chrono::milliseconds(100), [&]()
@@ -375,7 +381,7 @@ int main(int argc, char **argv)
         case 1:
             log << " (Window closed normally)";
             break;
-            //I just used the next number, have to find a better way to do this.
+            // I just used the next number, have to find a better way to do this.
         case 2:
             log << " (Window closed by exit button)";
             break;
@@ -389,9 +395,9 @@ int main(int argc, char **argv)
 
 #pragma endregion StopThread
     }
-    //This happens here because the destructors of the render classes will complain if the context no longer exists.
+    // This happens here because the destructors of the render classes will complain if the context no longer exists.
     glfwTerminate();
 
-    //Not necessary, but it's nice to have.
+    // Not necessary, but it's nice to have.
     return 0;
 }

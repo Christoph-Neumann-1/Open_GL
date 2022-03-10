@@ -19,24 +19,23 @@
 #include <Buffer.hpp>
 #include <VertexArray.hpp>
 
-const double raydist = 8;   //How far the player can mine/place blocks
-const double raysteps = 32; //How often the ray should be sampled
+const double raydist = 8;   // How far the player can mine/place blocks
+const double raysteps = 32; // How often the ray should be sampled
 class Voxel_t final : public GL::Scene
 {
-
 #pragma region Variables
-    //The handle for the texture atlas
+    // The handle for the texture atlas
     uint tex_id;
 
     GL::Shader chunkShader{"shader/Voxel/Chunk.vs", "shader/Voxel/Block.fs"};
 
-    //Shader for ui. Right now this means the square acting as the crosshair
+    // Shader for ui. Right now this means the square acting as the crosshair
     GL::Shader shader{"shader/Default.vs", "shader/Default.fs"};
 
     glm::mat4 proj = glm::perspective(glm::radians(65.0f), (float)loader->GetWindow().GetWidth() / loader->GetWindow().GetHeigth(), 0.05f, 400.0f);
 
     GL::Camera3D camera{{0, 30, 0}};
-    ///This camera controller does not allow roll or looking more than 90 degrees up.
+    /// This camera controller does not allow roll or looking more than 90 degrees up.
     GL::Fplocked cameraController{camera, loader->GetWindow(), 22};
     GL::Voxel::TexConfig blockTextures{"res/Textures/block.cfg"};
     GL::Voxel::ChunkManager chunks{blockTextures, loader->GetCallback()};
@@ -51,10 +50,10 @@ class Voxel_t final : public GL::Scene
 
     GL::Voxel::Inventory inventory;
 
-    //Player data
+    // Player data
     GL::Voxel::FileLayout file{"res/world/PLAYER"};
 
-    //This key regenerates the world
+    // This key regenerates the world
     GL::InputHandler::KeyCallback r_key{GetInputHandler()};
 
 #pragma endregion Variables
@@ -180,7 +179,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-    //I probaply need to save velocity somewhere for this to work.
+    // I probaply need to save velocity somewhere for this to work.
     void Collide()
     {
         glm::ivec3 cam_block = glm::round(camera.position);
@@ -190,7 +189,7 @@ class Voxel_t final : public GL::Scene
         {
             if (*block != GL::Voxel::BAir)
             {
-                //TODO: Water
+                // TODO: Water
                 if (*block == GL::Voxel::BWater)
                 {
                 }
@@ -213,7 +212,7 @@ class Voxel_t final : public GL::Scene
         }
     }
 
-    //TODO: Render back faces of partially transparent blocks like leaves.
+    // TODO: Render back faces of partially transparent blocks like leaves.
     void Render()
     {
         auto dt = loader->GetTimeInfo().RenderDeltaTime();
@@ -249,7 +248,7 @@ class Voxel_t final : public GL::Scene
 
         glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 
-        //The square in the middle.
+        // The square in the middle.
         shader.Bind();
         vao.Bind();
         ibo.Bind(GL_ELEMENT_ARRAY_BUFFER);
@@ -268,9 +267,10 @@ class Voxel_t final : public GL::Scene
 public:
     Voxel_t(GL::SceneLoader *_loader) : Scene(_loader)
     {
+        std::filesystem::create_directory("res/world");
         RegisterFunc(GL::CallbackType::Render, &Voxel_t::Render, this);
         chunkShader.Bind();
-        chunkShader.SetUniform1i("u_Texture", 0); //The texture array is using slot 0
+        chunkShader.SetUniform1i("u_Texture", 0); // The texture array is using slot 0
 
         TexSetup();
         chunkShader.UnBind();
@@ -306,7 +306,7 @@ public:
         glm::mat4 mat;
 
         auto &window = loader->GetWindow();
-        //This makes sure the the square always looks the same.
+        // This makes sure the the square always looks the same.
         if (window.GetWidth() > window.GetHeigth())
         {
             mat = glm::ortho(-(float)window.GetWidth() / window.GetHeigth(), (float)window.GetWidth() / window.GetHeigth(), -1.0f, 1.0f);
@@ -322,7 +322,7 @@ public:
 
         inventory.Load();
 
-        //Regenerate World and reset player position.
+        // Regenerate World and reset player position.
         r_key.Bind(
             glfwGetKeyScancode(GLFW_KEY_R), GL::InputHandler::Action::Press, [&](int)
             {
@@ -330,8 +330,7 @@ public:
                 cameraController.pitch = 0;
                 cameraController.yaw = 0;
                 chunks.Regenerate();
-                inventory.Load();
-            });
+                inventory.Load(); });
     }
     ~Voxel_t()
     {
@@ -340,7 +339,7 @@ public:
     }
 };
 
-//Load the texture array
+// Load the texture array
 void Voxel_t::TexSetup()
 {
     stbi_set_flip_vertically_on_load(1);
